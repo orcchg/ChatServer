@@ -1,0 +1,12 @@
+Minimal:
+1. Simple http one-process chat server
+2. Browser as a client
+
+Optional:
+3. Socket selection
+4. Multi-channeling
+5. Authentication
+6. REST API
+7. Private and encrypted channeling
+8. File transfer
+
