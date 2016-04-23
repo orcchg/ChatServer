@@ -1,5 +1,5 @@
 cmake_minimum_required( VERSION 2.8 )
-PROJECT( Lesson_14_Chat )
+PROJECT( ChatServer )
 
 # -----------------------------------------------------------------------------
 # --------------------------- Common header -----------------------------------
@@ -13,5 +13,6 @@ endif()
 
 # -----------------------------------------------------------------------------
 ADD_SUBDIRECTORY( client )
+ADD_SUBDIRECTORY( parser )
 ADD_SUBDIRECTORY( server )
 
