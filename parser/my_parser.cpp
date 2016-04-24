@@ -1,3 +1,23 @@
+/** 
+ *   HTTP Chat server with authentication and multi-channeling.
+ *
+ *   Copyright (C) 2016  Maxim Alov
+ *
+ *   This program is free software; you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation; either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program; if not, write to the Free Software Foundation,
+ *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+ */
+
 #include <algorithm>
 #include <sstream>
 #include <cstdlib>
@@ -53,10 +73,56 @@ Request MyParser::parseRequest(char* http, int nbytes) {
   return request;  
 }
 
+Response MyParser::parseResponse(char* http, int nbytes) {
+  const char* CRLF = "\r\n";
+  std::istringstream iss(http);
+  //MSG("Input: %s", iss.str().c_str());
+  Response response;
+
+  // code line
+  std::string code_line;
+  std::getline(iss, code_line);
+  //MSG("code=%s", code_line.c_str());
+  response.codeline = parseCodeLine(code_line);
+
+  // headers
+  std::string header_line;
+  std::vector<Header> headers;
+  while (true) {
+    std::getline(iss, header_line);
+    if (isHeader(header_line)) {
+      Header header = parseHeader(header_line);
+      headers.push_back(header);
+      //MSG("header=%s", header_line.c_str());
+    } else {
+      break;
+    }
+  }
+  response.headers = headers;
+
+  // body
+  std::string ending = "";
+  response.body = "";
+  std::string line;
+  while (std::getline(iss, line)) {
+    line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
+    response.body.append(ending);
+    response.body.append(line);
+    ending = "\n";
+  }
+
+  return response;
+}
+
 /* Output */
 // ----------------------------------------------------------------------------
 std::ostream& operator << (std::ostream& out, const StartLine& startline) {
   out << "Start Line:\n\tMethod: " << startline.method << "\n\tPath: " << startline.path << "\n\tVersion: " << startline.version << std::endl;
+  return out;
+}
+
+std::ostream& operator << (std::ostream& out, const CodeLine& codeline) {
+  out << "Code Line:\n\tVersion: " << codeline.version << "\n\tCode: " << codeline.code << "\n\tMessage: " << codeline.message << std::endl;
   return out;
 }
 
@@ -74,6 +140,15 @@ std::ostream& operator << (std::ostream& out, const Request& request) {
   return out;
 }
 
+std::ostream& operator << (std::ostream& out, const Response& response) {
+  out << "Response:\n" << response.codeline;
+  for (auto& it : response.headers) {
+    out << it;
+  }
+  out << "Body:\n" << response.body << std::endl;
+  return out;
+}
+
 /* Internals */
 // ----------------------------------------------------------------------------
 StartLine MyParser::parseStartLine(const std::string& start_line) const {
@@ -82,9 +157,29 @@ StartLine MyParser::parseStartLine(const std::string& start_line) const {
   int i1 = start_line.find_first_of(" ");
   startline.method = start_line.substr(0, i1);
   int i2 = start_line.find_first_of("HTTP", i1 + 1);
+  if (i1 == std::string::npos || i2 == std::string::npos) {
+    ERR("Parse error: invalid start line: %s", start_line.c_str());
+    throw ParseException();
+  }
   startline.path = start_line.substr(i1 + 1, i2 - i1 - 2);
   startline.version = std::atoi(start_line.substr(i2 + 7).c_str());
   return startline;
+}
+
+CodeLine MyParser::parseCodeLine(const std::string& code_line) const {
+  reduce(code_line);
+  CodeLine codeline;
+  int i1 = code_line.find_first_of("HTTP");
+  codeline.version = std::atoi(code_line.substr(i1 + 7, 1).c_str());
+  int i2 = code_line.find_first_of(" ", i1 + 8);
+  int i3 = code_line.find_first_of(" ", i2 + 1);
+    if (i1 == std::string::npos || i2 == std::string::npos || i3 == std::string::npos) {
+    ERR("Parse error: invalid code line: %s", code_line.c_str());
+    throw ParseException();
+  }
+  codeline.code = std::atoi(code_line.substr(i2, i3 - i2).c_str());
+  codeline.message = code_line.substr(i3 + 1);
+  return codeline;
 }
 
 bool MyParser::isHeader(const std::string& header_line) const {
@@ -95,6 +190,10 @@ bool MyParser::isHeader(const std::string& header_line) const {
 Header MyParser::parseHeader(const std::string& header_line) const {
   reduce(header_line);
   int colon = header_line.find_first_of(':');
+  if (colon == std::string::npos) {
+    ERR("Parse error: invalid header: %s", header_line.c_str());
+    throw ParseException();
+  }
   Header header;
   header.name = header_line.substr(0, colon);
   header.value = header_line.substr(colon + 1);
