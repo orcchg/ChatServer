@@ -31,6 +31,7 @@ public:
   void setSocket(int socket_id);
 
   inline int getChannel() const { return m_channel; }
+  inline int getSocket() const { return m_socket; }
 
 private:
   ID_t m_id;

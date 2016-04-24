@@ -70,9 +70,12 @@ Server::Server(int port_number) {
   // utility table
   m_methods["GET"] = Method::GET;
   m_methods["POST"] = Method::POST;
+  m_methods["PUT"] = Method::PUT;
   m_paths["/login"] = Path::LOGIN;
   m_paths["/register"] = Path::REGISTER;
   m_paths["/message"] = Path::MESSAGE;
+  m_paths["/logout"] = Path::LOGOUT;
+  m_paths["/switch_channel"] = Path::SWITCH_CHANNEL;
 
   m_api_impl = new ServerApiImpl();
 }
@@ -96,7 +99,8 @@ void Server::run() {
 }
 
 void Server::stop() {
-  // TODO: broadcast close signal to all peers
+  m_is_stopped = true;
+  m_api_impl->terminate();
   close(m_socket);
   delete m_api_impl;  m_api_impl = nullptr;
 }
@@ -117,8 +121,7 @@ void Server::runListener() {
 
     // get incoming message
     try {
-      Request request = getRequest(peer_socket);
-      std::thread t(&Server::handleRequest, this, peer_socket, request);
+      std::thread t(&Server::handleRequest, this, peer_socket);
       t.detach();
     } catch (ParseException exception) {
       ERR("Parse error: bad request");
@@ -146,7 +149,9 @@ Method Server::getMethod(const std::string& method) const {
 }
 
 Path Server::getPath(const std::string& path) const {
-  auto it = m_paths.find(path);
+  int i1 = path.find_first_of("?");
+  std::string path_no_params = path.substr(0, i1);
+  auto it = m_paths.find(path_no_params);
   if (it != m_paths.end()) {
     return it->second;
   }
@@ -155,60 +160,86 @@ Path Server::getPath(const std::string& path) const {
 
 /* Process request */
 // ----------------------------------------------
-Request Server::getRequest(int socket) {
+Request Server::getRequest(int socket, bool* is_closed) {
   char buffer[MESSAGE_SIZE];
   memset(buffer, 0, MESSAGE_SIZE);
   int read_bytes = recv(socket, buffer, MESSAGE_SIZE, 0);
+  if (read_bytes == 0) {
+    DBG("Connection closed");
+    *is_closed = true;
+    return Request::EMPTY;
+  }
   DBG("Raw request: %.*s", (int) read_bytes, buffer);
   return m_parser.parseRequest(buffer, read_bytes);
 }
 
-void Server::handleRequest(int socket, const Request& request) {
-  Method method = getMethod(request.startline.method);
-  if (method == Method::UNKNOWN) {
-    ERR("Invalid method: %s", request.startline.method.c_str());
-    close(socket);
-    return;
-  }
+void Server::handleRequest(int socket) {
+  while (!m_is_stopped) {
+    bool is_closed = false;
+    Request request = getRequest(socket, &is_closed);
+    if (is_closed) {
+      DBG("Stopping peer thread...");
+      close(socket);
+      return;
+    }
 
-  Path path = getPath(request.startline.path);
-  if (path == Path::UNKNOWN) {
-    ERR("Invalid path: %s", request.startline.path.c_str());
-    close(socket);
-    return;
-  }
+    Method method = getMethod(request.startline.method);
+    if (method == Method::UNKNOWN) {
+      ERR("Invalid method: %s", request.startline.method.c_str());
+      continue;
+    }
 
-  m_api_impl->setSocket(socket);
+    Path path = getPath(request.startline.path);
+    if (path == Path::UNKNOWN) {
+      ERR("Invalid path: %s", request.startline.path.c_str());
+      continue;
+    }
 
-  switch (path) {
-    case Path::LOGIN:
-      switch (method) {
-        case Method::GET:
-          m_api_impl->sendLoginForm();
+    m_api_impl->setSocket(socket);
+
+    switch (path) {
+      case Path::LOGIN:
+        switch (method) {
+          case Method::GET:
+            m_api_impl->sendLoginForm();
+            break;
+          case Method::POST:
+            m_api_impl->login(request.body);
+            break;
+        }
+        break;
+      case Path::REGISTER:
+        switch (method) {
+          case Method::GET:
+            m_api_impl->sendRegistrationForm();
+            break;
+          case Method::POST:
+            m_api_impl->registrate(request.body);
+            break;
+        }
+        break;
+      case Path::MESSAGE:
+        switch (method) {
+          case Method::POST:
+            m_api_impl->message(request.body);
+            break;
+        }
+        break;
+      case Path::LOGOUT:
+        switch (method) {
+          case Method::DELETE:
+          m_api_impl->logout(request.startline.path);
+          return;  // terminate current peer thread
+        }
+        break;
+      case Path::SWITCH_CHANNEL:
+        switch (method) {
+          case Method::PUT:
+          m_api_impl->switchChannel(request.body);
           break;
-        case Method::POST:
-          m_api_impl->login(request.body);
-          break;
-      }
-      break;
-    case Path::REGISTER:
-      switch (method) {
-        case Method::GET:
-          m_api_impl->sendRegistrationForm();
-          break;
-        case Method::POST:
-          m_api_impl->registrate(request.body);
-          // TODO: send 201 Created registered
-          break;
-      }
-      break;
-    case Path::MESSAGE:
-      switch (method) {
-        case Method::POST:
-          m_api_impl->message(request.body);
-          break;
-      }
-      break;
+        }
+        break;
+    }
   }
 }
 

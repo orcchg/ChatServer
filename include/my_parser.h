@@ -25,6 +25,11 @@
 #include <string>
 #include <vector>
 
+struct Query {
+  std::string key;
+  std::string value;
+};
+
 struct StartLine {
   std::string method;
   std::string path;
@@ -46,12 +51,16 @@ struct Request {
   StartLine startline;
   std::vector<Header> headers;
   std::string body;
+
+  static Request EMPTY;
 };
 
 struct Response {
   CodeLine codeline;
   std::vector<Header> headers;
   std::string body;
+
+  static Response EMPTY;
 };
 
 std::ostream& operator << (std::ostream& out, const StartLine& startline);
@@ -69,6 +78,8 @@ public:
 
   Request parseRequest(char* http, int nbytes);
   Response parseResponse(char* http, int nbytes);
+
+  std::string parsePath(const std::string& path, std::vector<Query>* params);
 
 protected:
   StartLine parseStartLine(const std::string& start_line) const;

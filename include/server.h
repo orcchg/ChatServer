@@ -44,10 +44,10 @@ private:
 
   void runListener();
   void printClientInfo(sockaddr_in& peeraddr);
-  Request getRequest(int socket);
+  Request getRequest(int socket, bool* is_closed);
   Method getMethod(const std::string& method) const;
   Path getPath(const std::string& path) const;
-  void handleRequest(int socket, const Request& request);
+  void handleRequest(int socket);
 };
 
 struct ServerException {};

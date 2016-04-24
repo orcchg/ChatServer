@@ -18,8 +18,10 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
+#include <cstdlib>
 #include <sstream>
 #include <utility>
+#include <vector>
 #include "all.h"
 #include "api.h"
 #include "server_api_impl.h"
@@ -138,6 +140,75 @@ void ServerApiImpl::message(const std::string& json) {
   }
 }
 
+void ServerApiImpl::logout(const std::string& path) {
+  std::vector<Query> params;
+  m_parser.parsePath(path, &params);
+  if (params.empty() || params[0].key.compare(ITEM_ID) != 0 ||
+      (params.size() >= 2 && params[1].key.compare(ITEM_LOGIN) != 0)) {
+    ERR("Logout failed: wrong query params: %s", path.c_str());
+    return;
+  }
+  ID_t id = std::stoll(params[0].value.c_str());
+  std::string name = params[1].value;
+  m_peers.erase(id);
+
+  std::ostringstream oss;
+  // feedback to logged in peer
+  oss << "HTTP/1.1 200 Logged Out\r\n\r\n";
+  send(m_socket, oss.str().c_str(), oss.str().length(), 0);
+  oss.str("");
+
+  // notify other peers
+  for (auto& it : m_peers) {
+    if (it.first != id) {
+      oss << "HTTP/1.1 200 Logged Out\r\n\r\n"
+          << "{\"" D_ITEM_MESSAGE "\":\"" << name << " has logged out\"}"; 
+      send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
+      oss.str("");
+    }
+  }
+}
+
+bool ServerApiImpl::switchChannel(const std::string& path) {
+  std::vector<Query> params;
+  m_parser.parsePath(path, &params);
+  if (params.size() < 2 || params[0].key.compare(ITEM_ID) != 0 ||
+      params[1].key.compare(ITEM_CHANNEL) != 0 ||
+      (params.size() >= 3 && params[2].key.compare(ITEM_LOGIN) != 0)) {
+    ERR("Switch channel failed: wrong query params: %s", path.c_str());
+    return false;
+  }
+  ID_t id = std::stoll(params[0].value.c_str());
+  int channel = std::stoi(params[1].value.c_str());
+  std::string name = params[2].value;
+
+  std::ostringstream oss;
+  // feedback to logged in peer
+  oss << "HTTP/1.1 200 Switched channel\r\n\r\n";
+  send(m_socket, oss.str().c_str(), oss.str().length(), 0);
+  oss.str("");
+
+  // notify other peers
+  for (auto& it : m_peers) {
+    if (it.first != id && it.second.getChannel() == channel) {
+      oss << "HTTP/1.1 200 Switched channel\r\n\r\n"
+          << "{\"" D_ITEM_MESSAGE "\":\"" << name << " has entered channel\"}"; 
+      send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
+      oss.str("");
+    }
+  }
+  return true;
+}
+
+void ServerApiImpl::terminate() {
+  std::ostringstream oss;
+  for (auto& it : m_peers) {
+    oss << "HTTP/1.1 " TERMINATE_CODE " Terminate\r\n\r\n";
+    send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
+    oss.str("");
+  }
+}
+
 /* Internals */
 // ----------------------------------------------------------------------------
 bool ServerApiImpl::loginPeer(const LoginForm& form) {
@@ -168,6 +239,7 @@ ID_t ServerApiImpl::registerPeer(const RegistrationForm& form) {
   if (id == UNKNOWN_ID) {
     PeerDTO peer = m_register_mapper.map(form);
     ID_t id = m_peers_database.addPeer(peer);
+    notifyPeerRegistered();
     doLogin(id, peer.getLogin());  // login after register
     return id;
   } else {
@@ -176,12 +248,32 @@ ID_t ServerApiImpl::registerPeer(const RegistrationForm& form) {
   return UNKNOWN_ID;
 }
 
+void ServerApiImpl::notifyPeerRegistered() {
+  std::ostringstream oss;
+  oss << "HTTP/1.1 201 Registered\r\n\r\n";
+  send(m_socket, oss.str().c_str(), oss.str().length(), 0);
+}
+
 void ServerApiImpl::doLogin(ID_t id, const std::string& name) {
   Peer peer(id, name);
   peer.setSocket(m_socket);
   m_peers.insert(std::make_pair(id, peer));
-  // TODO: notify other peers
-  // TODO: send 200 OK logged in
+
+  std::ostringstream oss;
+  // feedback to logged in peer
+  oss << "HTTP/1.1 200 Logged In\r\n\r\n";
+  send(m_socket, oss.str().c_str(), oss.str().length(), 0);
+  oss.str("");
+
+  // notify other peers
+  for (auto& it : m_peers) {
+    if (it.first != id) {
+      oss << "HTTP/1.1 200 Logged In\r\n\r\n"
+          << "{\"" D_ITEM_MESSAGE "\":\"" << name << " has logged in\"}"; 
+      send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
+      oss.str("");
+    }
+  }
 }
 
 void ServerApiImpl::broadcast(const Message& message) {
@@ -190,7 +282,7 @@ void ServerApiImpl::broadcast(const Message& message) {
     if (it.first != message.getId() && it.second.getChannel() == message.getChannel()) {
       oss << "HTTP/1.1 102 Processing\r\n\r\n"
           << message.toJson();
-      send(m_socket, oss.str().c_str(), oss.str().length(), 0);
+      send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
       oss.str("");
     }
   }

@@ -25,6 +25,7 @@
 #include "api.h"
 #include "database/peer_table.h"
 #include "mapper.h"
+#include "my_parser.h"
 #include "peer.h"
 #include "structures.h"
 
@@ -67,9 +68,14 @@ public:
   bool login(const std::string& json) override;
   ID_t registrate(const std::string& json) override;
   void message(const std::string& json) override;
+  void logout(const std::string& path) override;
+  bool switchChannel(const std::string& path) override;
+
+  void terminate() override;
 
 private:
   int m_socket;
+  MyParser m_parser;
   std::unordered_map<ID_t, Peer> m_peers;
   db::PeerTable m_peers_database;
   LoginToPeerDTOMapper m_login_mapper;
@@ -77,6 +83,7 @@ private:
 
   bool loginPeer(const LoginForm& form);
   ID_t registerPeer(const RegistrationForm& form);
+  void notifyPeerRegistered();
   void doLogin(ID_t id, const std::string& name);
   void broadcast(const Message& message);
 };

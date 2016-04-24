@@ -31,20 +31,25 @@
  *
  *  GET   /login - get login form
  *  POST  /login - send filled login form
+ *  DELETE   /logout?id=N&name=str - logout chat
  *
  *  GET   /register - get registration form
  *  POST  /register - send registration form
  *
  *  POST  /message - send message
+ *  PUT   /switch_channel?id=N&channel=K&name=str - switch to another channel
  *
+ *  terminate code: 99
  */
 
+#define TERMINATE_CODE "99"
+
 enum class Method : int {
-  UNKNOWN = -1, GET = 0, POST = 1
+  UNKNOWN = -1, GET = 0, POST = 1, PUT = 2, DELETE = 3
 };
 
 enum class Path : int {
-  UNKNOWN = -1, LOGIN = 0, REGISTER = 1, MESSAGE = 2
+  UNKNOWN = -1, LOGIN = 0, REGISTER = 1, MESSAGE = 2, LOGOUT = 3, SWITCH_CHANNEL = 4
 };
 
 /* Client API */
@@ -67,6 +72,10 @@ public:
   virtual bool login(const std::string& json) = 0;
   virtual ID_t registrate(const std::string& json) = 0;
   virtual void message(const std::string& json) = 0;
+  virtual void logout(const std::string& path) = 0;
+  virtual bool switchChannel(const std::string& path) = 0;
+
+  virtual void terminate() = 0;
 };
 
 #endif  // CHAT_SERVER_API__H__
