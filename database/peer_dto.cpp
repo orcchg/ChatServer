@@ -18,17 +18,14 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#include "peer.h"
+#include "peer_dto.h"
 
-Peer::Peer(ID_t id, const std::string& name)
-  : m_id(id), m_name(name) {
-}
+PeerDTO PeerDTO::EMPTY = PeerDTO("", "", "");
 
-void Peer::setChannel(int channel) {
-  m_channel = channel;
-}
-
-void Peer::setSocket(int socket_id) {
-  m_socket = socket_id;
+PeerDTO::PeerDTO(
+    const std::string& login,
+    const std::string& email,
+    const std::string& password)
+  : m_login(login), m_email(email), m_password(password) {
 }
 

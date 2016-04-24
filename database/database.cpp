@@ -29,10 +29,8 @@
 
 namespace db {
 
-Database::Database(
-    const std::string& i_db_name,
-    const std::string& i_table_name)
-  : m_db_name(i_db_name)
+Database::Database(const std::string& i_table_name)
+  : m_db_name(DATABASE_NAME)
   , m_table_name(i_table_name)
   , m_db_handler(nullptr)
   , m_db_statement(nullptr)
@@ -42,7 +40,7 @@ Database::Database(
 }
 
 Database::Database(Database&& rval_obj)
-  : m_db_name(rval_obj.m_db_name)
+  : m_db_name(DATABASE_NAME)
   , m_table_name(rval_obj.m_table_name)
   , m_db_handler(rval_obj.m_db_handler)
   , m_db_statement(rval_obj.m_db_statement)

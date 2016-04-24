@@ -22,4 +22,5 @@ SET( SOURCES
     ${SOURCE_DIR}/shell.c
 )
 ADD_LIBRARY( sqlite SHARED ${SOURCES} )
+TARGET_LINK_LIBRARIES( sqlite dl )
 

@@ -53,6 +53,9 @@ const WrappedString::Char_t* WrappedString::c_str() const {
   return (this->m_string.c_str());
 }
 
+const WrappedString::String_t& WrappedString::get() const {
+  return (this->m_string);
+}
 
 WrappedString& WrappedString::operator += (const WrappedString& rhs) {
   this->m_string += rhs.m_string;

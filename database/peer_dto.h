@@ -18,18 +18,29 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#include "api.h"
+#ifndef CHAT_SERVER_PEER_DTO__H__
+#define CHAT_SERVER_PEER_DTO__H__
 
-LoginForm::LoginForm(
-    const std::string& login,
-    const std::string& password)
-  : m_login(login), m_password(password) {
-}
+#include <string>
 
-RegistrationForm::RegistrationForm(
+class PeerDTO {
+public:
+  static PeerDTO EMPTY;
+
+  PeerDTO(
     const std::string& login,
     const std::string& email,
-    const std::string& password)
-  : LoginForm(login, password), m_email(email) {
-}
+    const std::string& password);
+
+  inline const std::string& getLogin() const { return m_login; }
+  inline const std::string& getEmail() const { return m_email; }
+  inline const std::string& getPassword() const { return m_password; }
+
+private:
+  std::string m_login;
+  std::string m_email;
+  std::string m_password;
+};
+
+#endif  // CHAT_SERVER_PEER_DTO__H__
 

@@ -18,32 +18,14 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#ifndef CHAT_SERVER_PROTOCOL__H__
-#define CHAT_SERVER_PROTOCOL__H__
+#ifndef CHAT_SERVER_MAPPER__H__
+#define CHAT_SERVER_MAPPER__H__
 
-#include <ostream>
-#include <string>
-
-struct Protocol {
-  int src_id;
-  int dest_id;
-  int channel;
-  long long timestamp;
-  std::string name;
-  std::string message;
-
-  bool operator == (const Protocol& rhs) const;
-  bool operator != (const Protocol& rhs) const;
+template <typename From, typename To>
+class Mapper {
+public:
+  virtual To map(const From& from) = 0;
 };
 
-static Protocol EMPTY_MESSAGE;
-
-struct SerializeException {};
-
-char* serialize(const Protocol& message);
-Protocol deserialize(char* input);
-
-std::ostream& operator << (std::ostream& out, const Protocol& message);
-
-#endif  // CHAT_SERVER_PROTOCOL__H__
+#endif  // CHAT_SERVER_MAPPER__H__
 

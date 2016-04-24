@@ -22,6 +22,7 @@
 #define CHAT_SERVER_API__H__
 
 #include <string>
+#include "types.h"
 
 /* HTTP Chat-Server API */
 // ----------------------------------------------
@@ -34,6 +35,8 @@
  *  GET   /register - get registration form
  *  POST  /register - send registration form
  *
+ *  POST  /message - send message
+ *
  */
 
 enum class Method : int {
@@ -42,30 +45,6 @@ enum class Method : int {
 
 enum class Path : int {
   UNKNOWN = -1, LOGIN = 0, REGISTER = 1, MESSAGE = 2
-};
-
-/* Internal implementation API */
-// ----------------------------------------------------------------------------
-class LoginForm {
-public:
-  LoginForm(
-    const std::string& login,
-    const std::string& password);
-
-protected:
-  std::string m_login;
-  std::string m_password;
-};
-
-class RegistrationForm : public LoginForm {
-public:
-  RegistrationForm(
-    const std::string& login,
-    const std::string& email,
-    const std::string& password);
-
-protected:
-  std::string m_email;
 };
 
 /* Client API */
@@ -85,8 +64,8 @@ public:
   virtual void sendLoginForm() = 0;
   virtual void sendRegistrationForm() = 0;
 
-  virtual void login(const std::string& json) = 0;
-  virtual void registrate(const std::string& json) = 0;
+  virtual bool login(const std::string& json) = 0;
+  virtual ID_t registrate(const std::string& json) = 0;
   virtual void message(const std::string& json) = 0;
 };
 

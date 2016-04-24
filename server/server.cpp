@@ -78,9 +78,7 @@ Server::Server(int port_number) {
 }
 
 Server::~Server() {
-  // TODO: broadcast close signal to all peers
-  close(m_socket);
-  delete m_api_impl;  m_api_impl = nullptr;
+  stop();
 }
 
 void Server::run() {
@@ -98,7 +96,9 @@ void Server::run() {
 }
 
 void Server::stop() {
-  // TODO: stop server
+  // TODO: broadcast close signal to all peers
+  close(m_socket);
+  delete m_api_impl;  m_api_impl = nullptr;
 }
 
 /* Looper */
@@ -198,6 +198,7 @@ void Server::handleRequest(int socket, const Request& request) {
           break;
         case Method::POST:
           m_api_impl->registrate(request.body);
+          // TODO: send 201 Created registered
           break;
       }
       break;

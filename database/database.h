@@ -23,12 +23,16 @@
 
 #include <string>
 #include "sqlite/sqlite3.h"
+#include "types.h"
 #include "unistring.h"
+
+#define UNKNOWN_ID -1
 
 #define SQLITE_ACCUMULATED_PREPARE_ERROR -1
 #define TABLE_ASSERTION_ERROR_CODE -2
 
-typedef sqlite3_int64 ID_t;
+#define DATABASE_NAME "ChatServerDatabase.db"
+
 typedef sqlite3* DB_Handler;
 typedef sqlite3_stmt* DB_Statement;
 
@@ -42,9 +46,7 @@ namespace db {
 
 class Database {
 protected:
-  Database(
-      const std::string& db_name = "ChatServerDatabase.db",
-      const std::string& table_name = "Default_Table");
+  Database(const std::string& table_name = "Default_Table");
   Database(Database&& rval_obj);
   virtual ~Database();
 

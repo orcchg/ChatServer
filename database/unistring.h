@@ -22,6 +22,7 @@ public:
   size_t length() const;
   int n_bytes() const;
   const Char_t* c_str() const;
+  const String_t& get() const;
 
   WrappedString& operator += (const WrappedString& rhs);
 

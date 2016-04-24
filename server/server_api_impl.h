@@ -23,8 +23,36 @@
 
 #include <unordered_map>
 #include "api.h"
+#include "database/peer_table.h"
+#include "mapper.h"
 #include "peer.h"
+#include "structures.h"
 
+#define D_ITEM_LOGIN "login"
+#define D_ITEM_EMAIL "email"
+#define D_ITEM_PASSWORD "password"
+
+#define D_ITEM_ID "id"
+#define D_ITEM_DEST_ID "dest_id"
+#define D_ITEM_CHANNEL "channel"
+#define D_ITEM_TIMESTAMP "timestamp"
+#define D_ITEM_SIZE "size"
+#define D_ITEM_MESSAGE "message"
+
+/* Mapping */
+// ----------------------------------------------------------------------------
+class LoginToPeerDTOMapper : public Mapper<LoginForm, PeerDTO> {
+public:
+  PeerDTO map(const LoginForm& form) override;
+};
+
+class RegistrationToPeerDTOMapper : public Mapper<RegistrationForm, PeerDTO> {
+public:
+  PeerDTO map(const RegistrationForm& form) override;
+};
+
+/* Server implementation */
+// ----------------------------------------------------------------------------
 class ServerApiImpl : public ServerApi {
 public:
   ServerApiImpl();
@@ -36,16 +64,21 @@ public:
   void sendLoginForm() override;
   void sendRegistrationForm() override;
 
-  void login(const std::string& json) override;
-  void registrate(const std::string& json) override;
+  bool login(const std::string& json) override;
+  ID_t registrate(const std::string& json) override;
   void message(const std::string& json) override;
 
 private:
   int m_socket;
-  std::unordered_map<int, Peer> m_peers;
+  std::unordered_map<ID_t, Peer> m_peers;
+  db::PeerTable m_peers_database;
+  LoginToPeerDTOMapper m_login_mapper;
+  RegistrationToPeerDTOMapper m_register_mapper;
 
-  void loginPeer(const LoginForm& form);
-  void registerPeer(const RegistrationForm& form);
+  bool loginPeer(const LoginForm& form);
+  ID_t registerPeer(const RegistrationForm& form);
+  void doLogin(ID_t id, const std::string& name);
+  void broadcast(const Message& message);
 };
 
 #endif  // CHAT_SERVER_SERVER_API_IMPL__H__

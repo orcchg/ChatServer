@@ -19,6 +19,7 @@
  */
 
 #include <sstream>
+#include <utility>
 #include "all.h"
 #include "api.h"
 #include "server_api_impl.h"
@@ -27,14 +28,29 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
-#define D_ITEM_LOGIN "login"
-#define D_ITEM_EMAIL "email"
-#define D_ITEM_PASSWORD "password"
-
 const char* ITEM_LOGIN = D_ITEM_LOGIN;
 const char* ITEM_EMAIL = D_ITEM_EMAIL;
 const char* ITEM_PASSWORD = D_ITEM_PASSWORD;
 
+const char* ITEM_ID = D_ITEM_ID;
+const char* ITEM_DEST_ID = D_ITEM_DEST_ID;
+const char* ITEM_CHANNEL = D_ITEM_CHANNEL;
+const char* ITEM_TIMESTAMP = D_ITEM_TIMESTAMP;
+const char* ITEM_SIZE = D_ITEM_SIZE;
+const char* ITEM_MESSAGE = D_ITEM_MESSAGE;
+
+/* Mapping */
+// ----------------------------------------------------------------------------
+PeerDTO LoginToPeerDTOMapper::map(const LoginForm& form) {
+  return PeerDTO(form.getLogin(), "<email_stub>", form.getPassword());
+}
+
+PeerDTO RegistrationToPeerDTOMapper::map(const RegistrationForm& form) {
+  return PeerDTO(form.getLogin(), form.getEmail(), form.getPassword());
+}
+
+/* Server implementation */
+// ----------------------------------------------------------------------------
 ServerApiImpl::ServerApiImpl() {
 }
 
@@ -59,7 +75,7 @@ void ServerApiImpl::sendRegistrationForm() {
   send(m_socket, oss.str().c_str(), oss.str().length(), 0);
 }
 
-void ServerApiImpl::login(const std::string& json) {
+bool ServerApiImpl::login(const std::string& json) {
   rapidjson::Document document;
   document.Parse(json.c_str());
 
@@ -69,13 +85,14 @@ void ServerApiImpl::login(const std::string& json) {
     std::string login = document[ITEM_LOGIN].GetString();
     std::string password = document[ITEM_PASSWORD].GetString();
     LoginForm form(login, password);
-    loginPeer(form);
+    return loginPeer(form);
   } else {
     ERR("Login failed: invalid form: %s", json.c_str());
   }
+  return false;
 }
 
-void ServerApiImpl::registrate(const std::string& json) {
+ID_t ServerApiImpl::registrate(const std::string& json) {
   rapidjson::Document document;
   document.Parse(json.c_str());
 
@@ -87,23 +104,95 @@ void ServerApiImpl::registrate(const std::string& json) {
     std::string email = document[ITEM_EMAIL].GetString();
     std::string password = document[ITEM_PASSWORD].GetString();
     RegistrationForm form(login, email, password);
-    registerPeer(form);
+    return registerPeer(form);
   } else {
     ERR("Registration failed: invalid form: %s", json.c_str());
   }
+  return false;
 }
 
 void ServerApiImpl::message(const std::string& json) {
+  rapidjson::Document document;
+  document.Parse(json.c_str());
 
+  if (document.IsObject() &&
+      document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64() &&
+      document.HasMember(ITEM_LOGIN) && document[ITEM_LOGIN].IsString() &&
+      document.HasMember(ITEM_CHANNEL) && document[ITEM_CHANNEL].IsInt() &&
+      document.HasMember(ITEM_DEST_ID) && document[ITEM_DEST_ID].IsInt64() &&
+      document.HasMember(ITEM_TIMESTAMP) && document[ITEM_TIMESTAMP].IsUint64() &&
+      document.HasMember(ITEM_MESSAGE) && document[ITEM_MESSAGE].IsString()) {
+    ID_t id = document[ITEM_ID].GetInt64();
+    std::string login = document[ITEM_LOGIN].GetString();
+    int channel = document[ITEM_CHANNEL].GetInt();
+    ID_t dest_id = document[ITEM_DEST_ID].GetInt64();
+    uint64_t timestamp = document[ITEM_TIMESTAMP].GetUint64();
+    std::string message = document[ITEM_MESSAGE].GetString();
+    Message message_object =
+        Message::Builder(id).setLogin(login).setChannel(channel)
+            .setDestId(dest_id).setTimestamp(timestamp)
+            .setMessage(message).build();
+    broadcast(message_object);
+  } else {
+    ERR("Message failed: invalid json: %s", json.c_str());
+  }
 }
 
 /* Internals */
 // ----------------------------------------------------------------------------
-void ServerApiImpl::loginPeer(const LoginForm& form) {
-
+bool ServerApiImpl::loginPeer(const LoginForm& form) {
+  ID_t id = UNKNOWN_ID;
+  PeerDTO peer = PeerDTO::EMPTY;
+  const std::string& symbolic = form.getLogin();
+  if (symbolic.find("@") != std::string::npos) {
+    peer = m_peers_database.getPeerByEmail(symbolic, &id);
+  } else {
+    peer = m_peers_database.getPeerByLogin(symbolic, &id);
+  }
+  if (id != UNKNOWN_ID) {
+    doLogin(id, symbolic);
+    return true;
+  } else {
+    WRN("Peer with login %s not registered!", symbolic.c_str());
+  }
+  return false;
 }
 
-void ServerApiImpl::registerPeer(const RegistrationForm& form) {
+ID_t ServerApiImpl::registerPeer(const RegistrationForm& form) {
+  ID_t id = UNKNOWN_ID;
+  if (form.getLogin().find("@") != std::string::npos) {
+    m_peers_database.getPeerByEmail(form.getEmail(), &id);
+  } else {
+    m_peers_database.getPeerByLogin(form.getLogin(), &id);
+  }
+  if (id == UNKNOWN_ID) {
+    PeerDTO peer = m_register_mapper.map(form);
+    ID_t id = m_peers_database.addPeer(peer);
+    doLogin(id, peer.getLogin());  // login after register
+    return id;
+  } else {
+    WRN("Peer with login %s and email %s has already been registered!", form.getLogin().c_str(), form.getEmail().c_str());
+  }
+  return UNKNOWN_ID;
+}
 
+void ServerApiImpl::doLogin(ID_t id, const std::string& name) {
+  Peer peer(id, name);
+  peer.setSocket(m_socket);
+  m_peers.insert(std::make_pair(id, peer));
+  // TODO: notify other peers
+  // TODO: send 200 OK logged in
+}
+
+void ServerApiImpl::broadcast(const Message& message) {
+  std::ostringstream oss;
+  for (auto& it : m_peers) {
+    if (it.first != message.getId() && it.second.getChannel() == message.getChannel()) {
+      oss << "HTTP/1.1 102 Processing\r\n\r\n"
+          << message.toJson();
+      send(m_socket, oss.str().c_str(), oss.str().length(), 0);
+      oss.str("");
+    }
+  }
 }
 

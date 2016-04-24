@@ -19,6 +19,8 @@
 SET( SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR} )
 SET( SOURCES
     ${SOURCE_DIR}/database.cpp
+    ${SOURCE_DIR}/peer_dto.cpp
+    ${SOURCE_DIR}/peer_table.cpp
     ${SOURCE_DIR}/unistring.cpp
 )
 ADD_LIBRARY( database SHARED ${SOURCES} )
