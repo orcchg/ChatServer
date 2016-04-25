@@ -195,13 +195,8 @@ StatusCode ServerApiImpl::logout(const std::string& path) {
   std::string name = params[1].value;
   m_peers.erase(id);
 
-  std::ostringstream oss;
-  // feedback to logged in peer
-  oss << "HTTP/1.1 200 Logged Out\r\n\r\n";
-  send(m_socket, oss.str().c_str(), oss.str().length(), 0);
-  oss.str("");
-
   // notify other peers
+  std::ostringstream oss;
   for (auto& it : m_peers) {
     if (it.first != id) {
       oss << "HTTP/1.1 200 Logged Out\r\n\r\n"
@@ -233,13 +228,8 @@ StatusCode ServerApiImpl::switchChannel(const std::string& path) {
     return StatusCode::UNAUTHORIZED;
   }
 
-  std::ostringstream oss;
-  // feedback to logged in peer
-  oss << "HTTP/1.1 200 Switched channel\r\n\r\n";
-  send(m_socket, oss.str().c_str(), oss.str().length(), 0);
-  oss.str("");
-
   // notify other peers
+  std::ostringstream oss;
   for (auto& it : m_peers) {
     if (it.first != id && it.second.getChannel() == channel) {
       oss << "HTTP/1.1 200 Switched channel\r\n\r\n"
@@ -295,19 +285,12 @@ ID_t ServerApiImpl::registerPeer(const RegistrationForm& form) {
   if (id == UNKNOWN_ID) {
     PeerDTO peer = m_register_mapper.map(form);
     ID_t id = m_peers_database.addPeer(peer);
-    notifyPeerRegistered();
     doLogin(id, peer.getLogin());  // login after register
     return id;
   } else {
     WRN("Peer with login %s and email %s has already been registered!", form.getLogin().c_str(), form.getEmail().c_str());
   }
   return UNKNOWN_ID;
-}
-
-void ServerApiImpl::notifyPeerRegistered() {
-  std::ostringstream oss;
-  oss << "HTTP/1.1 201 Registered\r\n\r\n";
-  send(m_socket, oss.str().c_str(), oss.str().length(), 0);
 }
 
 bool ServerApiImpl::authenticate(const std::string& expected_pass, const std::string& actual_pass) const {
@@ -319,13 +302,8 @@ void ServerApiImpl::doLogin(ID_t id, const std::string& name) {
   peer.setSocket(m_socket);
   m_peers.insert(std::make_pair(id, peer));
 
-  std::ostringstream oss;
-  // feedback to logged in peer
-  oss << "HTTP/1.1 200 Logged In\r\n\r\n";
-  send(m_socket, oss.str().c_str(), oss.str().length(), 0);
-  oss.str("");
-
   // notify other peers
+  std::ostringstream oss;
   for (auto& it : m_peers) {
     if (it.first != id) {
       oss << "HTTP/1.1 200 Logged In\r\n\r\n"
