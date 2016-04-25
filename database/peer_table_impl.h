@@ -18,11 +18,12 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#ifndef CHAT_SERVER_PEER_TABLE__H__
-#define CHAT_SERVER_PEER_TABLE__H__
+#ifndef CHAT_SERVER_PEER_TABLE_IMPL__H__
+#define CHAT_SERVER_PEER_TABLE_IMPL__H__
 
 #include "database.h"
-#include "peer_dto.h"
+#include "storage/peer_dto.h"
+#include "storage/peer_table.h"
 
 #define D_COLUMN_NAME_LOGIN "Login"
 #define D_COLUMN_NAME_EMAIL "Email"
@@ -30,16 +31,16 @@
 
 namespace db {
 
-class PeerTable : private Database {
+class PeerTable : private Database, public IPeerTable {
 public:
   PeerTable();
   PeerTable(PeerTable&& rval_obj);
   virtual ~PeerTable();
 
-  ID_t addPeer(const PeerDTO& peer);
-  void removePeer(ID_t id);
-  PeerDTO getPeerByLogin(const std::string& login, ID_t* id);
-  PeerDTO getPeerByEmail(const std::string& email, ID_t* id);
+  ID_t addPeer(const PeerDTO& peer) override;
+  void removePeer(ID_t id) override;
+  PeerDTO getPeerByLogin(const std::string& login, ID_t* id) override;
+  PeerDTO getPeerByEmail(const std::string& email, ID_t* id) override;
 
 private:
   PeerDTO getPeerBySymbolic(
@@ -57,5 +58,5 @@ private:
 
 }
 
-#endif  // CHAT_SERVER_PEER_TABLE__H__
+#endif  // CHAT_SERVER_PEER_TABLE_IMPL__H__
 

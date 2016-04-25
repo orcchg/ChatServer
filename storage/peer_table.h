@@ -18,14 +18,20 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#include "storage/peer_dto.h"
+#ifndef CHAT_SERVER_PEER_TABLE__H__
+#define CHAT_SERVER_PEER_TABLE__H__
 
-PeerDTO PeerDTO::EMPTY = PeerDTO("", "", "");
+#include <string>
+#include "peer_dto.h"
+#include "types.h"
 
-PeerDTO::PeerDTO(
-    const std::string& login,
-    const std::string& email,
-    const std::string& password)
-  : m_login(login), m_email(email), m_password(password) {
-}
+class IPeerTable {
+public:
+  virtual ID_t addPeer(const PeerDTO& peer) = 0;
+  virtual void removePeer(ID_t id) = 0;
+  virtual PeerDTO getPeerByLogin(const std::string& login, ID_t* id) = 0;
+  virtual PeerDTO getPeerByEmail(const std::string& email, ID_t* id) = 0;
+};
+
+#endif  // CHAT_SERVER_PEER_TABLE__H__
 

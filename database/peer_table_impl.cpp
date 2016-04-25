@@ -19,7 +19,7 @@
  */
 
 #include "logger.h"
-#include "peer_table.h"
+#include "peer_table_impl.h"
 
 #define TABLE_NAME "peers"
 

@@ -23,10 +23,10 @@
 
 #include <unordered_map>
 #include "api.h"
-#include "database/peer_table.h"
 #include "mapper.h"
 #include "my_parser.h"
 #include "peer.h"
+#include "storage/peer_table.h"
 #include "structures.h"
 
 #define D_ITEM_LOGIN "login"
@@ -78,7 +78,7 @@ private:
   int m_socket;
   MyParser m_parser;
   std::unordered_map<ID_t, Peer> m_peers;
-  db::PeerTable m_peers_database;
+  IPeerTable* m_peers_database;
   LoginToPeerDTOMapper m_login_mapper;
   RegistrationToPeerDTOMapper m_register_mapper;
 

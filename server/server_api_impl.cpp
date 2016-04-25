@@ -24,6 +24,7 @@
 #include <vector>
 #include "all.h"
 #include "api.h"
+#include "database/peer_table_impl.h"
 #include "server_api_impl.h"
 
 #include "rapidjson/document.h"
@@ -54,9 +55,11 @@ PeerDTO RegistrationToPeerDTOMapper::map(const RegistrationForm& form) {
 /* Server implementation */
 // ----------------------------------------------------------------------------
 ServerApiImpl::ServerApiImpl() {
+  m_peers_database = new db::PeerTable();
 }
 
 ServerApiImpl::~ServerApiImpl() {
+  delete m_peers_database;  m_peers_database = nullptr;
 }
 
 void ServerApiImpl::setSocket(int socket) {
@@ -257,9 +260,9 @@ StatusCode ServerApiImpl::loginPeer(const LoginForm& form) {
   PeerDTO peer = PeerDTO::EMPTY;
   const std::string& symbolic = form.getLogin();
   if (symbolic.find("@") != std::string::npos) {
-    peer = m_peers_database.getPeerByEmail(symbolic, &id);
+    peer = m_peers_database->getPeerByEmail(symbolic, &id);
   } else {
-    peer = m_peers_database.getPeerByLogin(symbolic, &id);
+    peer = m_peers_database->getPeerByLogin(symbolic, &id);
   }
   if (id != UNKNOWN_ID) {
     if (authenticate(peer.getPassword(), form.getPassword())) {
@@ -278,13 +281,13 @@ StatusCode ServerApiImpl::loginPeer(const LoginForm& form) {
 ID_t ServerApiImpl::registerPeer(const RegistrationForm& form) {
   ID_t id = UNKNOWN_ID;
   if (form.getLogin().find("@") != std::string::npos) {
-    m_peers_database.getPeerByEmail(form.getEmail(), &id);
+    m_peers_database->getPeerByEmail(form.getEmail(), &id);
   } else {
-    m_peers_database.getPeerByLogin(form.getLogin(), &id);
+    m_peers_database->getPeerByLogin(form.getLogin(), &id);
   }
   if (id == UNKNOWN_ID) {
     PeerDTO peer = m_register_mapper.map(form);
-    ID_t id = m_peers_database.addPeer(peer);
+    ID_t id = m_peers_database->addPeer(peer);
     doLogin(id, peer.getLogin());  // login after register
     return id;
   } else {
