@@ -71,11 +71,12 @@ Server::Server(int port_number) {
   m_methods["GET"] = Method::GET;
   m_methods["POST"] = Method::POST;
   m_methods["PUT"] = Method::PUT;
-  m_paths["/login"] = Path::LOGIN;
-  m_paths["/register"] = Path::REGISTER;
-  m_paths["/message"] = Path::MESSAGE;
-  m_paths["/logout"] = Path::LOGOUT;
-  m_paths["/switch_channel"] = Path::SWITCH_CHANNEL;
+  m_methods["DELETE"] = Method::DELETE;
+  m_paths[PATH_LOGIN] = Path::LOGIN;
+  m_paths[PATH_REGISTER] = Path::REGISTER;
+  m_paths[PATH_MESSAGE] = Path::MESSAGE;
+  m_paths[PATH_LOGOUT] = Path::LOGOUT;
+  m_paths[PATH_SWITCH_CHANNEL] = Path::SWITCH_CHANNEL;
 
   m_api_impl = new ServerApiImpl();
 }

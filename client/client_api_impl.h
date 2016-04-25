@@ -27,15 +27,24 @@
 // ----------------------------------------------------------------------------
 class ClientApiImpl : public ClientApi {
 public:
-  ClientApiImpl();
+  ClientApiImpl(
+    int socket,
+    const std::string& ip_address,
+    const std::string& port);
   virtual ~ClientApiImpl();
 
   /* API */
   void getLoginForm() override;
   void getRegistrationForm() override;
+  void sendLoginForm(const std::string& json) override;
+  void sendRegistrationForm(const std::string& json) override;
+  void sendMessage(const std::string& json) override;
+  void logout(const std::string& path) override;
+  void switchChannel(const std::string& path) override;
 
 private:
-
+  int m_socket;
+  std::string m_host;
 };
 
 #endif  // CHAT_SERVER_CLIENT_API_IMPL__H__

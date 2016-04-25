@@ -44,6 +44,44 @@
 
 #define TERMINATE_CODE "99"
 
+#define D_ITEM_LOGIN "login"
+#define D_ITEM_EMAIL "email"
+#define D_ITEM_PASSWORD "password"
+
+#define D_ITEM_ID "id"
+#define D_ITEM_DEST_ID "dest_id"
+#define D_ITEM_CHANNEL "channel"
+#define D_ITEM_TIMESTAMP "timestamp"
+#define D_ITEM_SIZE "size"
+#define D_ITEM_MESSAGE "message"
+
+#define D_ITEM_CODE "code"
+
+#define D_PATH_LOGIN "/login"
+#define D_PATH_REGISTER "/register"
+#define D_PATH_MESSAGE "/message"
+#define D_PATH_LOGOUT "/logout"
+#define D_PATH_SWITCH_CHANNEL "/switch_channel"
+
+extern const char* ITEM_LOGIN;
+extern const char* ITEM_EMAIL;
+extern const char* ITEM_PASSWORD;
+
+extern const char* ITEM_ID;
+extern const char* ITEM_DEST_ID;
+extern const char* ITEM_CHANNEL;
+extern const char* ITEM_TIMESTAMP;
+extern const char* ITEM_SIZE;
+extern const char* ITEM_MESSAGE;
+
+extern const char* ITEM_CODE;
+
+extern const char* PATH_LOGIN;
+extern const char* PATH_REGISTER;
+extern const char* PATH_MESSAGE;
+extern const char* PATH_LOGOUT;
+extern const char* PATH_SWITCH_CHANNEL;
+
 enum class Method : int {
   UNKNOWN = -1, GET = 0, POST = 1, PUT = 2, DELETE = 3
 };
@@ -62,6 +100,11 @@ class ClientApi {
 public:
   virtual void getLoginForm() = 0;
   virtual void getRegistrationForm() = 0;
+  virtual void sendLoginForm(const std::string& json) = 0;
+  virtual void sendRegistrationForm(const std::string& json) = 0;
+  virtual void sendMessage(const std::string& json) = 0;
+  virtual void logout(const std::string& path) = 0;
+  virtual void switchChannel(const std::string& path) = 0;
 };
 
 /* Server API */

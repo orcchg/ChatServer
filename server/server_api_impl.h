@@ -29,17 +29,6 @@
 #include "storage/peer_table.h"
 #include "structures.h"
 
-#define D_ITEM_LOGIN "login"
-#define D_ITEM_EMAIL "email"
-#define D_ITEM_PASSWORD "password"
-
-#define D_ITEM_ID "id"
-#define D_ITEM_DEST_ID "dest_id"
-#define D_ITEM_CHANNEL "channel"
-#define D_ITEM_TIMESTAMP "timestamp"
-#define D_ITEM_SIZE "size"
-#define D_ITEM_MESSAGE "message"
-
 /* Mapping */
 // ----------------------------------------------------------------------------
 class LoginToPeerDTOMapper : public Mapper<LoginForm, PeerDTO> {

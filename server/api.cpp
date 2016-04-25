@@ -18,39 +18,24 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#ifndef CHAT_SERVER_CLIENT__H__
-#define CHAT_SERVER_CLIENT__H__
-
-#include <string>
-#include "all.h"
 #include "api.h"
-#include "client_api_impl.h"
-#include "my_parser.h"
 
-class Client {
-public:
-  Client(const std::string& config_file);
-  virtual ~Client();
+const char* ITEM_LOGIN = D_ITEM_LOGIN;
+const char* ITEM_EMAIL = D_ITEM_EMAIL;
+const char* ITEM_PASSWORD = D_ITEM_PASSWORD;
 
-  void run();
+const char* ITEM_ID = D_ITEM_ID;
+const char* ITEM_DEST_ID = D_ITEM_DEST_ID;
+const char* ITEM_CHANNEL = D_ITEM_CHANNEL;
+const char* ITEM_TIMESTAMP = D_ITEM_TIMESTAMP;
+const char* ITEM_SIZE = D_ITEM_SIZE;
+const char* ITEM_MESSAGE = D_ITEM_MESSAGE;
 
-private:
-  bool m_is_connected;
-  int m_socket;
-  std::string m_ip_address;
-  std::string m_port;
-  MyParser m_parser;
-  ClientApi* m_api_impl;
+const char* ITEM_CODE = D_ITEM_CODE;
 
-  bool readConfiguration(const std::string& config_file);
-  Response getResponse(int socket, bool* is_closed);
-  void tryLogin();
-  void tryRegister();
-  void onLogin();
-  void onRegister();
-};
-
-struct ClientException {};
-
-#endif  // CHAT_SERVER_CLIENT__H__
+const char* PATH_LOGIN = D_PATH_LOGIN;
+const char* PATH_REGISTER = D_PATH_REGISTER;
+const char* PATH_MESSAGE = D_PATH_MESSAGE;
+const char* PATH_LOGOUT = D_PATH_LOGOUT;
+const char* PATH_SWITCH_CHANNEL = D_PATH_SWITCH_CHANNEL;
 

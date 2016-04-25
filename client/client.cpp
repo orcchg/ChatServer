@@ -22,6 +22,12 @@
 #include "client.h"
 #include "logger.h"
 
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
+
+#define MESSAGE_SIZE 4096
+
 Client::Client(const std::string& config_file) {
   if (!readConfiguration(config_file)) {
     throw ClientException();
@@ -63,6 +69,8 @@ Client::Client(const std::string& config_file) {
   }
 
   freeaddrinfo(server_info);  // release address stucture and remove from linked list
+
+  m_api_impl = new ClientApiImpl(m_socket, m_ip_address, m_port);
 }
 
 Client::~Client() {
@@ -74,7 +82,8 @@ void Client::run() {
     ERR("No connection established to Server");
     throw ClientException();
   }
-  // TODO: login, register, message, logout, switch channel
+
+  tryLogin();
 }
 
 // ----------------------------------------------
@@ -101,6 +110,88 @@ bool Client::readConfiguration(const std::string& config_file) {
     result = false;
   }
   return result;
+}
+
+/* Process response */
+// ----------------------------------------------
+Response Client::getResponse(int socket, bool* is_closed) {
+  char buffer[MESSAGE_SIZE];
+  memset(buffer, 0, MESSAGE_SIZE);
+  int read_bytes = recv(socket, buffer, MESSAGE_SIZE, 0);
+  if (read_bytes == 0) {
+    DBG("Connection closed");
+    *is_closed = true;
+    return Response::EMPTY;
+  }
+  DBG("Raw response: %.*s", (int) read_bytes, buffer);
+  return m_parser.parseResponse(buffer, read_bytes);
+}
+
+/* Utility */
+// ----------------------------------------------
+void Client::tryLogin() {
+  bool is_closed = false;
+  m_api_impl->getLoginForm();
+  Response login_form_response = getResponse(m_socket, &is_closed);
+
+  rapidjson::Document document;
+  document.Parse(login_form_response.body.c_str());
+
+  if (document.IsObject() &&
+      document.HasMember(ITEM_CODE) && document[ITEM_CODE].IsInt()) {
+    StatusCode code = static_cast<StatusCode>(document[ITEM_CODE].GetInt());
+    switch (code) {
+      case StatusCode::SUCCESS:
+        onLogin();
+        break;
+      case StatusCode::WRONG_PASSWORD:
+        //
+        break;
+      case StatusCode::NOT_REGISTERED:
+        tryRegister();
+        break;
+      case StatusCode::INVALID_FORM:
+        //
+        break;
+    }
+  } else {
+    ERR("Login failed: server responded with invalid form");
+  }
+}
+
+void Client::tryRegister() {
+  bool is_closed = false;
+  m_api_impl->getRegistrationForm();
+  Response register_form_response = getResponse(m_socket, &is_closed);
+
+  rapidjson::Document document;
+  document.Parse(register_form_response.body.c_str());
+
+  if (document.IsObject() &&
+      document.HasMember(ITEM_CODE) && document[ITEM_CODE].IsInt()) {
+    StatusCode code = static_cast<StatusCode>(document[ITEM_CODE].GetInt());
+    switch (code) {
+      case StatusCode::SUCCESS:
+        onRegister();
+        break;
+      case StatusCode::ALREADY_REGISTERED:
+        //
+        break;
+      case StatusCode::INVALID_FORM:
+        //
+        break;
+    }
+  } else {
+    ERR("Register failed: server responded with invalid form");
+  }
+}
+
+void Client::onLogin() {
+
+}
+
+void Client::onRegister() {
+
 }
 
 /* Main */

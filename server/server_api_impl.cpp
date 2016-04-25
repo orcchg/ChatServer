@@ -31,17 +31,6 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
-const char* ITEM_LOGIN = D_ITEM_LOGIN;
-const char* ITEM_EMAIL = D_ITEM_EMAIL;
-const char* ITEM_PASSWORD = D_ITEM_PASSWORD;
-
-const char* ITEM_ID = D_ITEM_ID;
-const char* ITEM_DEST_ID = D_ITEM_DEST_ID;
-const char* ITEM_CHANNEL = D_ITEM_CHANNEL;
-const char* ITEM_TIMESTAMP = D_ITEM_TIMESTAMP;
-const char* ITEM_SIZE = D_ITEM_SIZE;
-const char* ITEM_MESSAGE = D_ITEM_MESSAGE;
-
 /* Mapping */
 // ----------------------------------------------------------------------------
 PeerDTO LoginToPeerDTOMapper::map(const LoginForm& form) {
@@ -108,6 +97,8 @@ void ServerApiImpl::sendStatus(StatusCode status) {
     default:
       return;
   }
+  oss << "{\"" D_ITEM_CODE "\":" << static_cast<int>(status) << "}";
+  send(m_socket, oss.str().c_str(), oss.str().length(), 0);
 }
 
 StatusCode ServerApiImpl::login(const std::string& json) {
