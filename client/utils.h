@@ -18,30 +18,18 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#ifndef CHAT_SERVER_CLIENT__H__
-#define CHAT_SERVER_CLIENT__H__
+#ifndef CHAT_SERVER_UTILS__H__
+#define CHAT_SERVER_UTILS__H__
 
 #include <string>
-#include "all.h"
-#include "client_api_impl.h"
 
-class Client {
-public:
-  Client(const std::string& config_file);
-  virtual ~Client();
+namespace util {
 
-  void run();
+std::string enterSymbolic();
+int selectChannel();
+uint64_t getCurrentTime();
 
-private:
-  bool m_is_connected;
-  int m_socket;
-  std::string m_ip_address;
-  std::string m_port;
+}
 
-  bool readConfiguration(const std::string& config_file);
-};
-
-struct ClientException {};
-
-#endif  // CHAT_SERVER_CLIENT__H__
+#endif  // CHAT_SERVER_UTILS__H__
 

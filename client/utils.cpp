@@ -18,30 +18,33 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#ifndef CHAT_SERVER_CLIENT__H__
-#define CHAT_SERVER_CLIENT__H__
+#include <chrono>
+#include <cstdio>
+#include <iostream>
+#include "utils.h"
 
-#include <string>
-#include "all.h"
-#include "client_api_impl.h"
+namespace util {
 
-class Client {
-public:
-  Client(const std::string& config_file);
-  virtual ~Client();
+std::string enterSymbolic() {
+  printf("Enter name: ");
+  std::string name;
+  std::cin >> name;
+  return name;
+}
 
-  void run();
+int selectChannel() {
+  printf("Select channel: ");
+  int channel = 0;
+  std::cin >> channel;
+  return channel;
+}
 
-private:
-  bool m_is_connected;
-  int m_socket;
-  std::string m_ip_address;
-  std::string m_port;
+uint64_t getCurrentTime() {
+  auto now = std::chrono::system_clock::now();
+  auto duration = now.time_since_epoch();
+  auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+  return millis;
+}
 
-  bool readConfiguration(const std::string& config_file);
-};
-
-struct ClientException {};
-
-#endif  // CHAT_SERVER_CLIENT__H__
+}
 
