@@ -149,7 +149,7 @@ Method Server::getMethod(const std::string& method) const {
 }
 
 Path Server::getPath(const std::string& path) const {
-  int i1 = path.find_first_of("?");
+  int i1 = path.find_first_of('?');
   std::string path_no_params = path.substr(0, i1);
   auto it = m_paths.find(path_no_params);
   if (it != m_paths.end()) {

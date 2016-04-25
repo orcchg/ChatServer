@@ -181,6 +181,13 @@ bool ServerApiImpl::switchChannel(const std::string& path) {
   ID_t id = std::stoll(params[0].value.c_str());
   int channel = std::stoi(params[1].value.c_str());
   std::string name = params[2].value;
+  auto it = m_peers.find(id);
+  if (it != m_peers.end()) {
+    it->second.setChannel(channel);
+  } else {
+    ERR("Peer with id [%lli] not logged in!", id);
+    return false;
+  }
 
   std::ostringstream oss;
   // feedback to logged in peer
