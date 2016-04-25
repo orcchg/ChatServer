@@ -61,15 +61,16 @@ public:
 
   void setSocket(int socket) override;
 
-  // API
+  /* API */
   void sendLoginForm() override;
   void sendRegistrationForm() override;
+  void sendStatus(StatusCode status) override;
 
-  bool login(const std::string& json) override;
-  ID_t registrate(const std::string& json) override;
-  void message(const std::string& json) override;
-  void logout(const std::string& path) override;
-  bool switchChannel(const std::string& path) override;
+  StatusCode login(const std::string& json) override;
+  StatusCode registrate(const std::string& json) override;
+  StatusCode message(const std::string& json) override;
+  StatusCode logout(const std::string& path) override;
+  StatusCode switchChannel(const std::string& path) override;
 
   void terminate() override;
 
@@ -81,10 +82,12 @@ private:
   LoginToPeerDTOMapper m_login_mapper;
   RegistrationToPeerDTOMapper m_register_mapper;
 
-  bool loginPeer(const LoginForm& form);
+  StatusCode loginPeer(const LoginForm& form);
   ID_t registerPeer(const RegistrationForm& form);
   void notifyPeerRegistered();
+  bool authenticate(const std::string& expected_pass, const std::string& actual_pass) const;
   void doLogin(ID_t id, const std::string& name);
+  bool isAuthorized(ID_t id) const;
   void broadcast(const Message& message);
 };
 

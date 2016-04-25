@@ -18,12 +18,25 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#include "client.h"
+#ifndef CHAT_SERVER_CLIENT_API_IMPL__H__
+#define CHAT_SERVER_CLIENT_API_IMPL__H__
 
-/* Main */
+#include "api.h"
+
+/* Client implementation */
 // ----------------------------------------------------------------------------
-int main(int argc, char** argv) {
-  //
-  return 0;
-}
+class ClientApiImpl : public ClientApi {
+public:
+  ClientApiImpl();
+  virtual ~ClientApiImpl();
+
+  /* API */
+  void getLoginForm() override;
+  void getRegistrationForm() override;
+
+private:
+
+};
+
+#endif  // CHAT_SERVER_CLIENT_API_IMPL__H__
 

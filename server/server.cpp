@@ -204,7 +204,10 @@ void Server::handleRequest(int socket) {
             m_api_impl->sendLoginForm();
             break;
           case Method::POST:
-            m_api_impl->login(request.body);
+            {
+              auto login_status = m_api_impl->login(request.body);
+              m_api_impl->sendStatus(login_status);
+            }
             break;
         }
         break;
@@ -214,28 +217,40 @@ void Server::handleRequest(int socket) {
             m_api_impl->sendRegistrationForm();
             break;
           case Method::POST:
-            m_api_impl->registrate(request.body);
+            {
+              auto register_status = m_api_impl->registrate(request.body);
+              m_api_impl->sendStatus(register_status);
+            }
             break;
         }
         break;
       case Path::MESSAGE:
         switch (method) {
           case Method::POST:
-            m_api_impl->message(request.body);
+            {
+              auto message_status = m_api_impl->message(request.body);
+              m_api_impl->sendStatus(message_status);
+            }
             break;
         }
         break;
       case Path::LOGOUT:
         switch (method) {
           case Method::DELETE:
-          m_api_impl->logout(request.startline.path);
-          return;  // terminate current peer thread
+          {
+            auto logout_status = m_api_impl->logout(request.startline.path);
+            m_api_impl->sendStatus(logout_status);
+            return;  // terminate current peer thread
+          }
         }
         break;
       case Path::SWITCH_CHANNEL:
         switch (method) {
           case Method::PUT:
-          m_api_impl->switchChannel(request.body);
+          {
+            auto switch_status = m_api_impl->switchChannel(request.body);
+            m_api_impl->sendStatus(switch_status);
+          }
           break;
         }
         break;

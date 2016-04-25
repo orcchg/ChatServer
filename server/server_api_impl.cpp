@@ -77,7 +77,37 @@ void ServerApiImpl::sendRegistrationForm() {
   send(m_socket, oss.str().c_str(), oss.str().length(), 0);
 }
 
-bool ServerApiImpl::login(const std::string& json) {
+void ServerApiImpl::sendStatus(StatusCode status) {
+  std::ostringstream oss;
+  oss << "HTTP/1.1 ";
+  switch (status) {
+    case StatusCode::SUCCESS:
+      oss << "200 OK\r\n\r\n";
+      break;
+    case StatusCode::WRONG_PASSWORD:
+      oss << "403 Wrong password\r\n\r\n";
+      break;
+    case StatusCode::NOT_REGISTERED:
+      oss << "404 Not registered\r\n\r\n";
+      break;
+    case StatusCode::ALREADY_REGISTERED:
+      oss << "409 Already registered\r\n\r\n";
+      break;
+    case StatusCode::INVALID_FORM:
+      oss << "400 Invalid form\r\n\r\n";
+      break;
+    case StatusCode::UNAUTHORIZED:
+      oss << "401 Unauthorized\r\n\r\n";
+      break;
+    case StatusCode::UNKNOWN:
+      oss << "500 Internal server error\r\n\r\n";
+      break;
+    default:
+      return;
+  }
+}
+
+StatusCode ServerApiImpl::login(const std::string& json) {
   rapidjson::Document document;
   document.Parse(json.c_str());
 
@@ -91,10 +121,10 @@ bool ServerApiImpl::login(const std::string& json) {
   } else {
     ERR("Login failed: invalid form: %s", json.c_str());
   }
-  return false;
+  return StatusCode::INVALID_FORM;
 }
 
-ID_t ServerApiImpl::registrate(const std::string& json) {
+StatusCode ServerApiImpl::registrate(const std::string& json) {
   rapidjson::Document document;
   document.Parse(json.c_str());
 
@@ -106,14 +136,21 @@ ID_t ServerApiImpl::registrate(const std::string& json) {
     std::string email = document[ITEM_EMAIL].GetString();
     std::string password = document[ITEM_PASSWORD].GetString();
     RegistrationForm form(login, email, password);
-    return registerPeer(form);
+    ID_t id = registerPeer(form);
+    if (id != UNKNOWN_ID) {
+      INF("Registration succeeded: new id [%lli]", id);
+      return StatusCode::SUCCESS;
+    } else {
+      ERR("Registration failed: already registered");
+      return StatusCode::ALREADY_REGISTERED;
+    }
   } else {
     ERR("Registration failed: invalid form: %s", json.c_str());
   }
-  return false;
+  return StatusCode::INVALID_FORM;
 }
 
-void ServerApiImpl::message(const std::string& json) {
+StatusCode ServerApiImpl::message(const std::string& json) {
   rapidjson::Document document;
   document.Parse(json.c_str());
 
@@ -125,6 +162,10 @@ void ServerApiImpl::message(const std::string& json) {
       document.HasMember(ITEM_TIMESTAMP) && document[ITEM_TIMESTAMP].IsUint64() &&
       document.HasMember(ITEM_MESSAGE) && document[ITEM_MESSAGE].IsString()) {
     ID_t id = document[ITEM_ID].GetInt64();
+    if (!isAuthorized(id)) {
+      ERR("Peer with id [%lli] is not authorized", id);
+      return StatusCode::UNAUTHORIZED;
+    }
     std::string login = document[ITEM_LOGIN].GetString();
     int channel = document[ITEM_CHANNEL].GetInt();
     ID_t dest_id = document[ITEM_DEST_ID].GetInt64();
@@ -135,18 +176,20 @@ void ServerApiImpl::message(const std::string& json) {
             .setDestId(dest_id).setTimestamp(timestamp)
             .setMessage(message).build();
     broadcast(message_object);
+    return StatusCode::SUCCESS;
   } else {
     ERR("Message failed: invalid json: %s", json.c_str());
   }
+  return StatusCode::INVALID_FORM;
 }
 
-void ServerApiImpl::logout(const std::string& path) {
+StatusCode ServerApiImpl::logout(const std::string& path) {
   std::vector<Query> params;
   m_parser.parsePath(path, &params);
   if (params.empty() || params[0].key.compare(ITEM_ID) != 0 ||
       (params.size() >= 2 && params[1].key.compare(ITEM_LOGIN) != 0)) {
     ERR("Logout failed: wrong query params: %s", path.c_str());
-    return;
+    return StatusCode::INVALID_QUERY;
   }
   ID_t id = std::stoll(params[0].value.c_str());
   std::string name = params[1].value;
@@ -167,16 +210,17 @@ void ServerApiImpl::logout(const std::string& path) {
       oss.str("");
     }
   }
+  return StatusCode::SUCCESS;
 }
 
-bool ServerApiImpl::switchChannel(const std::string& path) {
+StatusCode ServerApiImpl::switchChannel(const std::string& path) {
   std::vector<Query> params;
   m_parser.parsePath(path, &params);
   if (params.size() < 2 || params[0].key.compare(ITEM_ID) != 0 ||
       params[1].key.compare(ITEM_CHANNEL) != 0 ||
       (params.size() >= 3 && params[2].key.compare(ITEM_LOGIN) != 0)) {
     ERR("Switch channel failed: wrong query params: %s", path.c_str());
-    return false;
+    return StatusCode::INVALID_QUERY;
   }
   ID_t id = std::stoll(params[0].value.c_str());
   int channel = std::stoi(params[1].value.c_str());
@@ -186,7 +230,7 @@ bool ServerApiImpl::switchChannel(const std::string& path) {
     it->second.setChannel(channel);
   } else {
     ERR("Peer with id [%lli] not logged in!", id);
-    return false;
+    return StatusCode::UNAUTHORIZED;
   }
 
   std::ostringstream oss;
@@ -204,7 +248,7 @@ bool ServerApiImpl::switchChannel(const std::string& path) {
       oss.str("");
     }
   }
-  return true;
+  return StatusCode::SUCCESS;
 }
 
 void ServerApiImpl::terminate() {
@@ -218,7 +262,7 @@ void ServerApiImpl::terminate() {
 
 /* Internals */
 // ----------------------------------------------------------------------------
-bool ServerApiImpl::loginPeer(const LoginForm& form) {
+StatusCode ServerApiImpl::loginPeer(const LoginForm& form) {
   ID_t id = UNKNOWN_ID;
   PeerDTO peer = PeerDTO::EMPTY;
   const std::string& symbolic = form.getLogin();
@@ -228,12 +272,17 @@ bool ServerApiImpl::loginPeer(const LoginForm& form) {
     peer = m_peers_database.getPeerByLogin(symbolic, &id);
   }
   if (id != UNKNOWN_ID) {
-    doLogin(id, symbolic);
-    return true;
+    if (authenticate(peer.getPassword(), form.getPassword())) {
+      doLogin(id, symbolic);
+      return StatusCode::SUCCESS;
+    } else {
+      ERR("Authentication failed: wrong password");
+      return StatusCode::WRONG_PASSWORD;
+    }
   } else {
     WRN("Peer with login %s not registered!", symbolic.c_str());
   }
-  return false;
+  return StatusCode::NOT_REGISTERED;
 }
 
 ID_t ServerApiImpl::registerPeer(const RegistrationForm& form) {
@@ -261,6 +310,10 @@ void ServerApiImpl::notifyPeerRegistered() {
   send(m_socket, oss.str().c_str(), oss.str().length(), 0);
 }
 
+bool ServerApiImpl::authenticate(const std::string& expected_pass, const std::string& actual_pass) const {
+  return expected_pass.compare(actual_pass) == 0;
+}
+
 void ServerApiImpl::doLogin(ID_t id, const std::string& name) {
   Peer peer(id, name);
   peer.setSocket(m_socket);
@@ -281,6 +334,10 @@ void ServerApiImpl::doLogin(ID_t id, const std::string& name) {
       oss.str("");
     }
   }
+}
+
+bool ServerApiImpl::isAuthorized(ID_t id) const {
+  return m_peers.find(id) != m_peers.end();
 }
 
 void ServerApiImpl::broadcast(const Message& message) {

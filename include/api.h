@@ -52,6 +52,10 @@ enum class Path : int {
   UNKNOWN = -1, LOGIN = 0, REGISTER = 1, MESSAGE = 2, LOGOUT = 3, SWITCH_CHANNEL = 4
 };
 
+enum class StatusCode : int {
+  UNKNOWN = -1, SUCCESS = 0, WRONG_PASSWORD = 1, NOT_REGISTERED = 2, ALREADY_REGISTERED = 3, INVALID_FORM = 4, INVALID_QUERY = 5, UNAUTHORIZED = 6
+};
+
 /* Client API */
 // ----------------------------------------------
 class ClientApi {
@@ -68,12 +72,13 @@ public:
 
   virtual void sendLoginForm() = 0;
   virtual void sendRegistrationForm() = 0;
+  virtual void sendStatus(StatusCode status) = 0;
 
-  virtual bool login(const std::string& json) = 0;
-  virtual ID_t registrate(const std::string& json) = 0;
-  virtual void message(const std::string& json) = 0;
-  virtual void logout(const std::string& path) = 0;
-  virtual bool switchChannel(const std::string& path) = 0;
+  virtual StatusCode login(const std::string& json) = 0;
+  virtual StatusCode registrate(const std::string& json) = 0;
+  virtual StatusCode message(const std::string& json) = 0;
+  virtual StatusCode logout(const std::string& path) = 0;
+  virtual StatusCode switchChannel(const std::string& path) = 0;
 
   virtual void terminate() = 0;
 };

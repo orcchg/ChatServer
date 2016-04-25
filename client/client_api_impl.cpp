@@ -18,12 +18,4 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#include "client.h"
-
-/* Main */
-// ----------------------------------------------------------------------------
-int main(int argc, char** argv) {
-  //
-  return 0;
-}
-
+#include "client_api_impl.h"

@@ -18,12 +18,18 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#include "client.h"
+#ifndef CHAT_SERVER_CLIENT__H__
+#define CHAT_SERVER_CLIENT__H__
 
-/* Main */
-// ----------------------------------------------------------------------------
-int main(int argc, char** argv) {
-  //
-  return 0;
-}
+#include "all.h"
+#include "client_api_impl.h"
+
+class Client {
+public:
+
+private:
+
+};
+
+#endif  // CHAT_SERVER_CLIENT__H__
 
