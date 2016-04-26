@@ -23,7 +23,6 @@
 #include <utility>
 #include <vector>
 #include "all.h"
-#include "api.h"
 #include "database/peer_table_impl.h"
 #include "server_api_impl.h"
 

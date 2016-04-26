@@ -30,6 +30,7 @@ if( CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX )
 endif()
 
 # -----------------------------------------------------------------------------
+ADD_SUBDIRECTORY( api )
 ADD_SUBDIRECTORY( client )
 ADD_SUBDIRECTORY( database )
 ADD_SUBDIRECTORY( parser )

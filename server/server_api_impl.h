@@ -22,12 +22,12 @@
 #define CHAT_SERVER_SERVER_API_IMPL__H__
 
 #include <unordered_map>
-#include "api.h"
+#include "api/api.h"
+#include "api/structures.h"
 #include "mapper.h"
 #include "parser/my_parser.h"
 #include "peer.h"
 #include "storage/peer_table.h"
-#include "structures.h"
 
 /* Mapping */
 // ----------------------------------------------------------------------------
