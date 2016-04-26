@@ -86,6 +86,7 @@ void Client::run() {
   tryLogin();
 }
 
+/* Utility */
 // ----------------------------------------------
 bool Client::readConfiguration(const std::string& config_file) {
   bool result = true;
@@ -127,7 +128,7 @@ Response Client::getResponse(int socket, bool* is_closed) {
   return m_parser.parseResponse(buffer, read_bytes);
 }
 
-/* Utility */
+/* API invocations */
 // ----------------------------------------------
 void Client::tryLogin() {
   bool is_closed = false;
