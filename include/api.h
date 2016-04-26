@@ -22,6 +22,7 @@
 #define CHAT_SERVER_API__H__
 
 #include <string>
+#include "structures.h"
 #include "types.h"
 
 /* HTTP Chat-Server API */
@@ -100,11 +101,11 @@ class ClientApi {
 public:
   virtual void getLoginForm() = 0;
   virtual void getRegistrationForm() = 0;
-  virtual void sendLoginForm(const std::string& json) = 0;
-  virtual void sendRegistrationForm(const std::string& json) = 0;
-  virtual void sendMessage(const std::string& json) = 0;
-  virtual void logout(const std::string& path) = 0;
-  virtual void switchChannel(const std::string& path) = 0;
+  virtual void sendLoginForm(const LoginForm& form) = 0;
+  virtual void sendRegistrationForm(const RegistrationForm& form) = 0;
+  virtual void sendMessage(const Message& message) = 0;
+  virtual void logout(ID_t id, const std::string& name) = 0;
+  virtual void switchChannel(ID_t id, int channel, const std::string& name) = 0;
 };
 
 /* Server API */

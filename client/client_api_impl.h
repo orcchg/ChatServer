@@ -36,11 +36,11 @@ public:
   /* API */
   void getLoginForm() override;
   void getRegistrationForm() override;
-  void sendLoginForm(const std::string& json) override;
-  void sendRegistrationForm(const std::string& json) override;
-  void sendMessage(const std::string& json) override;
-  void logout(const std::string& path) override;
-  void switchChannel(const std::string& path) override;
+  void sendLoginForm(const LoginForm& form) override;
+  void sendRegistrationForm(const RegistrationForm& form) override;
+  void sendMessage(const Message& message) override;
+  void logout(ID_t id, const std::string& name) override;
+  void switchChannel(ID_t id, int channel, const std::string& name) override;
 
 private:
   int m_socket;
