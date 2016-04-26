@@ -23,9 +23,12 @@
 
 #include <string>
 #include "all.h"
-#include "api.h"
+#include "api/api.h"
+#include "api/structures.h"
 #include "client_api_impl.h"
 #include "parser/my_parser.h"
+
+struct RuntimeException {};
 
 class Client {
 public:
@@ -44,10 +47,18 @@ private:
 
   bool readConfiguration(const std::string& config_file);
   Response getResponse(int socket, bool* is_closed);
-  void tryLogin();
-  void tryRegister();
+
+  void getLoginForm();
+  void fillLoginForm(LoginForm* form);
+  void tryLogin(const LoginForm& form);
   void onLogin();
+
+  void getRegistrationForm();
+  void fillRegistrationForm(RegistrationForm* form);
+  void tryRegister(const RegistrationForm& form);
   void onRegister();
+
+  void startChat();
 };
 
 struct ClientException {};

@@ -41,6 +41,9 @@ public:
   inline const std::string& getLogin() const { return m_login; }
   inline const std::string& getPassword() const { return m_password; }
 
+  inline void setLogin(const std::string& login) { m_login = login; }
+  inline void setPassword(const std::string& password) { m_password = password; }
+
 protected:
   std::string m_login;
   std::string m_password;
@@ -62,6 +65,8 @@ public:
     const std::string& password);
 
   inline const std::string& getEmail() const { return m_email; }
+
+  inline void setEmail(const std::string& email) { m_email = email; }
 
 protected:
   std::string m_email;

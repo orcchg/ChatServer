@@ -21,7 +21,7 @@
 #ifndef CHAT_SERVER_CLIENT_API_IMPL__H__
 #define CHAT_SERVER_CLIENT_API_IMPL__H__
 
-#include "api.h"
+#include "api/api.h"
 
 /* Client implementation */
 // ----------------------------------------------------------------------------

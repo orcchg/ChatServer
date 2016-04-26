@@ -18,7 +18,9 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
+#include <cstdio>
 #include <cstring>
+#include <iostream>
 #include "client.h"
 #include "logger.h"
 
@@ -83,7 +85,7 @@ void Client::run() {
     throw ClientException();
   }
 
-  tryLogin();
+  getLoginForm();
 }
 
 /* Utility */
@@ -129,14 +131,46 @@ Response Client::getResponse(int socket, bool* is_closed) {
 }
 
 /* API invocations */
+// ----------------------------------------------------------------------------
+/* Login */
 // ----------------------------------------------
-void Client::tryLogin() {
+void Client::getLoginForm() {
   bool is_closed = false;
   m_api_impl->getLoginForm();
   Response login_form_response = getResponse(m_socket, &is_closed);
 
   rapidjson::Document document;
   document.Parse(login_form_response.body.c_str());
+
+  if (document.IsObject() &&
+      document.HasMember(ITEM_LOGIN) && document[ITEM_LOGIN].IsString() &&
+      document.HasMember(ITEM_PASSWORD) && document[ITEM_PASSWORD].IsString()) {
+    LoginForm form(document[ITEM_LOGIN].GetString(), document[ITEM_PASSWORD].GetString());
+    fillLoginForm(&form);
+    tryLogin(form);
+  } else {
+    ERR("Login failed: server's responded with invalid form");
+    throw RuntimeException();
+  }
+}
+
+void Client::fillLoginForm(LoginForm* form) {
+  std::string login, password;
+  printf("Login: ");
+  std::cin >> login;
+  printf("Password: ");
+  std::cin >> password;
+  form->setLogin(login);
+  form->setPassword(password);
+}
+
+void Client::tryLogin(const LoginForm& form) {
+  bool is_closed = false;
+  m_api_impl->sendLoginForm(form);
+  Response code_response = getResponse(m_socket, &is_closed);
+
+  rapidjson::Document document;
+  document.Parse(code_response.body.c_str());
 
   if (document.IsObject() &&
       document.HasMember(ITEM_CODE) && document[ITEM_CODE].IsInt()) {
@@ -146,27 +180,69 @@ void Client::tryLogin() {
         onLogin();
         break;
       case StatusCode::WRONG_PASSWORD:
-        //
+        // TODO: wrong password
         break;
       case StatusCode::NOT_REGISTERED:
-        tryRegister();
+        getRegistrationForm();
         break;
       case StatusCode::INVALID_FORM:
-        //
-        break;
+        ERR("Login failed: client's sent invalid form");
+        throw RuntimeException();
     }
   } else {
-    ERR("Login failed: server responded with invalid form");
+    ERR("Login failed: server's responded with wrong status");
+    throw RuntimeException();
   }
 }
 
-void Client::tryRegister() {
+void Client::onLogin() {
+  INF("Successfully logged in");
+  startChat();
+}
+
+/* Registration */
+// ----------------------------------------------
+void Client::getRegistrationForm() {
   bool is_closed = false;
   m_api_impl->getRegistrationForm();
   Response register_form_response = getResponse(m_socket, &is_closed);
 
   rapidjson::Document document;
   document.Parse(register_form_response.body.c_str());
+
+  if (document.IsObject() &&
+      document.HasMember(ITEM_LOGIN) && document[ITEM_LOGIN].IsString() &&
+      document.HasMember(ITEM_EMAIL) && document[ITEM_EMAIL].IsString() &&
+      document.HasMember(ITEM_PASSWORD) && document[ITEM_PASSWORD].IsString()) {
+    RegistrationForm form(document[ITEM_LOGIN].GetString(), document[ITEM_EMAIL].GetString(), document[ITEM_PASSWORD].GetString());
+    fillRegistrationForm(&form);
+    tryRegister(form);
+  } else {
+    ERR("Registration failed: server's responded with invalid form");
+    throw RuntimeException();
+  }
+}
+
+void Client::fillRegistrationForm(RegistrationForm* form) {
+  std::string login, email, password;
+  printf("Login: ");
+  std::cin >> login;
+  printf("Email: ");
+  std::cin >> email;
+  printf("Password: ");
+  std::cin >> password;
+  form->setLogin(login);
+  form->setEmail(email);
+  form->setPassword(password);
+}
+
+void Client::tryRegister(const RegistrationForm& form) {
+  bool is_closed = false;
+  m_api_impl->sendRegistrationForm(form);
+  Response code_response = getResponse(m_socket, &is_closed);
+
+  rapidjson::Document document;
+  document.Parse(code_response.body.c_str());
 
   if (document.IsObject() &&
       document.HasMember(ITEM_CODE) && document[ITEM_CODE].IsInt()) {
@@ -179,20 +255,25 @@ void Client::tryRegister() {
         //
         break;
       case StatusCode::INVALID_FORM:
-        //
-        break;
+        ERR("Registration failed: client's sent invalid form");
+        throw RuntimeException();
     }
   } else {
-    ERR("Register failed: server responded with invalid form");
+    ERR("Registration failed: server's responded with wrong status");
+    throw RuntimeException();
   }
 }
 
-void Client::onLogin() {
-
+void Client::onRegister() {
+  INF("Registration completed");
+  startChat();
 }
 
-void Client::onRegister() {
-
+/* Messaging */
+// ----------------------------------------------
+void Client::startChat() {
+  // TODO: received thread
+  // TODO: write messages in main thread
 }
 
 /* Main */
