@@ -53,13 +53,13 @@ public:
   /* API */
   void sendLoginForm() override;
   void sendRegistrationForm() override;
-  void sendStatus(StatusCode status) override;
+  void sendStatus(StatusCode status, ID_t id) override;
 
-  StatusCode login(const std::string& json) override;
-  StatusCode registrate(const std::string& json) override;
-  StatusCode message(const std::string& json) override;
-  StatusCode logout(const std::string& path) override;
-  StatusCode switchChannel(const std::string& path) override;
+  StatusCode login(const std::string& json, ID_t& id) override;
+  StatusCode registrate(const std::string& json, ID_t& id) override;
+  StatusCode message(const std::string& json, ID_t& id) override;
+  StatusCode logout(const std::string& path, ID_t& id) override;
+  StatusCode switchChannel(const std::string& path, ID_t& id) override;
 
   void terminate() override;
 
@@ -71,7 +71,7 @@ private:
   LoginToPeerDTOMapper m_login_mapper;
   RegistrationToPeerDTOMapper m_register_mapper;
 
-  StatusCode loginPeer(const LoginForm& form);
+  StatusCode loginPeer(const LoginForm& form, ID_t& id);
   ID_t registerPeer(const RegistrationForm& form);
   bool authenticate(const std::string& expected_pass, const std::string& actual_pass) const;
   void doLogin(ID_t id, const std::string& name);

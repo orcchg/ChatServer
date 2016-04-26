@@ -39,18 +39,26 @@ public:
 
 private:
   bool m_is_connected;
+  bool m_is_stopped;
   int m_socket;
   std::string m_ip_address;
   std::string m_port;
   MyParser m_parser;
   ClientApi* m_api_impl;
 
+  ID_t m_id;
+  std::string m_name;
+  int m_channel;
+
   bool readConfiguration(const std::string& config_file);
   Response getResponse(int socket, bool* is_closed);
 
+  void goToMainMenu();
+  void end();
+
   void getLoginForm();
   void fillLoginForm(LoginForm* form);
-  void tryLogin(const LoginForm& form);
+  void tryLogin(LoginForm& form);
   void onLogin();
 
   void getRegistrationForm();
@@ -58,7 +66,11 @@ private:
   void tryRegister(const RegistrationForm& form);
   void onRegister();
 
+  void onWrongPassword(LoginForm& form);
+  void onAlreadyRegistered();
   void startChat();
+
+  void receiverThread();
 };
 
 struct ClientException {};

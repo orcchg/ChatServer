@@ -5,5 +5,7 @@
 
 typedef sqlite3_int64 ID_t;
 
+#define UNKNOWN_ID -1
+
 #endif  // CHAT_SERVER_TYPES__H__
 

@@ -23,10 +23,8 @@
 
 #include <string>
 #include "sqlite/sqlite3.h"
-#include "types.h"
+#include "api/types.h"
 #include "unistring.h"
-
-#define UNKNOWN_ID -1
 
 #define SQLITE_ACCUMULATED_PREPARE_ERROR -1
 #define TABLE_ASSERTION_ERROR_CODE -2

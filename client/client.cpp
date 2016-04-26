@@ -18,9 +18,11 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
+#include <chrono>
 #include <cstdio>
 #include <cstring>
 #include <iostream>
+#include <sstream>
 #include "client.h"
 #include "logger.h"
 
@@ -84,8 +86,7 @@ void Client::run() {
     ERR("No connection established to Server");
     throw ClientException();
   }
-
-  getLoginForm();
+  goToMainMenu();
 }
 
 /* Utility */
@@ -113,6 +114,31 @@ bool Client::readConfiguration(const std::string& config_file) {
     result = false;
   }
   return result;
+}
+
+void Client::goToMainMenu() {
+  std::string command;
+  printf("---------- Main ----------\n\n         login\n\n       register\n\n          exit\n\nEnter command: ");
+  while (std::cin >> command) {
+    if (command.compare("login")) {
+      getLoginForm();
+      return;
+    } else if (command.compare("register")) {
+      getRegistrationForm();
+      return;
+    } else if (command.compare("exit")) {
+      end();
+      return;
+    } else {
+      printf("Wrong command !\nEnter command: ");
+    }
+  }
+  end();  // close at end
+}
+
+void Client::end() {
+  DBG("Client closing...");
+  m_is_stopped = true;  // stop background receiver thread if any
 }
 
 /* Process response */
@@ -164,7 +190,7 @@ void Client::fillLoginForm(LoginForm* form) {
   form->setPassword(password);
 }
 
-void Client::tryLogin(const LoginForm& form) {
+void Client::tryLogin(LoginForm& form) {
   bool is_closed = false;
   m_api_impl->sendLoginForm(form);
   Response code_response = getResponse(m_socket, &is_closed);
@@ -173,14 +199,18 @@ void Client::tryLogin(const LoginForm& form) {
   document.Parse(code_response.body.c_str());
 
   if (document.IsObject() &&
-      document.HasMember(ITEM_CODE) && document[ITEM_CODE].IsInt()) {
+      document.HasMember(ITEM_CODE) && document[ITEM_CODE].IsInt() &&
+      document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64()) {
     StatusCode code = static_cast<StatusCode>(document[ITEM_CODE].GetInt());
     switch (code) {
       case StatusCode::SUCCESS:
+        m_id = document[ITEM_ID].GetInt64();
+        m_name = form.getLogin();
         onLogin();
         break;
       case StatusCode::WRONG_PASSWORD:
-        // TODO: wrong password
+        onWrongPassword(form);
+        tryLogin(form);  // retry login with new password
         break;
       case StatusCode::NOT_REGISTERED:
         getRegistrationForm();
@@ -245,14 +275,17 @@ void Client::tryRegister(const RegistrationForm& form) {
   document.Parse(code_response.body.c_str());
 
   if (document.IsObject() &&
-      document.HasMember(ITEM_CODE) && document[ITEM_CODE].IsInt()) {
+      document.HasMember(ITEM_CODE) && document[ITEM_CODE].IsInt() &&
+      document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64()) {
     StatusCode code = static_cast<StatusCode>(document[ITEM_CODE].GetInt());
     switch (code) {
       case StatusCode::SUCCESS:
+        m_id = document[ITEM_ID].GetInt64();
+        m_name = form.getLogin();
         onRegister();
         break;
       case StatusCode::ALREADY_REGISTERED:
-        //
+        onAlreadyRegistered();
         break;
       case StatusCode::INVALID_FORM:
         ERR("Registration failed: client's sent invalid form");
@@ -271,9 +304,61 @@ void Client::onRegister() {
 
 /* Messaging */
 // ----------------------------------------------
+void Client::onWrongPassword(LoginForm& form) {
+  std::string password;
+  printf("Wrong password. Retry\n");
+  printf("Password: ");
+  std::cin >> password;
+  form.setPassword(password);
+}
+
+void Client::onAlreadyRegistered() {
+  printf("Account already registered!\n");
+  goToMainMenu();
+}
+
 void Client::startChat() {
-  // TODO: received thread
-  // TODO: write messages in main thread
+  std::thread t(&Client::receiverThread, this);
+  t.detach();
+
+  std::ostringstream oss;
+  std::string buffer;
+  while (!m_is_stopped && getline(std::cin, buffer)) {
+    // TODO: change channel / dest id / logout
+    uint64_t timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    Message message = Message::Builder(m_id)
+        .setLogin(m_name).setChannel(m_channel).setDestId(UNKNOWN_ID)
+        .setTimestamp(timestamp).setMessage(buffer).build();
+    m_api_impl->sendMessage(message);
+  }
+}
+
+void Client::receiverThread() {
+  while (!m_is_stopped) {
+    char buffer[MESSAGE_SIZE];
+    int nbytes = recv(m_socket, buffer, MESSAGE_SIZE, 0);
+    Response response = m_parser.parseResponse(buffer, nbytes);
+
+    int code = response.codeline.code;
+    if (code == TERMINATE_CODE) {
+      INF("Received terminate code from Server");
+      m_is_stopped = true;
+      return;
+    }
+    try {
+      Message message = Message::fromJson(response.body);
+
+      std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
+      std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+
+      std::ostringstream oss;
+      oss << std::ctime(&end_time);
+
+      printf("%s :: %s: %s\n", oss.str().c_str(), message.getLogin().c_str(), message.getMessage().c_str());
+    } catch (ConvertException exception) {
+      WRN("Something doesn't like a message has been received. Skip");
+    }
+  }
 }
 
 /* Main */

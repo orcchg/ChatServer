@@ -22,7 +22,9 @@
 #define CHAT_SERVER_STRUCTURES__H__
 
 #include <string>
-#include "types.h"
+#include "api/types.h"
+
+struct ConvertException {};
 
 /* Internal implementation API */
 // ----------------------------------------------------------------------------
@@ -113,6 +115,7 @@ public:
 
   Message(const Builder& builder);
   std::string toJson() const;
+  static Message fromJson(const std::string& json);
 
   inline ID_t getId() const { return m_id; }
   inline const std::string& getLogin() const { return m_login; }

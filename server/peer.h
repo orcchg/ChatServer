@@ -22,7 +22,7 @@
 #define CHAT_SERVER_PEER__H__
 
 #include <string>
-#include "types.h"
+#include "api/types.h"
 
 class Peer {
 public:

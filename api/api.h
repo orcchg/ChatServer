@@ -43,7 +43,7 @@
  *  terminate code: 99
  */
 
-#define TERMINATE_CODE "99"
+#define TERMINATE_CODE 99
 
 #define D_ITEM_LOGIN "login"
 #define D_ITEM_EMAIL "email"
@@ -116,13 +116,13 @@ public:
 
   virtual void sendLoginForm() = 0;
   virtual void sendRegistrationForm() = 0;
-  virtual void sendStatus(StatusCode status) = 0;
+  virtual void sendStatus(StatusCode status, ID_t id) = 0;
 
-  virtual StatusCode login(const std::string& json) = 0;
-  virtual StatusCode registrate(const std::string& json) = 0;
-  virtual StatusCode message(const std::string& json) = 0;
-  virtual StatusCode logout(const std::string& path) = 0;
-  virtual StatusCode switchChannel(const std::string& path) = 0;
+  virtual StatusCode login(const std::string& json, ID_t& id) = 0;
+  virtual StatusCode registrate(const std::string& json, ID_t& id) = 0;
+  virtual StatusCode message(const std::string& json, ID_t& id) = 0;
+  virtual StatusCode logout(const std::string& path, ID_t& id) = 0;
+  virtual StatusCode switchChannel(const std::string& path, ID_t& id) = 0;
 
   virtual void terminate() = 0;
 };

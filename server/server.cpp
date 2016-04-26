@@ -205,8 +205,9 @@ void Server::handleRequest(int socket) {
             break;
           case Method::POST:
             {
-              auto login_status = m_api_impl->login(request.body);
-              m_api_impl->sendStatus(login_status);
+              ID_t id = UNKNOWN_ID;
+              auto login_status = m_api_impl->login(request.body, id);
+              m_api_impl->sendStatus(login_status, id);
             }
             break;
         }
@@ -218,8 +219,9 @@ void Server::handleRequest(int socket) {
             break;
           case Method::POST:
             {
-              auto register_status = m_api_impl->registrate(request.body);
-              m_api_impl->sendStatus(register_status);
+              ID_t id = UNKNOWN_ID;
+              auto register_status = m_api_impl->registrate(request.body, id);
+              m_api_impl->sendStatus(register_status, id);
             }
             break;
         }
@@ -228,8 +230,9 @@ void Server::handleRequest(int socket) {
         switch (method) {
           case Method::POST:
             {
-              auto message_status = m_api_impl->message(request.body);
-              m_api_impl->sendStatus(message_status);
+              ID_t id = UNKNOWN_ID;
+              auto message_status = m_api_impl->message(request.body, id);
+              m_api_impl->sendStatus(message_status, id);
             }
             break;
         }
@@ -238,8 +241,9 @@ void Server::handleRequest(int socket) {
         switch (method) {
           case Method::DELETE:
           {
-            auto logout_status = m_api_impl->logout(request.startline.path);
-            m_api_impl->sendStatus(logout_status);
+            ID_t id = UNKNOWN_ID;
+            auto logout_status = m_api_impl->logout(request.startline.path, id);
+            m_api_impl->sendStatus(logout_status, id);
             return;  // terminate current peer thread
           }
         }
@@ -248,8 +252,9 @@ void Server::handleRequest(int socket) {
         switch (method) {
           case Method::PUT:
           {
-            auto switch_status = m_api_impl->switchChannel(request.body);
-            m_api_impl->sendStatus(switch_status);
+            ID_t id = UNKNOWN_ID;
+            auto switch_status = m_api_impl->switchChannel(request.body, id);
+            m_api_impl->sendStatus(switch_status, id);
           }
           break;
         }

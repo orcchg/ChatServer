@@ -19,7 +19,13 @@
  */
 
 #include <sstream>
+#include "api.h"
+#include "logger.h"
 #include "structures.h"
+
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
 
 // ----------------------------------------------
 LoginForm::LoginForm(
@@ -81,13 +87,40 @@ Message::Message(const Message::Builder& builder)
 
 std::string Message::toJson() const {
   std::ostringstream oss;
-  oss << "{\"id\":" << m_id
-      << ",\"login\":\"" << m_login
-      << "\",\"channel\":" << m_channel
-      << ",\"dest_id\":" << m_dest_id
-      << ",\"timestamp\":" << m_timestamp
-      << ",\"message\":\"" << m_message
+  oss << "{\"" D_ITEM_ID "\":" << m_id
+      << ",\"" D_ITEM_LOGIN "\":\"" << m_login
+      << "\",\"" D_ITEM_CHANNEL "\":" << m_channel
+      << ",\"" D_ITEM_DEST_ID "\":" << m_dest_id
+      << ",\"" D_ITEM_TIMESTAMP "\":" << m_timestamp
+      << ",\"" D_ITEM_MESSAGE "\":\"" << m_message
       << "\"}";
   return oss.str();
+}
+
+Message Message::fromJson(const std::string& json) {
+  rapidjson::Document document;
+  document.Parse(json.c_str());
+
+  if (document.IsObject() &&
+      document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64() &&
+      document.HasMember(ITEM_LOGIN) && document[ITEM_LOGIN].IsString() &&
+      document.HasMember(ITEM_CHANNEL) && document[ITEM_CHANNEL].IsInt() &&
+      document.HasMember(ITEM_DEST_ID) && document[ITEM_DEST_ID].IsInt64() &&
+      document.HasMember(ITEM_TIMESTAMP) && document[ITEM_TIMESTAMP].IsInt64() &&
+      document.HasMember(ITEM_MESSAGE) && document[ITEM_MESSAGE].IsString()) {
+    ID_t id = document[ITEM_ID].GetInt64();
+    std::string login = document[ITEM_LOGIN].GetString();
+    int channel = document[ITEM_CHANNEL].GetInt();
+    ID_t dest_id = document[ITEM_DEST_ID].GetInt64();
+    uint64_t timestamp = document[ITEM_TIMESTAMP].GetInt64();
+    std::string message = document[ITEM_MESSAGE].GetString();
+
+    return Message::Builder(id).setLogin(login).setChannel(channel)
+        .setDestId(dest_id).setTimestamp(timestamp).setMessage(message)
+        .build();
+  } else {
+    ERR("Message parse failed: invalid json: %s", json.c_str());
+    throw ConvertException();
+  }
 }
 

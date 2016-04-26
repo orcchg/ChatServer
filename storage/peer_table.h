@@ -23,7 +23,7 @@
 
 #include <string>
 #include "peer_dto.h"
-#include "types.h"
+#include "api/types.h"
 
 class IPeerTable {
 public:
