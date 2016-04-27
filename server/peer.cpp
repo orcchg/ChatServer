@@ -21,7 +21,7 @@
 #include "peer.h"
 
 Peer::Peer(ID_t id, const std::string& name)
-  : m_id(id), m_name(name) {
+  : m_id(id), m_name(name), m_channel(0), m_socket(-1) {
 }
 
 void Peer::setChannel(int channel) {

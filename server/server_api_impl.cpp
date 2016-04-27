@@ -315,12 +315,45 @@ bool ServerApiImpl::isAuthorized(ID_t id) const {
 
 void ServerApiImpl::broadcast(const Message& message) {
   std::ostringstream oss;
+
+  // send to dedicated peer
+  ID_t dest_id = message.getDestId();
+  auto it = m_peers.find(dest_id);
+  if (dest_id != UNKNOWN_ID) {
+    printf("Sending message to dedicated peer with id [%lli]......     ", dest_id);
+    if (dest_id != message.getId() && it != m_peers.end()) {
+      printf("\e[5;00;32mOK\e[m\n");
+      oss << "HTTP/1.1 102 Processing\r\n\r\n"
+          << message.toJson();
+      send(it->second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
+      oss.str("");
+    } else if (dest_id == message.getId()) {
+      printf("\e[5;00;33mNot sent: same peer\e[m\n");
+    } else if (it == m_peers.end()) {
+      printf("\e[5;00;31mRecepient not found\e[m\n");
+    } else {
+      printf("\e[5;00;31mError\e[m\n");
+    }
+    return;  // do not broadcast dedicated messages
+  }
+
+  MSG("Broadcasting... total peers: %zu", m_peers.size());
   for (auto& it : m_peers) {
-    if (it.first != message.getId() && it.second.getChannel() == message.getChannel()) {
+    ID_t id = it.first;
+    int channel = it.second.getChannel();
+    printf("Sending message to peer with id [%lli] on channel [%i]......     ", id, channel);
+    if (id != message.getId() && channel == message.getChannel()) {
+      printf("\e[5;00;32mOK\e[m\n");
       oss << "HTTP/1.1 102 Processing\r\n\r\n"
           << message.toJson();
       send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
       oss.str("");
+    } else if (id == message.getId()) {
+      printf("\e[5;00;33mNot sent: same peer\e[m\n");
+    } else if (channel != message.getChannel()) {
+      printf("\e[5;00;33mNot sent: another channel\e[m\n");
+    } else {
+      printf("\e[5;00;31mError\e[m\n");
     }
   }
 }

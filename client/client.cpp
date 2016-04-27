@@ -345,7 +345,6 @@ void Client::receiverThread() {
         INF("Received terminate code from Server");
         printf("\e[5;00;31mSystem: Server shutdown\e[m\n");
         m_is_stopped = true;
-        std::cin.ignore();
         return;
       }
 
