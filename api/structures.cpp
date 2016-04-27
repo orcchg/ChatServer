@@ -21,11 +21,8 @@
 #include <sstream>
 #include "api.h"
 #include "logger.h"
-#include "structures.h"
-
 #include "rapidjson/document.h"
-#include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
+#include "structures.h"
 
 // ----------------------------------------------
 LoginForm::LoginForm(

@@ -32,6 +32,7 @@ const char* ITEM_SIZE = D_ITEM_SIZE;
 const char* ITEM_MESSAGE = D_ITEM_MESSAGE;
 
 const char* ITEM_CODE = D_ITEM_CODE;
+const char* ITEM_SYSTEM = D_ITEM_SYSTEM;
 
 const char* PATH_LOGIN = D_PATH_LOGIN;
 const char* PATH_REGISTER = D_PATH_REGISTER;

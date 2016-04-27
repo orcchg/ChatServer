@@ -22,6 +22,7 @@
 #include "peer_table_impl.h"
 
 #define TABLE_NAME "peers"
+#define BASE_ID 1000
 
 namespace db {
 
@@ -141,7 +142,7 @@ void PeerTable::removePeer(ID_t id) {
   if (this->__empty__()) {
     DBG("Table ["%s"] has become empty. Next ID value is set to zero.",
          this->m_table_name.c_str());
-    this->m_next_id = 0;
+    this->m_next_id = BASE_ID;
   }
   DBG("Deleted peer [ID: %lli] in table ["%s"].",
        id, this->m_table_name.c_str());
@@ -168,7 +169,7 @@ PeerDTO PeerTable::getPeerBySymbolic(
   select_statement += this->m_table_name;
   select_statement += "' WHERE ";
   select_statement += symbolic;
-  select_statement += " == '";
+  select_statement += " LIKE '";
   select_statement += value;
   select_statement += "';";
 
@@ -177,7 +178,7 @@ PeerDTO PeerTable::getPeerBySymbolic(
   *id = sqlite3_column_int64(this->m_db_statement, 0);
 
   PeerDTO peer = PeerDTO::EMPTY;
-  if (*id != 0) {
+  if (*id != UNKNOWN_ID) {
     DBG("Read id [%lli] from  table ["%s"] of database ["%s"].",
          *id, this->m_table_name.c_str(), this->m_db_name.c_str());
 
@@ -212,7 +213,7 @@ void PeerTable::__init__() {
   DBG("enter PeerTable::__init__().");
   Database::__init__();
   ID_t last_row_id = this->__read_last_id__(this->m_table_name);
-  this->m_next_id = last_row_id == 0 ? 0 : last_row_id + 1;
+  this->m_next_id = last_row_id == 0 ? BASE_ID : last_row_id + 1;
   TRC("Initialization has completed: total rows [%i], last row id [%lli], "
       "next_id [%lli].",
       this->m_rows, last_row_id, this->m_next_id);
@@ -223,7 +224,7 @@ void PeerTable::__create_table__() {
   DBG("enter PeerTable::__create_table__().");
   std::string statement = "CREATE TABLE IF NOT EXISTS ";
   statement += this->m_table_name;
-  statement += "('ID' INTEGER PRIMARY KEY UNIQUE, "
+  statement += "('ID' INTEGER PRIMARY KEY UNIQUE DEFAULT " STR_UNKNOWN_ID ", "
       "'" D_COLUMN_NAME_LOGIN "' TEXT, "
       "'" D_COLUMN_NAME_EMAIL "' TEXT, "
       "'" D_COLUMN_NAME_PASSWORD "' TEXT);";

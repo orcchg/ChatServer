@@ -21,6 +21,7 @@
 #include <sstream>
 #include "all.h"
 #include "client_api_impl.h"
+#include "logger.h"
 
 /* Client implementation */
 // ----------------------------------------------------------------------------
@@ -38,12 +39,14 @@ ClientApiImpl::~ClientApiImpl() {
 void ClientApiImpl::getLoginForm() {
   std::ostringstream oss;
   oss << "GET " D_PATH_LOGIN " HTTP/1.1\r\nHost: " << m_host << "\r\n\r\n";
+  MSG("Request: %s", oss.str().c_str());
   send(m_socket, oss.str().c_str(), oss.str().length(), 0);
 }
 
 void ClientApiImpl::getRegistrationForm() {
   std::ostringstream oss;
   oss << "GET " D_PATH_REGISTER " HTTP/1.1\r\nHost: " << m_host << "\r\n\r\n";
+  MSG("Request: %s", oss.str().c_str());
   send(m_socket, oss.str().c_str(), oss.str().length(), 0);
 }
 
@@ -52,6 +55,7 @@ void ClientApiImpl::sendLoginForm(const LoginForm& form) {
   oss << "POST " D_PATH_LOGIN " HTTP/1.1\r\nHost: " << m_host << "\r\n\r\n"
       << "{\"" D_ITEM_LOGIN "\":\"" << form.getLogin()
       << "\",\"" D_ITEM_PASSWORD "\":\"" << form.getPassword() << "\"}";
+  MSG("Request: %s", oss.str().c_str());
   send(m_socket, oss.str().c_str(), oss.str().length(), 0);
 }
 
@@ -61,6 +65,7 @@ void ClientApiImpl::sendRegistrationForm(const RegistrationForm& form) {
       << "{\"" D_ITEM_LOGIN "\":\"" << form.getLogin()
       << "\",\"" D_ITEM_EMAIL "\":\"" << form.getEmail()
       << "\",\"" D_ITEM_PASSWORD "\":\"" << form.getPassword() << "\"}";
+  MSG("Request: %s", oss.str().c_str());
   send(m_socket, oss.str().c_str(), oss.str().length(), 0);
 }
 
@@ -73,6 +78,7 @@ void ClientApiImpl::sendMessage(const Message& message) {
       << ",\"" D_ITEM_DEST_ID "\":" << message.getDestId()
       << ",\"" D_ITEM_TIMESTAMP "\":" << message.getTimestamp()
       << ",\"" D_ITEM_MESSAGE "\":\"" << message.getMessage() << "\"}";
+  MSG("Request: %s", oss.str().c_str());
   send(m_socket, oss.str().c_str(), oss.str().length(), 0);
 }
 
@@ -81,6 +87,7 @@ void ClientApiImpl::logout(ID_t id, const std::string& name) {
   oss << "DELETE " D_PATH_LOGOUT "?" D_ITEM_ID "=" << id
       << "&" D_ITEM_LOGIN "=" << name
       << " HTTP/1.1\r\nHost: " << m_host << "\r\n\r\n";
+  MSG("Request: %s", oss.str().c_str());
   send(m_socket, oss.str().c_str(), oss.str().length(), 0);
 }
 
@@ -90,6 +97,7 @@ void ClientApiImpl::switchChannel(ID_t id, int channel, const std::string& name)
       << "&" D_ITEM_CHANNEL "=" << channel
       << "&" D_ITEM_LOGIN "=" << name
       << " HTTP/1.1\r\nHost: " << m_host << "\r\n\r\n";
+  MSG("Request: %s", oss.str().c_str());
   send(m_socket, oss.str().c_str(), oss.str().length(), 0);
 }
 

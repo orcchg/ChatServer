@@ -25,7 +25,7 @@
 #include "logger.h"
 
 #define ROWS_IN_CASE_OF_NOT_EXISTING_TABLE -1
-#define ID_IN_CASE_OF_NOT_EXISTING_TABLE 0
+#define ID_IN_CASE_OF_NOT_EXISTING_TABLE -1
 
 namespace db {
 
@@ -75,7 +75,7 @@ void Database::__init__() {
   } catch(TableException& e) {
     ERR(["%s"], e.what());
     this->__terminate__("Error during create table or counting rows!");
-    // Do not allow invalid object of DailyTable to be instantiated.
+    // Do not allow invalid object of Table to be instantiated.
     WRN("throw from Database::__init__().");
     throw e;
   }

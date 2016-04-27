@@ -57,6 +57,7 @@
 #define D_ITEM_MESSAGE "message"
 
 #define D_ITEM_CODE "code"
+#define D_ITEM_SYSTEM "system"
 
 #define D_PATH_LOGIN "/login"
 #define D_PATH_REGISTER "/register"
@@ -76,6 +77,7 @@ extern const char* ITEM_SIZE;
 extern const char* ITEM_MESSAGE;
 
 extern const char* ITEM_CODE;
+extern const char* ITEM_SYSTEM;
 
 extern const char* PATH_LOGIN;
 extern const char* PATH_REGISTER;

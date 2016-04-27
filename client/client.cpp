@@ -25,10 +25,8 @@
 #include <sstream>
 #include "client.h"
 #include "logger.h"
-
 #include "rapidjson/document.h"
-#include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
+#include "utils.h"
 
 #define MESSAGE_SIZE 4096
 
@@ -120,13 +118,13 @@ void Client::goToMainMenu() {
   std::string command;
   printf("---------- Main ----------\n\n         login\n\n       register\n\n          exit\n\nEnter command: ");
   while (std::cin >> command) {
-    if (command.compare("login")) {
+    if (command.compare("login") == 0) {
       getLoginForm();
       return;
-    } else if (command.compare("register")) {
+    } else if (command.compare("register") == 0) {
       getRegistrationForm();
       return;
-    } else if (command.compare("exit")) {
+    } else if (command.compare("exit") == 0) {
       end();
       return;
     } else {
@@ -323,6 +321,7 @@ void Client::startChat() {
 
   std::ostringstream oss;
   std::string buffer;
+  std::cin.ignore();
   while (!m_is_stopped && getline(std::cin, buffer)) {
     // TODO: change channel / dest id / logout
     uint64_t timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
@@ -336,15 +335,31 @@ void Client::startChat() {
 void Client::receiverThread() {
   while (!m_is_stopped) {
     char buffer[MESSAGE_SIZE];
+    memset(buffer, 0, MESSAGE_SIZE);
     int nbytes = recv(m_socket, buffer, MESSAGE_SIZE, 0);
     Response response = m_parser.parseResponse(buffer, nbytes);
 
-    int code = response.codeline.code;
-    if (code == TERMINATE_CODE) {
-      INF("Received terminate code from Server");
-      m_is_stopped = true;
-      return;
+    {  // system responses
+      int code = response.codeline.code;
+      if (code == TERMINATE_CODE) {
+        INF("Received terminate code from Server");
+        printf("\e[5;00;31mSystem: Server shutdown\e[m\n");
+        m_is_stopped = true;
+        std::cin.ignore();
+        return;
+      }
+
+      if (util::checkStatus(response.body)) {
+        continue;  // received status from Server
+      }
+      std::string system;
+      if (util::checkSystemMessage(response.body, &system)) {
+        printf("\e[5;00;32mSystem: %s\e[m\n", system.c_str());
+        continue;  // received system message from Server
+      }
     }
+
+    // peers' messages
     try {
       Message message = Message::fromJson(response.body);
 

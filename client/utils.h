@@ -28,6 +28,8 @@ namespace util {
 std::string enterSymbolic();
 int selectChannel();
 uint64_t getCurrentTime();
+bool checkStatus(const std::string& json);
+bool checkSystemMessage(const std::string& json, std::string* system);
 
 }
 

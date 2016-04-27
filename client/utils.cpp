@@ -21,6 +21,8 @@
 #include <chrono>
 #include <cstdio>
 #include <iostream>
+#include "api/api.h"
+#include "rapidjson/document.h"
 #include "utils.h"
 
 namespace util {
@@ -44,6 +46,25 @@ uint64_t getCurrentTime() {
   auto duration = now.time_since_epoch();
   auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
   return millis;
+}
+
+bool checkStatus(const std::string& json) {
+  rapidjson::Document document;
+  document.Parse(json.c_str());
+  return document.IsObject() &&
+      document.HasMember(ITEM_CODE) && document[ITEM_CODE].IsInt() &&
+      document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64();
+}
+
+bool checkSystemMessage(const std::string& json, std::string* system) {
+  rapidjson::Document document;
+  document.Parse(json.c_str());
+  bool result = document.IsObject() &&
+         document.HasMember(ITEM_SYSTEM) && document[ITEM_SYSTEM].IsString();
+  if (result) {
+    *system = document[ITEM_SYSTEM].GetString();
+  }
+  return result;
 }
 
 }

@@ -24,11 +24,8 @@
 #include <vector>
 #include "all.h"
 #include "database/peer_table_impl.h"
-#include "server_api_impl.h"
-
 #include "rapidjson/document.h"
-#include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
+#include "server_api_impl.h"
 
 /* Mapping */
 // ----------------------------------------------------------------------------
@@ -98,6 +95,7 @@ void ServerApiImpl::sendStatus(StatusCode status, ID_t id) {
   }
   oss << "{\"" D_ITEM_CODE "\":" << static_cast<int>(status)
       << ",\"" D_ITEM_ID "\":" << id << "}";
+  MSG("Response: %s", oss.str().c_str());
   send(m_socket, oss.str().c_str(), oss.str().length(), 0);
 }
 
@@ -196,7 +194,7 @@ StatusCode ServerApiImpl::logout(const std::string& path, ID_t& id) {
   for (auto& it : m_peers) {
     if (it.first != id) {
       oss << "HTTP/1.1 200 Logged Out\r\n\r\n"
-          << "{\"" D_ITEM_MESSAGE "\":\"" << name << " has logged out\"}"; 
+          << "{\"" D_ITEM_SYSTEM "\":\"" << name << " has logged out\"}"; 
       send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
       oss.str("");
     }
@@ -230,7 +228,7 @@ StatusCode ServerApiImpl::switchChannel(const std::string& path, ID_t& id) {
   for (auto& it : m_peers) {
     if (it.first != id && it.second.getChannel() == channel) {
       oss << "HTTP/1.1 200 Switched channel\r\n\r\n"
-          << "{\"" D_ITEM_MESSAGE "\":\"" << name << " has entered channel\"}"; 
+          << "{\"" D_ITEM_SYSTEM "\":\"" << name << " has entered channel\"}"; 
       send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
       oss.str("");
     }
@@ -267,7 +265,7 @@ StatusCode ServerApiImpl::loginPeer(const LoginForm& form, ID_t& id) {
       return StatusCode::WRONG_PASSWORD;
     }
   } else {
-    WRN("Peer with login %s not registered!", symbolic.c_str());
+    WRN("Peer with login ["%s"] not registered!", symbolic.c_str());
   }
   return StatusCode::NOT_REGISTERED;
 }
@@ -285,7 +283,7 @@ ID_t ServerApiImpl::registerPeer(const RegistrationForm& form) {
     doLogin(id, peer.getLogin());  // login after register
     return id;
   } else {
-    WRN("Peer with login %s and email %s has already been registered!", form.getLogin().c_str(), form.getEmail().c_str());
+    WRN("Peer with login ["%s"] and email ["%s"] has already been registered!", form.getLogin().c_str(), form.getEmail().c_str());
   }
   return UNKNOWN_ID;
 }
@@ -304,7 +302,7 @@ void ServerApiImpl::doLogin(ID_t id, const std::string& name) {
   for (auto& it : m_peers) {
     if (it.first != id) {
       oss << "HTTP/1.1 200 Logged In\r\n\r\n"
-          << "{\"" D_ITEM_MESSAGE "\":\"" << name << " has logged in\"}"; 
+          << "{\"" D_ITEM_SYSTEM "\":\"" << name << " has logged in\"}"; 
       send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
       oss.str("");
     }
