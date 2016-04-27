@@ -206,6 +206,9 @@ StatusCode ServerApiImpl::switchChannel(const std::string& path, ID_t& id) {
   id = UNKNOWN_ID;
   std::vector<Query> params;
   m_parser.parsePath(path, &params);
+  for (auto& query : params) {
+    DBG("Query: %s: %s", query.key.c_str(), query.value.c_str());
+  }
   if (params.size() < 2 || params[0].key.compare(ITEM_ID) != 0 ||
       params[1].key.compare(ITEM_CHANNEL) != 0 ||
       (params.size() >= 3 && params[2].key.compare(ITEM_LOGIN) != 0)) {

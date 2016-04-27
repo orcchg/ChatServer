@@ -31,6 +31,12 @@ uint64_t getCurrentTime();
 bool checkStatus(const std::string& json);
 bool checkSystemMessage(const std::string& json, std::string* system);
 
+enum class Command : int {
+  UNKNOWN = -1, DIRECT_MESSAGE = 0, SWITCH_CHANNEL = 1, LOGOUT = 2, MENU = 3
+};
+
+Command parseCommand(const std::string& command, ID_t& value);
+
 }
 
 #endif  // CHAT_SERVER_UTILS__H__

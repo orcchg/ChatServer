@@ -20,6 +20,7 @@
 
 #include <chrono>
 #include <cstdio>
+#include <sstream>
 #include <iostream>
 #include "api/api.h"
 #include "rapidjson/document.h"
@@ -65,6 +66,22 @@ bool checkSystemMessage(const std::string& json, std::string* system) {
     *system = document[ITEM_SYSTEM].GetString();
   }
   return result;
+}
+
+Command parseCommand(const std::string& command, ID_t& value) {
+  if (command.length() > 1 && command[0] == '.') {
+    int i1 = command.find_first_of(' ');
+    std::string argument = command.substr(i1 + 1);
+    std::istringstream iss(argument);
+    iss >> value;
+    switch (command[1]) {
+      case 'd': return Command::DIRECT_MESSAGE;
+      case 's': return Command::SWITCH_CHANNEL;
+      case 'q': return Command::LOGOUT;
+      case 'm': return Command::MENU;
+    }
+  }
+  return Command::UNKNOWN;
 }
 
 }

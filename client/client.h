@@ -28,8 +28,6 @@
 #include "client_api_impl.h"
 #include "parser/my_parser.h"
 
-struct RuntimeException {};
-
 class Client {
 public:
   Client(const std::string& config_file);
@@ -41,6 +39,7 @@ private:
   ID_t m_id;
   std::string m_name;
   int m_channel;
+  ID_t m_dest_id;
 
   bool m_is_connected;
   bool m_is_stopped;
@@ -74,6 +73,7 @@ private:
 };
 
 struct ClientException {};
+struct RuntimeException {};
 
 #endif  // CHAT_SERVER_CLIENT__H__
 

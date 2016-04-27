@@ -253,7 +253,7 @@ void Server::handleRequest(int socket) {
           case Method::PUT:
           {
             ID_t id = UNKNOWN_ID;
-            auto switch_status = m_api_impl->switchChannel(request.body, id);
+            auto switch_status = m_api_impl->switchChannel(request.startline.path, id);
             m_api_impl->sendStatus(switch_status, id);
           }
           break;

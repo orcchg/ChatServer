@@ -31,7 +31,7 @@
 #define MESSAGE_SIZE 4096
 
 Client::Client(const std::string& config_file)
-  : m_id(UNKNOWN_ID), m_name(""), m_channel(0)
+  : m_id(UNKNOWN_ID), m_name(""), m_channel(0), m_dest_id(UNKNOWN_ID)
   , m_is_connected(false), m_is_stopped(false)
   , m_socket(-1), m_ip_address(""), m_port("http") {
   if (!readConfiguration(config_file)) {
@@ -322,16 +322,48 @@ void Client::startChat() {
   std::thread t(&Client::receiverThread, this);
   t.detach();
 
+  printf("Type \'.m\' to list commands\n\n");
+
   std::ostringstream oss;
   std::string buffer;
   std::cin.ignore();
   while (!m_is_stopped && getline(std::cin, buffer)) {
-    // TODO: change channel / dest id / logout
+    ID_t value = 0;
+    util::Command command = util::parseCommand(buffer, value);
+    switch (command) {
+      case util::Command::DIRECT_MESSAGE:
+        m_dest_id = value;
+        continue;
+      case util::Command::SWITCH_CHANNEL:
+        m_channel = value;
+        m_api_impl->switchChannel(m_id, static_cast<int>(m_channel), m_name);
+        continue;
+      case util::Command::LOGOUT:
+        m_api_impl->logout(m_id, m_name);
+        end();
+        continue;
+      case util::Command::MENU:
+        printf("\t\e[5;00;37m.m - list commands\e[m\n");
+        printf("\t\e[5;00;37m.d <id>  - send message directly to peer with <id>\e[m\n");
+        printf("\t\e[5;00;37m.s <channel> - switch to another <channel>\e[m\n");
+        printf("\t\e[5;00;37m.q - logout\e[m\n");
+        continue;
+      case util::Command::UNKNOWN:
+      default:
+        // ignore invalid commands, it could be just a message
+        break;
+    }
+
+    // sending message
     uint64_t timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     Message message = Message::Builder(m_id)
-        .setLogin(m_name).setChannel(m_channel).setDestId(UNKNOWN_ID)
+        .setLogin(m_name).setChannel(m_channel).setDestId(m_dest_id)
         .setTimestamp(timestamp).setMessage(buffer).build();
     m_api_impl->sendMessage(message);
+
+    if (m_dest_id != UNKNOWN_ID) {
+      m_dest_id = UNKNOWN_ID;  // drop directed id
+    }
   }
 }
 
