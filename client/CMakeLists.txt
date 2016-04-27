@@ -22,6 +22,7 @@ SET( SOURCES
     ${SOURCE_DIR}/client_api_impl.cpp
     ${SOURCE_DIR}/utils.cpp
 )
+
 ADD_EXECUTABLE( client ${SOURCES} )
 TARGET_LINK_LIBRARIES( client api my_parser )
 

@@ -351,7 +351,7 @@ void ServerApiImpl::broadcast(const Message& message) {
     } else if (id == message.getId()) {
       printf("\e[5;00;33mNot sent: same peer\e[m\n");
     } else if (channel != message.getChannel()) {
-      printf("\e[5;00;33mNot sent: another channel\e[m\n");
+      printf("\e[5;00;33mNot sent: another channel [%i]\e[m\n", message.getChannel());
     } else {
       printf("\e[5;00;31mError\e[m\n");
     }

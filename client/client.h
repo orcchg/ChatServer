@@ -38,6 +38,10 @@ public:
   void run();
 
 private:
+  ID_t m_id;
+  std::string m_name;
+  int m_channel;
+
   bool m_is_connected;
   bool m_is_stopped;
   int m_socket;
@@ -45,10 +49,6 @@ private:
   std::string m_port;
   MyParser m_parser;
   ClientApi* m_api_impl;
-
-  ID_t m_id;
-  std::string m_name;
-  int m_channel;
 
   bool readConfiguration(const std::string& config_file);
   Response getResponse(int socket, bool* is_closed);

@@ -30,7 +30,10 @@
 
 #define MESSAGE_SIZE 4096
 
-Client::Client(const std::string& config_file) {
+Client::Client(const std::string& config_file)
+  : m_id(UNKNOWN_ID), m_name(""), m_channel(0)
+  , m_is_connected(false), m_is_stopped(false)
+  , m_socket(-1), m_ip_address(""), m_port("http") {
   if (!readConfiguration(config_file)) {
     throw ClientException();
   }
@@ -224,7 +227,7 @@ void Client::tryLogin(LoginForm& form) {
 }
 
 void Client::onLogin() {
-  INF("Successfully logged in");
+  printf("\e[5;00;36mSystem: Successfully logged in\e[m\n");
   startChat();
 }
 
@@ -296,7 +299,7 @@ void Client::tryRegister(const RegistrationForm& form) {
 }
 
 void Client::onRegister() {
-  INF("Registration completed");
+  printf("\e[5;00;36mSystem: Registration completed\e[m\n");
   startChat();
 }
 
