@@ -66,6 +66,7 @@ private:
   void onRegister();
 
   void onWrongPassword(LoginForm& form);
+  void onAlreadyLoggedIn();
   void onAlreadyRegistered();
   void startChat();
 

@@ -216,6 +216,9 @@ void Client::tryLogin(LoginForm& form) {
       case StatusCode::NOT_REGISTERED:
         getRegistrationForm();
         break;
+      case StatusCode::ALREADY_LOGGED_IN:
+        onAlreadyLoggedIn();
+        break;
       case StatusCode::INVALID_FORM:
         ERR("Login failed: client's sent invalid form");
         throw RuntimeException();
@@ -313,8 +316,13 @@ void Client::onWrongPassword(LoginForm& form) {
   form.setPassword(password);
 }
 
+void Client::onAlreadyLoggedIn() {
+  printf("\e[5;00;33mSystem: Peer already logged in !\e[m\n");
+  goToMainMenu();
+}
+
 void Client::onAlreadyRegistered() {
-  printf("Account already registered!\n");
+  printf("\e[5;00;33mSystem: Peer already registered !\e[m\n");
   goToMainMenu();
 }
 

@@ -87,6 +87,9 @@ void ServerApiImpl::sendStatus(StatusCode status, ID_t id) {
     case StatusCode::UNAUTHORIZED:
       oss << "401 Unauthorized\r\n\r\n";
       break;
+    case StatusCode::ALREADY_LOGGED_IN:
+      oss << "409 Already logged in\r\n\r\n";
+      break;
     case StatusCode::UNKNOWN:
       oss << "500 Internal server error\r\n\r\n";
       break;
@@ -261,6 +264,10 @@ StatusCode ServerApiImpl::loginPeer(const LoginForm& form, ID_t& id) {
   }
   if (id != UNKNOWN_ID) {
     if (authenticate(peer.getPassword(), form.getPassword())) {
+      if (m_peers.find(id) != m_peers.end()) {
+        ERR("Authentication failed: already logged in");
+        return StatusCode::ALREADY_LOGGED_IN;
+      }
       doLogin(id, symbolic);
       return StatusCode::SUCCESS;
     } else {
