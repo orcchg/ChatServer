@@ -22,24 +22,60 @@
 #include <cstdio>
 #include <sstream>
 #include <iostream>
+#include <termios.h>
+#include <unistd.h>
 #include "api/api.h"
 #include "rapidjson/document.h"
 #include "utils.h"
 
 namespace util {
 
+static void hideStdin() {
+  termios old_terminal;
+  tcgetattr(STDIN_FILENO, &old_terminal);
+  old_terminal.c_lflag &= ~ECHO;
+  tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal);
+}
+
+static void showStdin() {
+  termios old_terminal;
+  tcgetattr(STDIN_FILENO, &old_terminal);
+  old_terminal.c_lflag |= ECHO;
+  tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal);
+}
+
 std::string enterSymbolic(const char* title) {
+  return enterSymbolic(title, false);
+}
+
+std::string enterSymbolic(const char* title, bool hide) {
+  if (hide) {
+    hideStdin();
+  }
   printf("%s: ", title);
   std::string str;
   std::cin >> str;
+  if (hide) {
+    showStdin();
+  }
   return str;
 }
 
 #if SECURE
 std::string enterSymbolic(const char* title, secure::ICryptor* cryptor) {
+  return enterSymbolic(title, cryptor, false);
+}
+
+std::string enterSymbolic(const char* title, secure::ICryptor* cryptor, bool hide) {
+  if (hide) {
+    hideStdin();
+  }
   printf("%s: ", title);
   std::string str;
   std::cin >> str;
+  if (hide) {
+    showStdin();
+  }
   return cryptor->encrypt(str);
 }
 #endif  // SECURE

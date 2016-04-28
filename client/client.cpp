@@ -196,9 +196,9 @@ void Client::fillLoginForm(LoginForm* form) {
   std::string login, password;
   login = util::enterSymbolic("Login");
 #if SECURE
-  password = util::enterSymbolic("Password", m_cryptor);
+  password = util::enterSymbolic("Password", m_cryptor, true);
 #else
-  password = util::enterSymbolic("Password");
+  password = util::enterSymbolic("Password", true);
 #endif  // SECURE
   form->setLogin(login);
   form->setPassword(password);
@@ -276,9 +276,9 @@ void Client::fillRegistrationForm(RegistrationForm* form) {
   login = util::enterSymbolic("Login");
   email = util::enterSymbolic("Email");
 #if SECURE
-  password = util::enterSymbolic("Password", m_cryptor);
+  password = util::enterSymbolic("Password", m_cryptor, true);
 #else
-  password = util::enterSymbolic("Password");
+  password = util::enterSymbolic("Password", true);
 #endif  // SECURE
   form->setLogin(login);
   form->setEmail(email);
@@ -327,9 +327,9 @@ void Client::onWrongPassword(LoginForm& form) {
   std::string password;
   printf("Wrong password. Retry\n");
 #if SECURE
-  password = util::enterSymbolic("Password", m_cryptor);
+  password = util::enterSymbolic("Password", m_cryptor, true);
 #else
-  password = util::enterSymbolic("Password");
+  password = util::enterSymbolic("Password", true);
 #endif  // SECURE
   form.setPassword(password);
 }

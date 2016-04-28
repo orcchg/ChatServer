@@ -29,8 +29,10 @@
 namespace util {
 
 std::string enterSymbolic(const char* title);
+std::string enterSymbolic(const char* title, bool hide);
 #if SECURE
 std::string enterSymbolic(const char* title, secure::ICryptor* cryptor);
+std::string enterSymbolic(const char* title, secure::ICryptor* cryptor, bool hide);
 #endif  // SECURE
 int selectChannel();
 uint64_t getCurrentTime();
