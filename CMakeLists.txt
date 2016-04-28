@@ -39,7 +39,7 @@ endif()
 
 if( SECURE )
     MESSAGE( STATUS "Security enabled" )
-    SET( OPENSSL_LIBS ssl crypto )
+    SET( OPENSSL_LIBS crypto ssl )
     SET( CRYPTOR cryptor )
     ADD_DEFINITIONS( -DSECURE=1 )
     ADD_SUBDIRECTORY( crypting )

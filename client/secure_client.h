@@ -10,8 +10,10 @@ public:
   SecureClient(const std::string& config_file);
   virtual ~SecureClient();
 
-protected:
+  void init() override;
 
+protected:
+  void end() override;
 };
 
 #endif  // SECURE

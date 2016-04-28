@@ -32,6 +32,6 @@ if( SECURE )
         ${SOURCE_DIR}/run_secure_client.cpp
     )
     ADD_EXECUTABLE( s_client ${SECURE_SOURCES} ${SOURCES} )
-    TARGET_LINK_LIBRARIES( s_client api my_parser ${CRYPTOR} )
+    TARGET_LINK_LIBRARIES( s_client api my_parser ${CRYPTOR} ${OPENSSL_LIBS} )
 endif()
 

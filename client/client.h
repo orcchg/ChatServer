@@ -37,7 +37,7 @@ public:
   Client(const std::string& config_file);
   virtual ~Client();
 
-  void init();
+  virtual void init();
   void run();
 
 protected:
@@ -61,7 +61,7 @@ protected:
   Response getResponse(int socket, bool* is_closed);
 
   void goToMainMenu();
-  void end();
+  virtual void end();
 
   void getLoginForm();
   void fillLoginForm(LoginForm* form);

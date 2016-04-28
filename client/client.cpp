@@ -104,6 +104,14 @@ void Client::init() {
 #endif  // SECURE
 }
 
+/* Release */
+// ----------------------------------------------
+void Client::end() {
+  DBG("Client closing...");
+  m_is_stopped = true;  // stop background receiver thread if any
+  close(m_socket);
+}
+
 /* Utility */
 // ----------------------------------------------------------------------------
 bool Client::readConfiguration(const std::string& config_file) {
@@ -149,12 +157,6 @@ void Client::goToMainMenu() {
     }
   }
   end();  // close at end
-}
-
-void Client::end() {
-  DBG("Client closing...");
-  m_is_stopped = true;  // stop background receiver thread if any
-  close(m_socket);
 }
 
 /* Process response */
