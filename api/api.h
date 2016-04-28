@@ -101,6 +101,8 @@ enum class StatusCode : int {
 // ----------------------------------------------
 class ClientApi {
 public:
+  virtual ~ClientApi() {}
+
   virtual void getLoginForm() = 0;
   virtual void getRegistrationForm() = 0;
   virtual void sendLoginForm(const LoginForm& form) = 0;
@@ -114,6 +116,8 @@ public:
 // ----------------------------------------------
 class ServerApi {
 public:
+  virtual ~ServerApi() {}
+
   virtual void setSocket(int socket) = 0;
 
   virtual void sendLoginForm() = 0;

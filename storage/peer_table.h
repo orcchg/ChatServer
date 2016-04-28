@@ -27,6 +27,8 @@
 
 class IPeerTable {
 public:
+  virtual ~IPeerTable() {}
+
   virtual ID_t addPeer(const PeerDTO& peer) = 0;
   virtual void removePeer(ID_t id) = 0;
   virtual PeerDTO getPeerByLogin(const std::string& login, ID_t* id) = 0;
