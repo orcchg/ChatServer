@@ -26,7 +26,25 @@ INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR} )  # for config.h
 INCLUDE_DIRECTORIES( ${PROJECT_SOURCE_DIR} include )
 
 if( CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX )
-    SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread -DENABLED_LOGGING=0" )
+    SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread" )
+endif()
+
+if( DEBUG )
+    MESSAGE( STATUS "Build configuration: DEBUG" )
+    ADD_DEFINITIONS( -DENABLED_LOGGING=1 )
+else()
+    MESSAGE( STATUS "Build configuration: RELEASE" )
+    ADD_DEFINITIONS( -DENABLED_LOGGING=0 )
+endif()
+
+if( ENABLE_OPENSSL )
+    MESSAGE( STATUS "Openssl enabled" )
+    ADD_DEFINITIONS( -DENABLE_OPENSSL=1 )
+    SET( OPENSSL_LIBS openssl crypto )
+else()
+    MESSAGE( STATUS "Openssl disabled" )
+    ADD_DEFINITIONS( -DENABLE_OPENSSL=0 )
+    SET( OPENSSL_LIBS )
 endif()
 
 # -----------------------------------------------------------------------------
