@@ -18,32 +18,36 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#ifndef CHAT_SERVER_UTILS__H__
-#define CHAT_SERVER_UTILS__H__
-
-#include <string>
 #if SECURE
-#include "api/icryptor.h"
-#endif  // SECURE
 
-namespace util {
+#include <iomanip>
+#include <sstream>
+#include <cstring>
+#include <openssl/sha.h>
+#include "cryptor.h"
 
-std::string enterSymbolic(const char* title);
-#if SECURE
-std::string enterSymbolic(const char* title, secure::ICryptor* cryptor);
-#endif  // SECURE
-int selectChannel();
-uint64_t getCurrentTime();
-bool checkStatus(const std::string& json);
-bool checkSystemMessage(const std::string& json, std::string* system);
+namespace secure {
 
-enum class Command : int {
-  UNKNOWN = -1, DIRECT_MESSAGE = 0, SWITCH_CHANNEL = 1, LOGOUT = 2, MENU = 3
-};
+Cryptor::Cryptor() {
+}
 
-Command parseCommand(const std::string& command, ID_t& value);
+Cryptor::~Cryptor() {
+}
+
+std::string Cryptor::encrypt(const std::string& source) {
+  char input[source.length()];
+  unsigned char buffer[SHA256_DIGEST_LENGTH];
+  strncpy(input, source.c_str(), source.length());
+  SHA256((unsigned char*) input, source.length(), buffer);
+
+  std::ostringstream oss;
+  for (int i = 0; i < SHA256_DIGEST_LENGTH; ++i) {
+    oss << std::hex << (int) buffer[i];
+  }
+  return oss.str();
+}
 
 }
 
-#endif  // CHAT_SERVER_UTILS__H__
+#endif  // SECURE
 

@@ -28,6 +28,10 @@
 #include "rapidjson/document.h"
 #include "utils.h"
 
+#if SECURE
+#include "crypting/cryptor.h"
+#endif  // SECURE
+
 #define MESSAGE_SIZE 4096
 
 Client::Client(const std::string& config_file)
@@ -76,10 +80,17 @@ Client::Client(const std::string& config_file)
   freeaddrinfo(server_info);  // release address stucture and remove from linked list
 
   m_api_impl = new ClientApiImpl(m_socket, m_ip_address, m_port);
+#if SECURE
+  m_cryptor = new secure::Cryptor();
+#endif  // SECURE
 }
 
 Client::~Client() {
   close(m_socket);
+  delete m_api_impl;  m_api_impl = nullptr;
+#if SECURE
+  delete m_cryptor;  m_cryptor = nullptr;
+#endif  // SECURE
 }
 
 void Client::run() {
@@ -183,10 +194,12 @@ void Client::getLoginForm() {
 
 void Client::fillLoginForm(LoginForm* form) {
   std::string login, password;
-  printf("Login: ");
-  std::cin >> login;
-  printf("Password: ");
-  std::cin >> password;
+  login = util::enterSymbolic("Login");
+#if SECURE
+  password = util::enterSymbolic("Password", m_cryptor);
+#else
+  password = util::enterSymbolic("Password");
+#endif  // SECURE
   form->setLogin(login);
   form->setPassword(password);
 }
@@ -214,6 +227,7 @@ void Client::tryLogin(LoginForm& form) {
         tryLogin(form);  // retry login with new password
         break;
       case StatusCode::NOT_REGISTERED:
+        printf("\e[5;00;33mSystem: peer not registered, do it now \e[m\n");
         getRegistrationForm();
         break;
       case StatusCode::ALREADY_LOGGED_IN:
@@ -259,12 +273,13 @@ void Client::getRegistrationForm() {
 
 void Client::fillRegistrationForm(RegistrationForm* form) {
   std::string login, email, password;
-  printf("Login: ");
-  std::cin >> login;
-  printf("Email: ");
-  std::cin >> email;
-  printf("Password: ");
-  std::cin >> password;
+  login = util::enterSymbolic("Login");
+  email = util::enterSymbolic("Email");
+#if SECURE
+  password = util::enterSymbolic("Password", m_cryptor);
+#else
+  password = util::enterSymbolic("Password");
+#endif  // SECURE
   form->setLogin(login);
   form->setEmail(email);
   form->setPassword(password);
@@ -311,8 +326,11 @@ void Client::onRegister() {
 void Client::onWrongPassword(LoginForm& form) {
   std::string password;
   printf("Wrong password. Retry\n");
-  printf("Password: ");
-  std::cin >> password;
+#if SECURE
+  password = util::enterSymbolic("Password", m_cryptor);
+#else
+  password = util::enterSymbolic("Password");
+#endif  // SECURE
   form.setPassword(password);
 }
 

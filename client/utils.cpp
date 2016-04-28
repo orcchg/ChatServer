@@ -28,12 +28,21 @@
 
 namespace util {
 
-std::string enterSymbolic() {
-  printf("Enter name: ");
-  std::string name;
-  std::cin >> name;
-  return name;
+std::string enterSymbolic(const char* title) {
+  printf("%s: ", title);
+  std::string str;
+  std::cin >> str;
+  return str;
 }
+
+#if SECURE
+std::string enterSymbolic(const char* title, secure::ICryptor* cryptor) {
+  printf("%s: ", title);
+  std::string str;
+  std::cin >> str;
+  return cryptor->encrypt(str);
+}
+#endif  // SECURE
 
 int selectChannel() {
   printf("Select channel: ");

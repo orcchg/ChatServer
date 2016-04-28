@@ -18,32 +18,25 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#ifndef CHAT_SERVER_UTILS__H__
-#define CHAT_SERVER_UTILS__H__
+#ifndef CHAT_SERVER_ICRYPTOR__H__
+#define CHAT_SERVER_ICRYPTOR__H__
+
+#if SECURE
 
 #include <string>
-#if SECURE
-#include "api/icryptor.h"
-#endif  // SECURE
 
-namespace util {
+namespace secure {
 
-std::string enterSymbolic(const char* title);
-#if SECURE
-std::string enterSymbolic(const char* title, secure::ICryptor* cryptor);
-#endif  // SECURE
-int selectChannel();
-uint64_t getCurrentTime();
-bool checkStatus(const std::string& json);
-bool checkSystemMessage(const std::string& json, std::string* system);
+class ICryptor {
+public:
+  virtual ~ICryptor() {}
 
-enum class Command : int {
-  UNKNOWN = -1, DIRECT_MESSAGE = 0, SWITCH_CHANNEL = 1, LOGOUT = 2, MENU = 3
+  virtual std::string encrypt(const std::string& source) = 0;
 };
-
-Command parseCommand(const std::string& command, ID_t& value);
 
 }
 
-#endif  // CHAT_SERVER_UTILS__H__
+#endif  // SECURE
+
+#endif  // CHAT_SERVER_ICRYPTOR__H__
 

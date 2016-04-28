@@ -28,6 +28,10 @@
 #include "client_api_impl.h"
 #include "parser/my_parser.h"
 
+#if SECURE
+#include "api/icryptor.h"
+#endif  // SECURE
+
 class Client {
 public:
   Client(const std::string& config_file);
@@ -48,6 +52,9 @@ private:
   std::string m_port;
   MyParser m_parser;
   ClientApi* m_api_impl;
+#if SECURE
+  secure::ICryptor* m_cryptor;
+#endif  // SECURE
 
   bool readConfiguration(const std::string& config_file);
   Response getResponse(int socket, bool* is_closed);
