@@ -266,7 +266,12 @@ void Server::handleRequest(int socket) {
 /* Main */
 // ----------------------------------------------------------------------------
 int main(int argc, char** argv) {
-  Server server(80);
+  int port = 80;
+  if (argc > 1) {
+    port = std::atoi(argv[1]);
+  }
+
+  Server server(port);
   server.run();
   return 0;
 }

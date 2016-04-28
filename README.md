@@ -35,7 +35,7 @@ Run:
 ----
 
 - cd build
-- ./server/server       (run with root priviledges as fas as it uses port 80)
+- ./server/server [port]       (run with root priviledges if port is 80)
 - ./client/client [config_file]
 - *** run as many clients as you want, use the same config_file ***
     
@@ -43,7 +43,7 @@ Config file example (see client/local.cfg)
 ------------------------------------------
 
 - IP: xxx.xxx.xxx.xxx
-- Port: 80              (this option is ignored)
+- Port: 80
     
 License
 -------
