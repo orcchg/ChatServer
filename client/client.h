@@ -37,9 +37,10 @@ public:
   Client(const std::string& config_file);
   virtual ~Client();
 
+  void init();
   void run();
 
-private:
+protected:
   ID_t m_id;
   std::string m_name;
   int m_channel;

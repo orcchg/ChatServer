@@ -41,7 +41,26 @@ Client::Client(const std::string& config_file)
   if (!readConfiguration(config_file)) {
     throw ClientException();
   }
+}
 
+Client::~Client() {
+  delete m_api_impl;  m_api_impl = nullptr;
+#if SECURE
+  delete m_cryptor;  m_cryptor = nullptr;
+#endif  // SECURE
+}
+
+void Client::run() {
+  if (!m_is_connected) {
+    ERR("No connection established to Server");
+    throw ClientException();
+  }
+  goToMainMenu();
+}
+
+/* Init */
+// ----------------------------------------------------------------------------
+void Client::init() {
   // prepare address structure
   addrinfo hints;
   addrinfo* server_info;
@@ -85,24 +104,8 @@ Client::Client(const std::string& config_file)
 #endif  // SECURE
 }
 
-Client::~Client() {
-  close(m_socket);
-  delete m_api_impl;  m_api_impl = nullptr;
-#if SECURE
-  delete m_cryptor;  m_cryptor = nullptr;
-#endif  // SECURE
-}
-
-void Client::run() {
-  if (!m_is_connected) {
-    ERR("No connection established to Server");
-    throw ClientException();
-  }
-  goToMainMenu();
-}
-
 /* Utility */
-// ----------------------------------------------
+// ----------------------------------------------------------------------------
 bool Client::readConfiguration(const std::string& config_file) {
   bool result = true;
   std::fstream fs;
@@ -151,6 +154,7 @@ void Client::goToMainMenu() {
 void Client::end() {
   DBG("Client closing...");
   m_is_stopped = true;  // stop background receiver thread if any
+  close(m_socket);
 }
 
 /* Process response */
@@ -450,6 +454,7 @@ int main(int argc, char** argv) {
 
   // start client
   Client client(config_file);
+  client.init();
   client.run();
   return 0;
 }
