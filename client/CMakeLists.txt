@@ -23,6 +23,15 @@ SET( SOURCES
     ${SOURCE_DIR}/utils.cpp
 )
 
-ADD_EXECUTABLE( client ${SOURCES} )
+ADD_EXECUTABLE( client ${SOURCES} ${SOURCE_DIR}/run_client.cpp )
 TARGET_LINK_LIBRARIES( client api my_parser ${CRYPTOR} )
+
+if( SECURE )
+    SET( SECURE_SOURCES
+        ${SOURCE_DIR}/secure_client.cpp
+        ${SOURCE_DIR}/run_secure_client.cpp
+    )
+    ADD_EXECUTABLE( s_client ${SECURE_SOURCES} ${SOURCES} )
+    TARGET_LINK_LIBRARIES( s_client api my_parser ${CRYPTOR} )
+endif()
 
