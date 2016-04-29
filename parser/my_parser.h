@@ -53,6 +53,8 @@ struct Request {
   std::string body;
 
   static Request EMPTY;
+
+  bool isEmpty();
 };
 
 struct Response {
@@ -61,6 +63,8 @@ struct Response {
   std::string body;
 
   static Response EMPTY;
+
+  bool isEmpty();
 };
 
 std::ostream& operator << (std::ostream& out, const StartLine& startline);

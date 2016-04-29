@@ -27,6 +27,10 @@
 #include "rapidjson/document.h"
 #include "server_api_impl.h"
 
+static const char* STANDARD_HEADERS = "Server: ChatServer\r\nContent-Type: application/json";
+static const char* CONTENT_LENGTH_HEADER = "Content-Length: ";
+static const char* CONNECTION_CLOSE_HEADER = "Connection: close";
+
 /* Mapping */
 // ----------------------------------------------------------------------------
 PeerDTO LoginToPeerDTOMapper::map(const LoginForm& form) {
@@ -52,52 +56,58 @@ void ServerApiImpl::setSocket(int socket) {
 }
 
 void ServerApiImpl::sendLoginForm() {
+  std::string json = "{\"" D_ITEM_LOGIN "\":\"\",\"" D_ITEM_PASSWORD "\":\"\"}";
   std::ostringstream oss;
-  oss << "HTTP/1.1 200 OK\r\n\r\n"
-      << "{\"" D_ITEM_LOGIN "\":\"\",\"" D_ITEM_PASSWORD "\":\"\"}";
+  oss << "HTTP/1.1 200 OK\r\n" << STANDARD_HEADERS << "\r\n"
+      << CONTENT_LENGTH_HEADER << json.length() << "\r\n\r\n"
+      << json;
   send(m_socket, oss.str().c_str(), oss.str().length(), 0);
 }
 
 void ServerApiImpl::sendRegistrationForm() {
+  std::string json = "{\"" D_ITEM_LOGIN "\":\"\",\"" D_ITEM_EMAIL "\":\"\",\"" D_ITEM_PASSWORD "\":\"\"}";
   std::ostringstream oss;
-  oss << "HTTP/1.1 200 OK\r\n\r\n"
-      << "{\"" D_ITEM_LOGIN "\":\"\",\"" D_ITEM_EMAIL "\":\"\",\"" D_ITEM_PASSWORD "\":\"\"}";
+  oss << "HTTP/1.1 200 OK\r\n" << STANDARD_HEADERS << "\r\n"
+      << CONTENT_LENGTH_HEADER << json.length() << "\r\n\r\n"
+      << json;
   send(m_socket, oss.str().c_str(), oss.str().length(), 0);
 }
 
 void ServerApiImpl::sendStatus(StatusCode status, ID_t id) {
-  std::ostringstream oss;
+  std::ostringstream oss, json;
   oss << "HTTP/1.1 ";
   switch (status) {
     case StatusCode::SUCCESS:
-      oss << "200 OK\r\n\r\n";
+      oss << "200 OK\r\n" << STANDARD_HEADERS << "\r\n";
       break;
     case StatusCode::WRONG_PASSWORD:
-      oss << "403 Wrong password\r\n\r\n";
+      oss << "403 Wrong password\r\n" << STANDARD_HEADERS << "\r\n";
       break;
     case StatusCode::NOT_REGISTERED:
-      oss << "404 Not registered\r\n\r\n";
+      oss << "404 Not registered\r\n" << STANDARD_HEADERS << "\r\n";
       break;
     case StatusCode::ALREADY_REGISTERED:
-      oss << "409 Already registered\r\n\r\n";
+      oss << "409 Already registered\r\n" << STANDARD_HEADERS << "\r\n";
       break;
     case StatusCode::INVALID_FORM:
-      oss << "400 Invalid form\r\n\r\n";
+      oss << "400 Invalid form\r\n" << STANDARD_HEADERS << "\r\n";
       break;
     case StatusCode::UNAUTHORIZED:
-      oss << "401 Unauthorized\r\n\r\n";
+      oss << "401 Unauthorized\r\n" << STANDARD_HEADERS << "\r\n";
       break;
     case StatusCode::ALREADY_LOGGED_IN:
-      oss << "409 Already logged in\r\n\r\n";
+      oss << "409 Already logged in\r\n" << STANDARD_HEADERS << "\r\n";
       break;
     case StatusCode::UNKNOWN:
-      oss << "500 Internal server error\r\n\r\n";
+      oss << "500 Internal server error\r\n" << STANDARD_HEADERS << "\r\n";
       break;
     default:
       return;
   }
-  oss << "{\"" D_ITEM_CODE "\":" << static_cast<int>(status)
-      << ",\"" D_ITEM_ID "\":" << id << "}";
+  json << "{\"" D_ITEM_CODE "\":" << static_cast<int>(status)
+       << ",\"" D_ITEM_ID "\":" << id << "}";
+  oss << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
+      << json.str();
   MSG("Response: %s", oss.str().c_str());
   send(m_socket, oss.str().c_str(), oss.str().length(), 0);
 }
@@ -193,13 +203,16 @@ StatusCode ServerApiImpl::logout(const std::string& path, ID_t& id) {
   m_peers.erase(id);
 
   // notify other peers
-  std::ostringstream oss;
+  std::ostringstream oss, json;
   for (auto& it : m_peers) {
     if (it.first != id) {
-      oss << "HTTP/1.1 200 Logged Out\r\n\r\n"
-          << "{\"" D_ITEM_SYSTEM "\":\"" << name << " has logged out\"}"; 
+      json << "{\"" D_ITEM_SYSTEM "\":\"" << name << " has logged out\"}";
+      oss << "HTTP/1.1 200 Logged Out\r\n" << STANDARD_HEADERS << "\r\n"
+          << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
+          << json.str();
       send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
       oss.str("");
+      json.str("");
     }
   }
   return StatusCode::SUCCESS;
@@ -230,13 +243,16 @@ StatusCode ServerApiImpl::switchChannel(const std::string& path, ID_t& id) {
   }
 
   // notify other peers
-  std::ostringstream oss;
+  std::ostringstream oss, json;
   for (auto& it : m_peers) {
     if (it.first != id && it.second.getChannel() == channel) {
-      oss << "HTTP/1.1 200 Switched channel\r\n\r\n"
-          << "{\"" D_ITEM_SYSTEM "\":\"" << name << " has entered channel\"}"; 
+      json << "{\"" D_ITEM_SYSTEM "\":\"" << name << " has entered channel\"}";
+      oss << "HTTP/1.1 200 Switched channel\r\n" << STANDARD_HEADERS << "\r\n"
+          << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
+          << json.str();
       send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
       oss.str("");
+      json.str("");
     }
   }
   return StatusCode::SUCCESS;
@@ -245,7 +261,9 @@ StatusCode ServerApiImpl::switchChannel(const std::string& path, ID_t& id) {
 void ServerApiImpl::terminate() {
   std::ostringstream oss;
   for (auto& it : m_peers) {
-    oss << "HTTP/1.1 " << TERMINATE_CODE << " Terminate\r\n\r\n";
+    oss << "HTTP/1.1 " << TERMINATE_CODE << " Terminate\r\n"
+        << STANDARD_HEADERS << "\r\n"
+        << CONTENT_LENGTH_HEADER << 0 << "\r\n\r\n";
     send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
     oss.str("");
   }
@@ -308,13 +326,16 @@ void ServerApiImpl::doLogin(ID_t id, const std::string& name) {
   m_peers.insert(std::make_pair(id, peer));
 
   // notify other peers
-  std::ostringstream oss;
+  std::ostringstream oss, json;
   for (auto& it : m_peers) {
     if (it.first != id) {
-      oss << "HTTP/1.1 200 Logged In\r\n\r\n"
-          << "{\"" D_ITEM_SYSTEM "\":\"" << name << " has logged in\"}"; 
+      json << "{\"" D_ITEM_SYSTEM "\":\"" << name << " has logged in\"}";
+      oss << "HTTP/1.1 200 Logged In\r\n" << STANDARD_HEADERS << "\r\n"
+          << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
+          << json.str();
       send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
       oss.str("");
+      json.str("");
     }
   }
 }
@@ -333,8 +354,10 @@ void ServerApiImpl::broadcast(const Message& message) {
     printf("Sending message to dedicated peer with id [%lli]......     ", dest_id);
     if (dest_id != message.getId() && it != m_peers.end()) {
       printf("\e[5;00;32mOK\e[m\n");
-      oss << "HTTP/1.1 102 Processing\r\n\r\n"
-          << message.toJson();
+      std::string json = message.toJson();
+      oss << "HTTP/1.1 102 Processing\r\n" << STANDARD_HEADERS << "\r\n"
+          << CONTENT_LENGTH_HEADER << json.length() << "\r\n\r\n"
+          << json;
       send(it->second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
       oss.str("");
     } else if (dest_id == message.getId()) {
@@ -354,8 +377,10 @@ void ServerApiImpl::broadcast(const Message& message) {
     printf("Sending message to peer with id [%lli] on channel [%i]......     ", id, channel);
     if (id != message.getId() && channel == message.getChannel()) {
       printf("\e[5;00;32mOK\e[m\n");
-      oss << "HTTP/1.1 102 Processing\r\n\r\n"
-          << message.toJson();
+      std::string json = message.toJson();
+      oss << "HTTP/1.1 102 Processing\r\n" << STANDARD_HEADERS << "\r\n"
+          << CONTENT_LENGTH_HEADER << json.length() << "\r\n\r\n"
+          << json;
       send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
       oss.str("");
     } else if (id == message.getId()) {
