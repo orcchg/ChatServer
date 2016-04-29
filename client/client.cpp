@@ -404,6 +404,15 @@ void Client::receiverThread() {
     char buffer[MESSAGE_SIZE];
     memset(buffer, 0, MESSAGE_SIZE);
     int nbytes = recv(m_socket, buffer, MESSAGE_SIZE, 0);
+    switch (nbytes) {
+      case -1:
+        ERR("Server error, retrying...");
+        continue;
+      case 0:
+        printf("\e[5;00;31mSystem: Connection refused\e[m\n");
+        m_is_stopped = true;
+        return;
+    }
     Response response = m_parser.parseResponse(buffer, nbytes);
 
     {  // system responses
