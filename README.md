@@ -35,7 +35,7 @@ Run:
 ----
 
 - cd build
-- ./server/server [port]       (run with root priviledges if port is 80)
+- ./server/server [port]       "run with root priviledges if port is 80"
 - ./client/client [config_file]
 - *** run as many clients as you want, use the same config_file ***
     
