@@ -32,6 +32,8 @@
 #include "api/icryptor.h"
 #endif  // SECURE
 
+#define MESSAGE_SIZE 4096
+
 class Client {
 public:
   Client(const std::string& config_file);
@@ -48,7 +50,7 @@ protected:
 
   bool m_is_connected;
   bool m_is_stopped;
-  int m_socket;
+  int m_socket;  // for insecure connections only
   std::string m_ip_address;
   std::string m_port;
   MyParser m_parser;
@@ -58,7 +60,7 @@ protected:
 #endif  // SECURE
 
   bool readConfiguration(const std::string& config_file);
-  Response getResponse(int socket, bool* is_closed);
+  virtual Response getResponse(int socket, bool* is_closed);
 
   void goToMainMenu();
   virtual void end();

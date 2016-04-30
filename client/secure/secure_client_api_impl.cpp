@@ -18,55 +18,58 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#include <sys/socket.h>
-#include "client_api_impl.h"
-#include "request_prepare.h"
+#if SECURE
 
-/* Client implementation */
-// ----------------------------------------------------------------------------
-ClientApiImpl::ClientApiImpl(
-    int socket,
+#include <sstream>
+#include "logger.h"
+#include "request_prepare.h"
+#include "secure_client_api_impl.h"
+
+SecureClientApiImpl::SecureClientApiImpl(
+    BIO* bio,
     const std::string& ip_address,
     const std::string& port)
-  : m_socket(socket)
+  : m_bio(nullptr)
   , m_host(ip_address + ":" + port) {
 }
 
-ClientApiImpl::~ClientApiImpl() {
+SecureClientApiImpl::~SecureClientApiImpl() {
 }
 
-void ClientApiImpl::getLoginForm() {
+void SecureClientApiImpl::getLoginForm() {
   std::string request = util::getLoginForm_request(m_host);
-  send(m_socket, request.c_str(), request.length(), 0);
+  BIO_write(m_bio, request.c_str(), request.length());
 }
 
-void ClientApiImpl::getRegistrationForm() {
+void SecureClientApiImpl::getRegistrationForm() {
   std::string request = util::getRegistrationForm_request(m_host);
-  send(m_socket, request.c_str(), request.length(), 0);
+  BIO_write(m_bio, request.c_str(), request.length());
 }
 
-void ClientApiImpl::sendLoginForm(const LoginForm& form) {
+void SecureClientApiImpl::sendLoginForm(const LoginForm& form) {
   std::string request = util::sendLoginForm_request(m_host, form);
-  send(m_socket, request.c_str(), request.length(), 0);
+  BIO_write(m_bio, request.c_str(), request.length());
 }
 
-void ClientApiImpl::sendRegistrationForm(const RegistrationForm& form) {
+void SecureClientApiImpl::sendRegistrationForm(const RegistrationForm& form) {
   std::string request = util::sendRegistrationForm_request(m_host, form);
-  send(m_socket, request.c_str(), request.length(), 0);
+  BIO_write(m_bio, request.c_str(), request.length());
 }
 
-void ClientApiImpl::sendMessage(const Message& message) {
+void SecureClientApiImpl::sendMessage(const Message& message) {
   std::string request = util::sendMessage_request(m_host, message);
-  send(m_socket, request.c_str(), request.length(), 0);
+  BIO_write(m_bio, request.c_str(), request.length());
 }
 
-void ClientApiImpl::logout(ID_t id, const std::string& name) {
+void SecureClientApiImpl::logout(ID_t id, const std::string& name) {
   std::string request = util::logout_request(m_host, id, name);
-  send(m_socket, request.c_str(), request.length(), 0);
+  BIO_write(m_bio, request.c_str(), request.length());
 }
 
-void ClientApiImpl::switchChannel(ID_t id, int channel, const std::string& name) {
+void SecureClientApiImpl::switchChannel(ID_t id, int channel, const std::string& name) {
   std::string request = util::switchChannel_request(m_host, id, channel, name);
-  send(m_socket, request.c_str(), request.length(), 0);
+  BIO_write(m_bio, request.c_str(), request.length());
 }
+
+#endif  // SECURE
 

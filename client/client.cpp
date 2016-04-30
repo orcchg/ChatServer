@@ -32,8 +32,6 @@
 #include "crypting/cryptor.h"
 #endif  // SECURE
 
-#define MESSAGE_SIZE 4096
-
 Client::Client(const std::string& config_file)
   : m_id(UNKNOWN_ID), m_name(""), m_channel(0), m_dest_id(UNKNOWN_ID)
   , m_is_connected(false), m_is_stopped(false)
