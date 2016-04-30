@@ -47,13 +47,13 @@ void SecureClient::init() {
 
   // loading the Trust Store
   if(!SSL_CTX_load_verify_locations(m_ssl_context, "../client/certs/TrustStore.pem", nullptr)) {
-    ERR("Failed to load the Trust Store of certificates");
+    ERR("Failed to load the Trust Store of certificates: %s", ERR_reason_error_string(ERR_get_error()));
     throw ClientException();
   }
 
   m_bio = BIO_new_ssl_connect(m_ssl_context);
   if (m_bio == nullptr) {
-    ERR("Failed to prepare new secure connection");
+    ERR("Failed to prepare new secure connection: %s", ERR_reason_error_string(ERR_get_error()));
     throw ClientException();
   }
   BIO_get_ssl(m_bio, &m_ssl);
@@ -63,7 +63,7 @@ void SecureClient::init() {
   BIO_set_conn_hostname(m_bio, m_ip_address.c_str());
   BIO_set_conn_port(m_bio, m_port.c_str());
   if (BIO_do_connect(m_bio) <= 0) {
-    ERR("Failed to securely connect to [%s:%s]", m_ip_address.c_str(), m_port.c_str());
+    ERR("Failed to securely connect to [%s:%s]: %s", m_ip_address.c_str(), m_port.c_str(), ERR_reason_error_string(ERR_get_error()));
     m_is_connected = false;
   } else {
     m_is_connected = true;
@@ -71,7 +71,7 @@ void SecureClient::init() {
 
   // checking certificate from Server
   if (SSL_get_verify_result(m_ssl) != X509_V_OK) {
-    WRN("Certificate verification has failed !");
+    WRN("Certificate verification has failed: %s", ERR_reason_error_string(ERR_get_error()));
     // TODO: probably, proceed further
   }
 
@@ -100,7 +100,7 @@ Response SecureClient::getResponse(int socket, bool* is_closed) {
   } else if (read_bytes < 0) {
     bool retry = BIO_should_retry(m_bio);
     if (!retry) {
-      ERR("Failed to retry connection");
+      ERR("Failed to retry connection: %s", ERR_reason_error_string(ERR_get_error()));
       goto FAILURE;
     }
   }
