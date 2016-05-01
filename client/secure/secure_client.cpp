@@ -25,6 +25,8 @@
 #include "secure_client_api_impl.h"
 
 /// @see http://www.ibm.com/developerworks/library/l-openssl/
+/// @see http://fm4dd.com/openssl/sslconnect.htm
+/// @see http://h71000.www7.hp.com/doc/83final/ba554_90007/ch04s03.html
 
 SecureClient::SecureClient(const std::string& config_file)
   : Client(config_file)
@@ -84,7 +86,9 @@ void SecureClient::init() {
 void SecureClient::end() {
   DBG("Secure Client closing...");
   m_is_stopped = true;  // stop background receiver thread if any
+  ERR_free_strings();
   SSL_CTX_free(m_ssl_context);
+  SSL_free(m_ssl);
   BIO_free_all(m_bio);
 }
 
