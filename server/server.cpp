@@ -81,7 +81,9 @@ Server::Server(int port_number) {
 }
 
 Server::~Server() {
-  stop();
+  if (!m_is_stopped) {
+    stop();
+  }
 }
 
 void Server::run() {
