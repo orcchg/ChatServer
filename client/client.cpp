@@ -430,11 +430,11 @@ void Client::receiverThread() {
 
       std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
       std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+      std::string timestamp(std::ctime(&end_time));
+      int i1 = timestamp.find_last_of('\n');
+      timestamp = timestamp.substr(0, i1);
 
-      std::ostringstream oss;
-      oss << std::ctime(&end_time);
-
-      printf("%s :: %s: %s\n", oss.str().c_str(), message.getLogin().c_str(), message.getMessage().c_str());
+      printf("\e[5;00;33m%s\e[m :: \e[5;01;37m%s\e[m: %s\n", timestamp.c_str(), message.getLogin().c_str(), message.getMessage().c_str());
     } catch (ConvertException exception) {
       WRN("Something doesn't like a message has been received. Skip");
     }
