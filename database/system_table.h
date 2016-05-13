@@ -24,6 +24,7 @@
 #include <string>
 #include "database.h"
 
+#define D_COLUMN_NAME_EXTRA_ID "ExtraID"
 #define D_COLUMN_NAME_TIMESTAMP "Timestamp"
 #define D_COLUMN_NAME_DATETIME "DateTime"
 #define D_COLUMN_NAME_IP_ADDRESS "IpAddress"
@@ -35,14 +36,16 @@ class Record {
 public:
   static Record EMPTY;
 
-  Record(uint64_t timestamp, const std::string& ip_address, int port);
+  Record(ID_t extra_id, uint64_t timestamp, const std::string& ip_address, int port);
 
+  inline ID_t getExtraId() const { return m_extra_id; }
   inline uint64_t getTimestamp() const { return m_timestamp; }
   inline const std::string& getDateTime() const { return m_date_time; }
   inline const std::string& getIpAddress() const { return m_ip_address; }
   inline int getPort() const { return m_port; }
 
 private:
+  ID_t m_extra_id;
   uint64_t m_timestamp;
   std::string m_date_time;
   std::string m_ip_address;

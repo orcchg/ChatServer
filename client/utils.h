@@ -35,7 +35,6 @@ std::string enterSymbolic(const char* title, secure::ICryptor* cryptor);
 std::string enterSymbolic(const char* title, secure::ICryptor* cryptor, bool hide);
 #endif  // SECURE
 int selectChannel();
-uint64_t getCurrentTime();
 bool checkStatus(const std::string& json);
 bool checkSystemMessage(const std::string& json, std::string* system);
 

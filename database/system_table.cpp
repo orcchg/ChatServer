@@ -27,15 +27,17 @@
 
 namespace db {
 
+const char* COLUMN_NAME_EXTRA_ID = D_COLUMN_NAME_EXTRA_ID;
 const char* COLUMN_NAME_TIMESTAMP = D_COLUMN_NAME_TIMESTAMP;
 const char* COLUMN_NAME_DATETIME = D_COLUMN_NAME_DATETIME;
 const char* COLUMN_NAME_IP_ADDRESS = D_COLUMN_NAME_IP_ADDRESS;
 const char* COLUMN_NAME_PORT = D_COLUMN_NAME_PORT;
 
-Record Record::EMPTY = Record(0, "", 0);
+Record Record::EMPTY = Record(0, 0, "", 0);
 
-Record::Record(uint64_t timestamp, const std::string& ip_address, int port)
-  : m_timestamp(timestamp)
+Record::Record(ID_t extra_id, uint64_t timestamp, const std::string& ip_address, int port)
+  : m_extra_id(extra_id)
+  , m_timestamp(timestamp)
   , m_date_time("")
   , m_ip_address(ip_address)
   , m_port(port) {
@@ -68,7 +70,7 @@ ID_t SystemTable::addRecord(const Record& record) {
   INF("enter SystemTable::addRecord().");
   std::string insert_statement = "INSERT INTO '";
   insert_statement += this->m_table_name;
-  insert_statement += "' VALUES(?1, ?2, ?3, ?4, ?5);";
+  insert_statement += "' VALUES(?1, ?2, ?3, ?4, ?5, ?6);";
   this->__prepare_statement__(insert_statement);
 
   bool accumulate = true;
@@ -78,11 +80,17 @@ ID_t SystemTable::addRecord(const Record& record) {
   DBG("ID [%lli] has been stored in table ["%s"], SQLite database ["%s"].",
        record_id, this->m_table_name.c_str(), this->m_db_name.c_str());
 
+  ID_t extra_id = record.getExtraId();
+  accumulate = accumulate &&
+      (sqlite3_bind_int64(this->m_db_statement, 2, extra_id) == SQLITE_OK);
+  DBG("Extra ID [%lli] has been stored in table ["%s"], SQLite database ["%s"].",
+       extra_id, this->m_table_name.c_str(), this->m_db_name.c_str());
+
   uint64_t i_timestamp = record.getTimestamp();
   accumulate = accumulate &&
       (sqlite3_bind_int64(
           this->m_db_statement,
-          2,
+          3,
           i_timestamp) == SQLITE_OK);
   DBG("Timestamp [%lu] has been stored in table ["%s"], SQLite database ["%s"].",
        i_timestamp, this->m_table_name.c_str(), this->m_db_name.c_str());
@@ -92,7 +100,7 @@ ID_t SystemTable::addRecord(const Record& record) {
   accumulate = accumulate &&
       (sqlite3_bind_text(
           this->m_db_statement,
-          3,
+          4,
           i_datetime.c_str(),
           datetime_n_bytes,
           SQLITE_TRANSIENT) == SQLITE_OK);
@@ -107,7 +115,7 @@ ID_t SystemTable::addRecord(const Record& record) {
   accumulate = accumulate &&
       (sqlite3_bind_text(
           this->m_db_statement,
-          4,
+          5,
           i_ipaddress.c_str(),
           ipaddress_n_bytes,
           SQLITE_TRANSIENT) == SQLITE_OK);
@@ -118,7 +126,7 @@ ID_t SystemTable::addRecord(const Record& record) {
   accumulate = accumulate &&
       (sqlite3_bind_int(
           this->m_db_statement,
-          5,
+          6,
           i_port) == SQLITE_OK);
   DBG("Port [%i] has been stored in table ["%s"], SQLite database ["%s"].",
        i_port, this->m_table_name.c_str(), this->m_db_name.c_str());
@@ -195,21 +203,23 @@ Record SystemTable::getRecord(ID_t i_record_id) {
     DBG("Read id [%lli] from  table ["%s"] of database ["%s"].",
          id, this->m_table_name.c_str(), this->m_db_name.c_str());
 
-    uint64_t timestamp = sqlite3_column_int64(this->m_db_statement, 1);
+    ID_t extra_id = sqlite3_column_int64(this->m_db_statement, 1);
+    uint64_t timestamp = sqlite3_column_int64(this->m_db_statement, 2);
     const void* raw_datetime = reinterpret_cast<const char*>(
-        sqlite3_column_text(this->m_db_statement, 2));
+        sqlite3_column_text(this->m_db_statement, 3));
     WrappedString datetime(raw_datetime);
     const void* raw_ipaddress = reinterpret_cast<const char*>(
-        sqlite3_column_text(this->m_db_statement, 3));
+        sqlite3_column_text(this->m_db_statement, 4));
     WrappedString ipaddress(raw_ipaddress);
-    int port = sqlite3_column_int(this->m_db_statement, 4);
+    int port = sqlite3_column_int(this->m_db_statement, 5);
 
-    DBG("Loaded column data: " D_COLUMN_NAME_TIMESTAMP " [%lu]; " D_COLUMN_NAME_DATETIME " ["%s"]; " D_COLUMN_NAME_IP_ADDRESS " ["%s"]; " D_COLUMN_NAME_PORT " [%i].",
+    DBG("Loaded column data: " COLUMN_NAME_EXTRA_ID " [%lli]; " D_COLUMN_NAME_TIMESTAMP " [%lu]; " D_COLUMN_NAME_DATETIME " ["%s"]; " D_COLUMN_NAME_IP_ADDRESS " ["%s"]; " D_COLUMN_NAME_PORT " [%i].",
+         extra_id,
          timestamp,
          datetime.c_str(),
          ipaddress.c_str(),
          port);
-    record = Record(timestamp, ipaddress.get(), port);
+    record = Record(extra_id, timestamp, ipaddress.get(), port);
     DBG("Proper peer instance has been constructed.");
   } else {
     WRN("ID [%lli] is missing in table ["%s"] of database %p!",
@@ -239,6 +249,7 @@ void SystemTable::__create_table__() {
   std::string statement = "CREATE TABLE IF NOT EXISTS ";
   statement += this->m_table_name;
   statement += "('ID' INTEGER PRIMARY KEY UNIQUE DEFAULT " STR_UNKNOWN_ID ", "
+      "'" D_COLUMN_NAME_EXTRA_ID "' INTEGER, "
       "'" D_COLUMN_NAME_TIMESTAMP "' INTEGER, "
       "'" D_COLUMN_NAME_DATETIME "' TEXT, "
       "'" D_COLUMN_NAME_IP_ADDRESS "' TEXT, "

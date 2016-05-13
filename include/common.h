@@ -18,41 +18,19 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#include <cstdio>
-#include <cstring>
-#include "logger.h"
-#include "server_menu.h"
+#ifndef CHAT_SERVER_COMMON__H__
+#define CHAT_SERVER_COMMON__H__
 
-namespace menu {
+namespace utils {
 
-const char* HELP = "help";
-const char* LOGI = "logi";
-const char* STOP = "stop";
-
-bool evaluate(Server* server, char* command) {
-  if (strcmp(HELP, command) == 0) {
-    printHelp();
-  } else if (strcmp(LOGI, command) == 0) {
-    server->logIncoming();
-    return false;
-  } else if (strcmp(STOP, command) == 0) {
-    server->stop();
-    return false;
-  } else {
-    WRN("Undefined command: %s", command);
-  }
-  return true;
-}
-
-void printHelp() {
-  printf("Commands:\n\thelp - print this help \
-                   \n\tlogi - enable / disable incoming requests logging \
-                   \n\tstop - send terminate signal to all peers and stop server\n");
-}
-
-void printPrompt() {
-  printf("server@server:");
+uint64_t getCurrentTime() {
+  auto now = std::chrono::system_clock::now();
+  auto duration = now.time_since_epoch();
+  auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+  return millis;
 }
 
 }
+
+#endif  // CHAT_SERVER_COMMON__H__
 

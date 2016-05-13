@@ -87,13 +87,6 @@ int selectChannel() {
   return channel;
 }
 
-uint64_t getCurrentTime() {
-  auto now = std::chrono::system_clock::now();
-  auto duration = now.time_since_epoch();
-  auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-  return millis;
-}
-
 bool checkStatus(const std::string& json) {
   rapidjson::Document document;
   document.Parse(json.c_str());

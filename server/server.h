@@ -27,6 +27,27 @@
 #include "database/system_table.h"
 #include "parser/my_parser.h"
 
+// ----------------------------------------------
+class Connection {
+public:
+  static Connection EMPTY;
+
+  Connection();
+  Connection(ID_t id, uint64_t timestamp, const std::string& ip_address, int port);
+
+  inline ID_t getId() const { return m_id; }
+  inline uint64_t getTimestamp() const { return m_timestamp; }
+  inline const std::string& getIpAddress() const { return m_ip_address; }
+  inline int getPort() const { return m_port; }
+
+private:
+  ID_t m_id;
+  uint64_t m_timestamp;
+  std::string m_ip_address;
+  int m_port;
+};
+
+// ----------------------------------------------
 class Server {
 public:
   Server(int port_number);
@@ -34,23 +55,29 @@ public:
 
   void run();
   void stop();
+  void logIncoming();
 
 private:
+  ID_t m_next_accepted_connection_id;
   bool m_is_stopped;
+  bool m_should_store_requests;
   int m_socket;
+  uint64_t m_launch_timestamp;
   std::unordered_map<std::string, Method> m_methods;
   std::unordered_map<std::string, Path> m_paths;
+  std::unordered_map<ID_t, Connection> m_accepted_connections;
   MyParser m_parser;
   ServerApi* m_api_impl;
   db::SystemTable* m_system_database;
 
   void runListener();
   void printClientInfo(sockaddr_in& peeraddr);
-  void storeClientInfo(sockaddr_in& peeraddr);
+  Connection storeClientInfo(sockaddr_in& peeraddr);
   Request getRequest(int socket, bool* is_closed);
   Method getMethod(const std::string& method) const;
   Path getPath(const std::string& path) const;
-  void handleRequest(int socket);
+  void handleRequest(int socket, ID_t connection_id);
+  void storeRequest(ID_t connection_id, const Request& request);
 };
 
 struct ServerException {};

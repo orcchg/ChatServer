@@ -18,15 +18,35 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#include <chrono>
 #include <thread>
+#include "common.h"
 #include "server.h"
 #include "server_api_impl.h"
 #include "server_menu.h"
 
 #define MESSAGE_SIZE 4096
+#define BASE_CONNECTION_ID 100
 
-Server::Server(int port_number) {
+/* Connection structure */
+// ----------------------------------------------------------------------------
+Connection Connection::EMPTY = Connection(0, 0, "", 0);
+
+Connection::Connection() {
+}
+
+Connection::Connection(ID_t id, uint64_t timestamp, const std::string& ip_address, int port)
+  : m_id(id)
+  , m_timestamp(timestamp)
+  , m_ip_address(ip_address)
+  , m_port(port) {
+}
+
+/* Server */
+// ----------------------------------------------------------------------------
+Server::Server(int port_number)
+  : m_next_accepted_connection_id(BASE_CONNECTION_ID)
+  , m_is_stopped(false)
+  , m_should_store_requests(false) {
   std::string port = std::to_string(port_number);
 
   // prepare address structure
@@ -92,6 +112,7 @@ Server::~Server() {
 }
 
 void Server::run() {
+  m_launch_timestamp = utils::getCurrentTime();  // launch timestamp
   std::thread t(&Server::runListener, this);
   t.detach();
 
@@ -111,6 +132,10 @@ void Server::stop() {
   close(m_socket);
 }
 
+void Server::logIncoming() {
+  m_should_store_requests = !m_should_store_requests;
+}
+
 /* Looper */
 // ----------------------------------------------
 void Server::runListener() {
@@ -125,11 +150,11 @@ void Server::runListener() {
       continue;  // skip failed connection
     }
 
-    storeClientInfo(peer_address_structure);  // log incoming connection
+    Connection connection = storeClientInfo(peer_address_structure);  // log incoming connection
 
     // get incoming message
     try {
-      std::thread t(&Server::handleRequest, this, peer_socket);
+      std::thread t(&Server::handleRequest, this, peer_socket, connection.getId());
       t.detach();
     } catch (ParseException exception) {
       ERR("Parse error: bad request");
@@ -148,17 +173,23 @@ void Server::printClientInfo(sockaddr_in& peeraddr) {
         ntohs(peeraddr.sin_port));
 }
 
-void Server::storeClientInfo(sockaddr_in& peeraddr) {
+Connection Server::storeClientInfo(sockaddr_in& peeraddr) {
   std::ostringstream oss;
   oss << ((ntohl(peeraddr.sin_addr.s_addr) >> 24) & 0xff) << '.'
       << ((ntohl(peeraddr.sin_addr.s_addr) >> 16) & 0xff) << '.'
       << ((ntohl(peeraddr.sin_addr.s_addr) >> 8) & 0xff) << '.'
       << (ntohl(peeraddr.sin_addr.s_addr) & 0xff);
-  uint64_t timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+  uint64_t timestamp = utils::getCurrentTime();
   std::string ip_address = oss.str();
   int port = ntohs(peeraddr.sin_port);
-  db::Record record(timestamp, ip_address, port);
+  db::Record record(m_next_accepted_connection_id, timestamp, ip_address, port);
   m_system_database->addRecord(record);
+
+  // store accepted connection in-memory
+  Connection connection(m_next_accepted_connection_id, timestamp, ip_address, port);
+  m_accepted_connections[m_next_accepted_connection_id] = connection;
+  ++m_next_accepted_connection_id;
+  return connection;
 }
 
 Method Server::getMethod(const std::string& method) const {
@@ -194,7 +225,7 @@ Request Server::getRequest(int socket, bool* is_closed) {
   return m_parser.parseRequest(buffer, read_bytes);
 }
 
-void Server::handleRequest(int socket) {
+void Server::handleRequest(int socket, ID_t connection_id) {
   while (!m_is_stopped) {
     bool is_closed = false;
     Request request = getRequest(socket, &is_closed);
@@ -203,6 +234,8 @@ void Server::handleRequest(int socket) {
       close(socket);
       return;
     }
+
+    storeRequest(connection_id, request);  // log incoming request
 
     Method method = getMethod(request.startline.method);
     if (method == Method::UNKNOWN) {
@@ -281,6 +314,13 @@ void Server::handleRequest(int socket) {
         }
         break;
     }
+  }
+}
+
+void Server::storeRequest(ID_t connection_id, const Request& request) {
+  if (m_should_store_requests) {
+    uint64_t timestamp = utils::getCurrentTime();
+    // TODO: store: m_launch_timestamp | connection_id | timestamp | request
   }
 }
 
