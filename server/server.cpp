@@ -18,6 +18,7 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
+#include <chrono>
 #include <thread>
 #include "server.h"
 #include "server_api_impl.h"
@@ -78,12 +79,16 @@ Server::Server(int port_number) {
   m_paths[PATH_SWITCH_CHANNEL] = Path::SWITCH_CHANNEL;
 
   m_api_impl = new ServerApiImpl();
+  m_system_database = new db::SystemTable();
 }
 
 Server::~Server() {
   if (!m_is_stopped) {
     stop();
   }
+
+  delete m_api_impl;  m_api_impl = nullptr;
+  delete m_system_database;  m_system_database = nullptr;
 }
 
 void Server::run() {
@@ -104,7 +109,6 @@ void Server::stop() {
   m_is_stopped = true;
   m_api_impl->terminate();
   close(m_socket);
-  delete m_api_impl;  m_api_impl = nullptr;
 }
 
 /* Looper */
@@ -121,6 +125,8 @@ void Server::runListener() {
       continue;  // skip failed connection
     }
 
+    storeClientInfo(peer_address_structure);  // log incoming connection
+
     // get incoming message
     try {
       std::thread t(&Server::handleRequest, this, peer_socket);
@@ -134,12 +140,25 @@ void Server::runListener() {
 /* Utility */
 // ----------------------------------------------
 void Server::printClientInfo(sockaddr_in& peeraddr) {
-  printf("Connection from IP %d.%d.%d.%d, port %d\n",
+  INF("Connection from IP %d.%d.%d.%d, port %d\n",
         (ntohl(peeraddr.sin_addr.s_addr) >> 24) & 0xff, // High byte of address
         (ntohl(peeraddr.sin_addr.s_addr) >> 16) & 0xff, // . . .
         (ntohl(peeraddr.sin_addr.s_addr) >> 8) & 0xff,  // . . .
         ntohl(peeraddr.sin_addr.s_addr) & 0xff,         // Low byte of address
         ntohs(peeraddr.sin_port));
+}
+
+void Server::storeClientInfo(sockaddr_in& peeraddr) {
+  std::ostringstream oss;
+  oss << ((ntohl(peeraddr.sin_addr.s_addr) >> 24) & 0xff) << '.'
+      << ((ntohl(peeraddr.sin_addr.s_addr) >> 16) & 0xff) << '.'
+      << ((ntohl(peeraddr.sin_addr.s_addr) >> 8) & 0xff) << '.'
+      << (ntohl(peeraddr.sin_addr.s_addr) & 0xff);
+  uint64_t timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+  std::string ip_address = oss.str();
+  int port = ntohs(peeraddr.sin_port);
+  db::Record record(timestamp, ip_address, port);
+  m_system_database->addRecord(record);
 }
 
 Method Server::getMethod(const std::string& method) const {

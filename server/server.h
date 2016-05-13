@@ -24,6 +24,7 @@
 #include <unordered_map>
 #include "all.h"
 #include "api/api.h"
+#include "database/system_table.h"
 #include "parser/my_parser.h"
 
 class Server {
@@ -41,9 +42,11 @@ private:
   std::unordered_map<std::string, Path> m_paths;
   MyParser m_parser;
   ServerApi* m_api_impl;
+  db::SystemTable* m_system_database;
 
   void runListener();
   void printClientInfo(sockaddr_in& peeraddr);
+  void storeClientInfo(sockaddr_in& peeraddr);
   Request getRequest(int socket, bool* is_closed);
   Method getMethod(const std::string& method) const;
   Path getPath(const std::string& path) const;
