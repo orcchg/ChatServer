@@ -49,7 +49,7 @@ PeerTable::~PeerTable() {
 
 // ----------------------------------------------
 ID_t PeerTable::addPeer(const PeerDTO& peer) {
-  INF("enter PeerTable::addEntry().");
+  INF("enter PeerTable::addPeer().");
   std::string insert_statement = "INSERT INTO '";
   insert_statement += this->m_table_name;
   insert_statement += "' VALUES(?1, ?2, ?3, ?4);";
@@ -117,13 +117,13 @@ ID_t PeerTable::addPeer(const PeerDTO& peer) {
 
   this->__finalize__(insert_statement.c_str());
   this->__increment_rows__();
-  INF("exit PeerTable::addEntry().");
+  INF("exit PeerTable::addPeer().");
   return peer_id;
 }
 
 // ----------------------------------------------
 void PeerTable::removePeer(ID_t id) {
-  INF("enter PeerTable::deleteEntry().");
+  INF("enter PeerTable::removePeer().");
   std::string delete_statement = "DELETE FROM '";
   delete_statement += this->m_table_name;
   delete_statement += "' WHERE ID == '";
@@ -146,7 +146,7 @@ void PeerTable::removePeer(ID_t id) {
   }
   DBG("Deleted peer [ID: %lli] in table ["%s"].",
        id, this->m_table_name.c_str());
-  INF("exit PeerTable::deleteEntry().");
+  INF("exit PeerTable::removePeer().");
 }
 
 // ----------------------------------------------
@@ -192,7 +192,7 @@ PeerDTO PeerTable::getPeerBySymbolic(
         sqlite3_column_text(this->m_db_statement, 3));
     WrappedString password(raw_password);
 
-    DBG("Loaded column data: Login ["%s"]; Email ["%s"]; Password ["%s"].",
+    DBG("Loaded column data: " D_COLUMN_NAME_LOGIN " ["%s"]; " D_COLUMN_NAME_EMAIL " ["%s"]; " D_COLUMN_NAME_PASSWORD " ["%s"].",
          login.c_str(),
          email.c_str(),
          password.c_str());
