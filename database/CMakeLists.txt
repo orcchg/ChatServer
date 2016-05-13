@@ -21,6 +21,7 @@ SET( SOURCES
     ${SOURCE_DIR}/database.cpp
     ${SOURCE_DIR}/peer_dto.cpp
     ${SOURCE_DIR}/peer_table_impl.cpp
+    ${SOURCE_DIR}/system_table.cpp
     ${SOURCE_DIR}/unistring.cpp
 )
 ADD_LIBRARY( database SHARED ${SOURCES} )
