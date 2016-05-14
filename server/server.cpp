@@ -153,12 +153,8 @@ void Server::runListener() {
     Connection connection = storeClientInfo(peer_address_structure);  // log incoming connection
 
     // get incoming message
-    try {
-      std::thread t(&Server::handleRequest, this, peer_socket, connection.getId());
-      t.detach();
-    } catch (ParseException exception) {
-      ERR("Parse error: bad request");
-    }
+    std::thread t(&Server::handleRequest, this, peer_socket, connection.getId());
+    t.detach();
   }
 }
 
