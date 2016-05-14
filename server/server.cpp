@@ -320,7 +320,7 @@ void Server::handleRequest(int socket, ID_t connection_id) {
 void Server::storeRequest(ID_t connection_id, const Request& request) {
   if (m_should_store_requests) {
     uint64_t timestamp = utils::getCurrentTime();
-    // TODO: store: m_launch_timestamp | connection_id | timestamp | request
+    // TODO: store: m_launch_timestamp | connection_id | timestamp | request .
   }
 }
 
