@@ -99,6 +99,7 @@ Server::Server(int port_number)
   m_paths[PATH_SWITCH_CHANNEL] = Path::SWITCH_CHANNEL;
 
   m_api_impl = new ServerApiImpl();
+  m_log_database = new db::LogTable();
   m_system_database = new db::SystemTable();
 }
 
@@ -108,6 +109,7 @@ Server::~Server() {
   }
 
   delete m_api_impl;  m_api_impl = nullptr;
+  delete m_log_database;  m_log_database = nullptr;
   delete m_system_database;  m_system_database = nullptr;
 }
 
@@ -316,7 +318,12 @@ void Server::handleRequest(int socket, ID_t connection_id) {
 void Server::storeRequest(ID_t connection_id, const Request& request) {
   if (m_should_store_requests) {
     uint64_t timestamp = utils::getCurrentTime();
-    // TODO: store: m_launch_timestamp | connection_id | timestamp | request .
+    std::ostringstream headers;
+    for (auto& header : request.headers) {
+      headers << "[" << header.to_string() << "]";
+    }
+    db::LogRecord log(connection_id, m_launch_timestamp, timestamp, request.startline.to_string(), headers.str(), request.body);
+    m_log_database->addLog(log);
   }
 }
 

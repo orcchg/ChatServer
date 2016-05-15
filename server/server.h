@@ -24,6 +24,7 @@
 #include <unordered_map>
 #include "all.h"
 #include "api/api.h"
+#include "database/log_table.h"
 #include "database/system_table.h"
 #include "parser/my_parser.h"
 
@@ -68,6 +69,7 @@ private:
   std::unordered_map<ID_t, Connection> m_accepted_connections;
   MyParser m_parser;
   ServerApi* m_api_impl;
+  db::LogTable* m_log_database;
   db::SystemTable* m_system_database;
 
   void runListener();
