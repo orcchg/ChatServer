@@ -166,6 +166,32 @@ std::ostream& operator << (std::ostream& out, const Response& response) {
   return out;
 }
 
+/* To String */
+// ----------------------------------------------------------------------------
+std::string Query::to_string() const {
+  std::ostringstream oss;
+  oss << key << ":" << value;
+  return oss.str();
+}
+
+std::string StartLine::to_string() const {
+  std::ostringstream oss;
+  oss << method << " " << path << " " << version;
+  return oss.str();
+}
+
+std::string CodeLine::to_string() const {
+  std::ostringstream oss;
+  oss << version << " " << code << " " << message;
+  return oss.str();
+}
+
+std::string Header::to_string() const {
+  std::ostringstream oss;
+  oss << name << ":" << value;
+  return oss.str();
+}
+
 /* Internals */
 // ----------------------------------------------------------------------------
 StartLine MyParser::parseStartLine(const std::string& start_line) const {

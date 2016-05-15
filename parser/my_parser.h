@@ -28,23 +28,31 @@
 struct Query {
   std::string key;
   std::string value;
+
+  std::string to_string() const;
 };
 
 struct StartLine {
   std::string method;
   std::string path;
   int version;
+
+  std::string to_string() const;
 };
 
 struct CodeLine {
   int version;
   int code;
   std::string message;
+
+  std::string to_string() const;
 };
 
 struct Header {
   std::string name;
   std::string value;
+
+  std::string to_string() const;
 };
 
 struct Request {
