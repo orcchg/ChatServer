@@ -57,60 +57,33 @@ ID_t PeerTable::addPeer(const PeerDTO& peer) {
 
   bool accumulate = true;
   ID_t peer_id = this->m_next_id++;
-  accumulate = accumulate &&
-      (sqlite3_bind_int64(this->m_db_statement, 1, peer_id) == SQLITE_OK);
+  accumulate = accumulate && (sqlite3_bind_int64(this->m_db_statement, 1, peer_id) == SQLITE_OK);
   DBG("ID [%lli] has been stored in table ["%s"], SQLite database ["%s"].",
-       peer_id, this->m_table_name.c_str(), this->m_db_name.c_str());
+      peer_id, this->m_table_name.c_str(), this->m_db_name.c_str());
 
   WrappedString i_name = WrappedString(peer.getLogin());
   int login_n_bytes = i_name.n_bytes();
-  accumulate = accumulate &&
-      (sqlite3_bind_text(
-          this->m_db_statement,
-          2,
-          i_name.c_str(),
-          login_n_bytes,
-          SQLITE_TRANSIENT) == SQLITE_OK);
+  accumulate = accumulate && (sqlite3_bind_text(this->m_db_statement, 2, i_name.c_str(), login_n_bytes, SQLITE_TRANSIENT) == SQLITE_OK);
   DBG("Login ["%s"] has been stored in table ["%s"], SQLite database ["%s"].",
-       i_name.c_str(), this->m_table_name.c_str(), this->m_db_name.c_str());
+      i_name.c_str(), this->m_table_name.c_str(), this->m_db_name.c_str());
 
   WrappedString i_email = WrappedString(peer.getEmail());
   int email_n_bytes = i_email.n_bytes();
-  accumulate = accumulate &&
-      (sqlite3_bind_text(
-          this->m_db_statement,
-          3,
-          i_email.c_str(),
-          email_n_bytes,
-          SQLITE_TRANSIENT) == SQLITE_OK);
-  DBG("Email ["%s"] has been stored in table ["%s"], "
-       "SQLite database ["%s"].",
-       i_email.c_str(),
-       this->m_table_name.c_str(),
-       this->m_db_name.c_str());
+  accumulate = accumulate && (sqlite3_bind_text(this->m_db_statement, 3, i_email.c_str(), email_n_bytes, SQLITE_TRANSIENT) == SQLITE_OK);
+  DBG("Email ["%s"] has been stored in table ["%s"], SQLite database ["%s"].",
+      i_email.c_str(), this->m_table_name.c_str(), this->m_db_name.c_str());
 
   WrappedString i_password = WrappedString(peer.getPassword());
   int password_n_bytes = i_password.n_bytes();
-  accumulate = accumulate &&
-      (sqlite3_bind_text(
-          this->m_db_statement,
-          4,
-          i_password.c_str(),
-          password_n_bytes,
-          SQLITE_TRANSIENT) == SQLITE_OK);
+  accumulate = accumulate && (sqlite3_bind_text(this->m_db_statement, 4, i_password.c_str(), password_n_bytes, SQLITE_TRANSIENT) == SQLITE_OK);
   DBG("Password ["%s"] has been stored in table ["%s"], SQLite database ["%s"].",
-       i_password.c_str(), this->m_table_name.c_str(), this->m_db_name.c_str());
+      i_password.c_str(), this->m_table_name.c_str(), this->m_db_name.c_str());
 
   sqlite3_step(this->m_db_statement);
   if (!accumulate) {
-    ERR("Error during saving data into table ["%s"], database ["%s"] "
-        "by statement ["%s"]!",
-        this->m_table_name.c_str(),
-        this->m_db_name.c_str(),
-        insert_statement.c_str());
-    this->__finalize_and_throw__(
-        insert_statement.c_str(),
-        SQLITE_ACCUMULATED_PREPARE_ERROR);
+    ERR("Error during saving data into table ["%s"], database ["%s"] by statement ["%s"]!",
+        this->m_table_name.c_str(), this->m_db_name.c_str(), insert_statement.c_str());
+    this->__finalize_and_throw__(insert_statement.c_str(), SQLITE_ACCUMULATED_PREPARE_ERROR);
   } else {
     DBG("All insertions have succeeded.");
   }
@@ -136,16 +109,13 @@ void PeerTable::removePeer(ID_t id) {
   if (id + 1 == this->m_next_id) {
     ID_t last_row_id = this->__read_last_id__(this->m_table_name);
     this->m_next_id = last_row_id + 1;
-    DBG("Deleted peer with largest ID. Next ID value is set to [%lli].",
-         this->m_next_id);
+    DBG("Deleted peer with largest ID. Next ID value is set to [%lli].", this->m_next_id);
   }
   if (this->__empty__()) {
-    DBG("Table ["%s"] has become empty. Next ID value is set to zero.",
-         this->m_table_name.c_str());
+    DBG("Table ["%s"] has become empty. Next ID value is set to zero.", this->m_table_name.c_str());
     this->m_next_id = BASE_ID;
   }
-  DBG("Deleted peer [ID: %lli] in table ["%s"].",
-       id, this->m_table_name.c_str());
+  DBG("Deleted peer [ID: %lli] in table ["%s"].", id, this->m_table_name.c_str());
   INF("exit PeerTable::removePeer().");
 }
 
@@ -180,27 +150,22 @@ PeerDTO PeerTable::getPeerBySymbolic(
   PeerDTO peer = PeerDTO::EMPTY;
   if (*id != UNKNOWN_ID) {
     DBG("Read id [%lli] from  table ["%s"] of database ["%s"].",
-         *id, this->m_table_name.c_str(), this->m_db_name.c_str());
+        *id, this->m_table_name.c_str(), this->m_db_name.c_str());
 
-    const void* raw_login = reinterpret_cast<const char*>(
-        sqlite3_column_text(this->m_db_statement, 1));
+    const void* raw_login = reinterpret_cast<const char*>(sqlite3_column_text(this->m_db_statement, 1));
     WrappedString login(raw_login);
-    const void* raw_email = reinterpret_cast<const char*>(
-        sqlite3_column_text(this->m_db_statement, 2));
+    const void* raw_email = reinterpret_cast<const char*>(sqlite3_column_text(this->m_db_statement, 2));
     WrappedString email(raw_email);
-    const void* raw_password = reinterpret_cast<const char*>(
-        sqlite3_column_text(this->m_db_statement, 3));
+    const void* raw_password = reinterpret_cast<const char*>(sqlite3_column_text(this->m_db_statement, 3));
     WrappedString password(raw_password);
 
     DBG("Loaded column data: " D_COLUMN_NAME_LOGIN " ["%s"]; " D_COLUMN_NAME_EMAIL " ["%s"]; " D_COLUMN_NAME_PASSWORD " ["%s"].",
-         login.c_str(),
-         email.c_str(),
-         password.c_str());
+        login.c_str(), email.c_str(), password.c_str());
     peer = PeerDTO(login.get(), email.get(), password.get());
     DBG("Proper peer instance has been constructed.");
   } else {
     WRN("Symbolic ["%s":"%s"] is missing in table ["%s"] of database %p!",
-         symbolic, value.c_str(), this->m_table_name.c_str(), this->m_db_handler);
+        symbolic, value.c_str(), this->m_table_name.c_str(), this->m_db_handler);
     *id = UNKNOWN_ID;
   }
 
@@ -214,8 +179,7 @@ void PeerTable::__init__() {
   Database::__init__();
   ID_t last_row_id = this->__read_last_id__(this->m_table_name);
   this->m_next_id = last_row_id == 0 ? BASE_ID : last_row_id + 1;
-  TRC("Initialization has completed: total rows [%i], last row id [%lli], "
-      "next_id [%lli].",
+  TRC("Initialization has completed: total rows [%i], last row id [%lli], next_id [%lli].",
       this->m_rows, last_row_id, this->m_next_id);
   DBG("exit PeerTable::__init__().");
 }
@@ -230,8 +194,7 @@ void PeerTable::__create_table__() {
       "'" D_COLUMN_NAME_PASSWORD "' TEXT);";
   this->__prepare_statement__(statement);
   sqlite3_step(this->m_db_statement);
-  DBG("Table ["%s"] has been successfully created.",
-       this->m_table_name.c_str());
+  DBG("Table ["%s"] has been successfully created.", this->m_table_name.c_str());
   this->__finalize__(statement.c_str());
   DBG("exit PeerTable::__create_table__().");
 }

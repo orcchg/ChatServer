@@ -78,84 +78,43 @@ ID_t LogTable::addLog(const LogRecord& log) {
 
   bool accumulate = true;
   ID_t log_id = this->m_next_id++;
-  accumulate = accumulate &&
-      (sqlite3_bind_int64(this->m_db_statement, 1, log_id) == SQLITE_OK);
+  accumulate = accumulate && (sqlite3_bind_int64(this->m_db_statement, 1, log_id) == SQLITE_OK);
   DBG("ID [%lli] has been stored in table ["%s"], SQLite database ["%s"].",
-       log_id, this->m_table_name.c_str(), this->m_db_name.c_str());
+      log_id, this->m_table_name.c_str(), this->m_db_name.c_str());
 
   uint64_t i_launch_timestamp = log.getLaunchTimestamp();
-  accumulate = accumulate &&
-      (sqlite3_bind_int64(
-          this->m_db_statement,
-          2,
-          i_launch_timestamp) == SQLITE_OK);
+  accumulate = accumulate && (sqlite3_bind_int64(this->m_db_statement, 2, i_launch_timestamp) == SQLITE_OK);
   DBG("Launch timestamp [%lu] has been stored in table ["%s"], SQLite database ["%s"].",
-       i_launch_timestamp, this->m_table_name.c_str(), this->m_db_name.c_str());
+      i_launch_timestamp, this->m_table_name.c_str(), this->m_db_name.c_str());
 
   uint64_t i_timestamp = log.getTimestamp();
-  accumulate = accumulate &&
-      (sqlite3_bind_int64(
-          this->m_db_statement,
-          3,
-          i_timestamp) == SQLITE_OK);
+  accumulate = accumulate && (sqlite3_bind_int64(this->m_db_statement, 3, i_timestamp) == SQLITE_OK);
   DBG("Timestamp [%lu] has been stored in table ["%s"], SQLite database ["%s"].",
-       i_timestamp, this->m_table_name.c_str(), this->m_db_name.c_str());
+      i_timestamp, this->m_table_name.c_str(), this->m_db_name.c_str());
 
   WrappedString i_startline = WrappedString(log.getStartLine());
   int startline_n_bytes = i_startline.n_bytes();
-  accumulate = accumulate &&
-      (sqlite3_bind_text(
-          this->m_db_statement,
-          4,
-          i_startline.c_str(),
-          startline_n_bytes,
-          SQLITE_TRANSIENT) == SQLITE_OK);
-  DBG("Start Line ["%s"] has been stored in table ["%s"], "
-       "SQLite database ["%s"].",
-       i_startline.c_str(),
-       this->m_table_name.c_str(),
-       this->m_db_name.c_str());
+  accumulate = accumulate && (sqlite3_bind_text(this->m_db_statement, 4, i_startline.c_str(), startline_n_bytes, SQLITE_TRANSIENT) == SQLITE_OK);
+  DBG("Start Line ["%s"] has been stored in table ["%s"], SQLite database ["%s"].",
+      i_startline.c_str(), this->m_table_name.c_str(), this->m_db_name.c_str());
 
   WrappedString i_headers = WrappedString(log.getHeaders());
   int headers_n_bytes = i_headers.n_bytes();
-  accumulate = accumulate &&
-      (sqlite3_bind_text(
-          this->m_db_statement,
-          5,
-          i_headers.c_str(),
-          headers_n_bytes,
-          SQLITE_TRANSIENT) == SQLITE_OK);
-  DBG("Headers ["%s"] has been stored in table ["%s"], "
-       "SQLite database ["%s"].",
-       i_headers.c_str(),
-       this->m_table_name.c_str(),
-       this->m_db_name.c_str());
+  accumulate = accumulate && (sqlite3_bind_text(this->m_db_statement, 5, i_headers.c_str(), headers_n_bytes, SQLITE_TRANSIENT) == SQLITE_OK);
+  DBG("Headers ["%s"] has been stored in table ["%s"], SQLite database ["%s"].",
+      i_headers.c_str(), this->m_table_name.c_str(), this->m_db_name.c_str());
 
   WrappedString i_payload = WrappedString(log.getPayload());
   int payload_n_bytes = i_payload.n_bytes();
-  accumulate = accumulate &&
-      (sqlite3_bind_text(
-          this->m_db_statement,
-          6,
-          i_payload.c_str(),
-          payload_n_bytes,
-          SQLITE_TRANSIENT) == SQLITE_OK);
-  DBG("Payload ["%s"] has been stored in table ["%s"], "
-       "SQLite database ["%s"].",
-       i_payload.c_str(),
-       this->m_table_name.c_str(),
-       this->m_db_name.c_str());
+  accumulate = accumulate && (sqlite3_bind_text(this->m_db_statement, 6, i_payload.c_str(), payload_n_bytes, SQLITE_TRANSIENT) == SQLITE_OK);
+  DBG("Payload ["%s"] has been stored in table ["%s"], SQLite database ["%s"].",
+      i_payload.c_str(), this->m_table_name.c_str(), this->m_db_name.c_str());
 
   sqlite3_step(this->m_db_statement);
   if (!accumulate) {
-    ERR("Error during saving data into table ["%s"], database ["%s"] "
-        "by statement ["%s"]!",
-        this->m_table_name.c_str(),
-        this->m_db_name.c_str(),
-        insert_statement.c_str());
-    this->__finalize_and_throw__(
-        insert_statement.c_str(),
-        SQLITE_ACCUMULATED_PREPARE_ERROR);
+    ERR("Error during saving data into table ["%s"], database ["%s"] by statement ["%s"]!",
+        this->m_table_name.c_str(), this->m_db_name.c_str(), insert_statement.c_str());
+    this->__finalize_and_throw__(insert_statement.c_str(), SQLITE_ACCUMULATED_PREPARE_ERROR);
   } else {
     DBG("All insertions have succeeded.");
   }
@@ -181,16 +140,13 @@ void LogTable::removeLog(ID_t id) {
   if (id + 1 == this->m_next_id) {
     ID_t last_row_id = this->__read_last_id__(this->m_table_name);
     this->m_next_id = last_row_id + 1;
-    DBG("Deleted log with largest ID. Next ID value is set to [%lli].",
-         this->m_next_id);
+    DBG("Deleted log with largest ID. Next ID value is set to [%lli].", this->m_next_id);
   }
   if (this->__empty__()) {
-    DBG("Table ["%s"] has become empty. Next ID value is set to zero.",
-         this->m_table_name.c_str());
+    DBG("Table ["%s"] has become empty. Next ID value is set to zero.", this->m_table_name.c_str());
     this->m_next_id = BASE_ID;
   }
-  DBG("Deleted log [ID: %lli] in table ["%s"].",
-       id, this->m_table_name.c_str());
+  DBG("Deleted log [ID: %lli] in table ["%s"].", id, this->m_table_name.c_str());
   INF("exit LogTable::removeLog().");
 }
 
@@ -206,43 +162,32 @@ LogRecord LogTable::getLog(ID_t i_log_id) {
   this->__prepare_statement__(select_statement);
   sqlite3_step(this->m_db_statement);
   ID_t id = sqlite3_column_int64(this->m_db_statement, 0);
-  DBG("Read id [%lli] from  table ["%s"] of database ["%s"], "
-       "input id was [%lli].",
-       id, this->m_table_name.c_str(), this->m_db_name.c_str(), i_log_id);
-  TABLE_ASSERT("Input log id does not equal to primary key value "
-               "from database!" &&
-               id == i_log_id);
+  DBG("Read id [%lli] from  table ["%s"] of database ["%s"], input id was [%lli].",
+      id, this->m_table_name.c_str(), this->m_db_name.c_str(), i_log_id);
+  TABLE_ASSERT("Input log id does not equal to primary key value from database!" && id == i_log_id);
 
   LogRecord log = LogRecord::EMPTY;
   if (i_log_id != UNKNOWN_ID) {
     DBG("Read id [%lli] from  table ["%s"] of database ["%s"].",
-         id, this->m_table_name.c_str(), this->m_db_name.c_str());
+        id, this->m_table_name.c_str(), this->m_db_name.c_str());
 
     ID_t connection_id = sqlite3_column_int64(this->m_db_statement, 1);
     uint64_t launch_timestamp = sqlite3_column_int64(this->m_db_statement, 2);
     uint64_t timestamp = sqlite3_column_int64(this->m_db_statement, 3);
-    const void* raw_startline = reinterpret_cast<const char*>(
-        sqlite3_column_text(this->m_db_statement, 4));
+    const void* raw_startline = reinterpret_cast<const char*>(sqlite3_column_text(this->m_db_statement, 4));
     WrappedString startline(raw_startline);
-    const void* raw_headers = reinterpret_cast<const char*>(
-        sqlite3_column_text(this->m_db_statement, 5));
+    const void* raw_headers = reinterpret_cast<const char*>(sqlite3_column_text(this->m_db_statement, 5));
     WrappedString headers(raw_headers);
-    const void* raw_payload = reinterpret_cast<const char*>(
-        sqlite3_column_text(this->m_db_statement, 6));
+    const void* raw_payload = reinterpret_cast<const char*>(sqlite3_column_text(this->m_db_statement, 6));
     WrappedString payload(raw_payload);
 
     DBG("Loaded column data: " COLUMN_NAME_CONNECTION_ID " [%lli]; " D_COLUMN_NAME_TIMESTAMP " [%lu]; " D_COLUMN_NAME_TIMESTAMP " [%lu]; " D_COLUMN_NAME_START_LINE " ["%s"]; " D_COLUMN_NAME_HEADERS " ["%s"]; " D_COLUMN_NAME_PAYLOAD " ["%s"].",
-         connection_id,
-         launch_timestamp,
-         timestamp,
-         startline.c_str(),
-         headers.c_str(),
-         payload.c_str());
+         connection_id, launch_timestamp, timestamp, startline.c_str(), headers.c_str(), payload.c_str());
     log = LogRecord(connection_id, launch_timestamp, timestamp, startline.get(), headers.get(), payload.get());
     DBG("Proper log instance has been constructed.");
   } else {
     WRN("ID [%lli] is missing in table ["%s"] of database %p!",
-         i_log_id, this->m_table_name.c_str(), this->m_db_handler);
+        i_log_id, this->m_table_name.c_str(), this->m_db_handler);
   }
 
   this->__finalize__(select_statement.c_str());
@@ -257,8 +202,7 @@ void LogTable::__init__() {
   Database::__init__();
   ID_t last_row_id = this->__read_last_id__(this->m_table_name);
   this->m_next_id = last_row_id == 0 ? BASE_ID : last_row_id + 1;
-  TRC("Initialization has completed: total rows [%i], last row id [%lli], "
-      "next_id [%lli].",
+  TRC("Initialization has completed: total rows [%i], last row id [%lli], next_id [%lli].",
       this->m_rows, last_row_id, this->m_next_id);
   DBG("exit LogTable::__init__().");
 }
@@ -276,8 +220,7 @@ void LogTable::__create_table__() {
       "'" D_COLUMN_NAME_PAYLOAD "' TEXT);";
   this->__prepare_statement__(statement);
   sqlite3_step(this->m_db_statement);
-  DBG("Table ["%s"] has been successfully created.",
-       this->m_table_name.c_str());
+  DBG("Table ["%s"] has been successfully created.", this->m_table_name.c_str());
   this->__finalize__(statement.c_str());
   DBG("exit LogTable::__create_table__().");
 }

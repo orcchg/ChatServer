@@ -318,11 +318,7 @@ void Server::handleRequest(int socket, ID_t connection_id) {
 void Server::storeRequest(ID_t connection_id, const Request& request) {
   if (m_should_store_requests) {
     uint64_t timestamp = utils::getCurrentTime();
-    std::ostringstream headers;
-    for (auto& header : request.headers) {
-      headers << "[" << header.to_string() << "]";
-    }
-    db::LogRecord log(connection_id, m_launch_timestamp, timestamp, request.startline.to_string(), headers.str(), request.body);
+    db::LogRecord log(connection_id, m_launch_timestamp, timestamp, request.startline.to_string(), "", request.body);
     m_log_database->addLog(log);
   }
 }
