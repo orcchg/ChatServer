@@ -34,7 +34,6 @@ bool evaluate(Server* server, char* command) {
     printHelp();
   } else if (strcmp(LOGI, command) == 0) {
     server->logIncoming();
-    return false;
   } else if (strcmp(STOP, command) == 0) {
     server->stop();
     return false;
