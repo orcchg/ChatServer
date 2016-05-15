@@ -52,6 +52,7 @@ private:
   int m_port;
 };
 
+// ----------------------------------------------
 class SystemTable : private Database {
 public:
   SystemTable();

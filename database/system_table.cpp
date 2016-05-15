@@ -166,7 +166,7 @@ void SystemTable::removeRecord(ID_t id) {
   if (id + 1 == this->m_next_id) {
     ID_t last_row_id = this->__read_last_id__(this->m_table_name);
     this->m_next_id = last_row_id + 1;
-    DBG("Deleted peer with largest ID. Next ID value is set to [%lli].",
+    DBG("Deleted record with largest ID. Next ID value is set to [%lli].",
          this->m_next_id);
   }
   if (this->__empty__()) {
@@ -174,7 +174,7 @@ void SystemTable::removeRecord(ID_t id) {
          this->m_table_name.c_str());
     this->m_next_id = BASE_ID;
   }
-  DBG("Deleted peer [ID: %lli] in table ["%s"].",
+  DBG("Deleted record [ID: %lli] in table ["%s"].",
        id, this->m_table_name.c_str());
   INF("exit SystemTable::removeRecord().");
 }
@@ -220,7 +220,7 @@ Record SystemTable::getRecord(ID_t i_record_id) {
          ipaddress.c_str(),
          port);
     record = Record(extra_id, timestamp, ipaddress.get(), port);
-    DBG("Proper peer instance has been constructed.");
+    DBG("Proper record instance has been constructed.");
   } else {
     WRN("ID [%lli] is missing in table ["%s"] of database %p!",
          i_record_id, this->m_table_name.c_str(), this->m_db_handler);
