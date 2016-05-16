@@ -239,9 +239,8 @@ Header MyParser::parseHeader(const std::string& header_line) const {
   }
   Header header;
   header.name = header_line.substr(0, colon);
-  header.value = header_line.substr(colon + 1);
-  std::replace(header.value.begin(), header.value.end(), '\r', '\0');  // remove CR character
-  std::replace(header.value.begin(), header.value.end(), '\n', '\0');  // remove LF character
+  std::string value = header_line.substr(colon + 1);
+  header.value = reduce(value, "", " \t\r\n");
   return header;
 }
 
