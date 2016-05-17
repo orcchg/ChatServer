@@ -21,6 +21,7 @@
 #ifndef CHAT_SERVER_STRUCTURES__H__
 #define CHAT_SERVER_STRUCTURES__H__
 
+#include <ostream>
 #include <string>
 #include "api/types.h"
 
@@ -133,6 +134,23 @@ private:
   size_t m_size;
   std::string m_message;
 };
+
+// ----------------------------------------------
+class Token {
+public:
+  static Token EMPTY;
+
+  explicit Token(const std::string& input);
+  Token(const Token& token);
+  virtual ~Token();
+
+  const std::string& get() const;
+
+private:
+  std::string m_token;
+};
+
+std::ostream& operator << (std::ostream& out, const Token& token);
 
 #endif  // CHAT_SERVER_STRUCTURES__H__
 

@@ -24,5 +24,5 @@ SET( SOURCES
     ${SOURCE_DIR}/server_menu.cpp
 )
 ADD_EXECUTABLE( server ${SOURCES} )
-TARGET_LINK_LIBRARIES( server api my_parser database )
+TARGET_LINK_LIBRARIES( server api my_parser database ${CRYPTOR} )
 

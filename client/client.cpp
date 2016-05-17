@@ -33,7 +33,7 @@
 #endif  // SECURE
 
 Client::Client(const std::string& config_file)
-  : m_id(UNKNOWN_ID), m_name(""), m_channel(0), m_dest_id(UNKNOWN_ID)
+  : m_id(UNKNOWN_ID), m_name(""), m_auth_token(""), m_channel(0), m_dest_id(UNKNOWN_ID)
   , m_is_connected(false), m_is_stopped(false)
   , m_socket(-1), m_ip_address(""), m_port("http") {
   if (!readConfiguration(config_file)) {
@@ -218,12 +218,14 @@ void Client::tryLogin(LoginForm& form) {
 
   if (document.IsObject() &&
       document.HasMember(ITEM_CODE) && document[ITEM_CODE].IsInt() &&
-      document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64()) {
+      document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64() &&
+      document.HasMember(ITEM_TOKEN) && document[ITEM_TOKEN].IsString()) {
     StatusCode code = static_cast<StatusCode>(document[ITEM_CODE].GetInt());
     switch (code) {
       case StatusCode::SUCCESS:
         m_id = document[ITEM_ID].GetInt64();
         m_name = form.getLogin();
+        m_auth_token = document[ITEM_TOKEN].GetString();
         onLogin();
         break;
       case StatusCode::WRONG_PASSWORD:
@@ -299,12 +301,14 @@ void Client::tryRegister(const RegistrationForm& form) {
 
   if (document.IsObject() &&
       document.HasMember(ITEM_CODE) && document[ITEM_CODE].IsInt() &&
-      document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64()) {
+      document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64() &&
+      document.HasMember(ITEM_TOKEN) && document[ITEM_TOKEN].IsString()) {
     StatusCode code = static_cast<StatusCode>(document[ITEM_CODE].GetInt());
     switch (code) {
       case StatusCode::SUCCESS:
         m_id = document[ITEM_ID].GetInt64();
         m_name = form.getLogin();
+        m_auth_token = document[ITEM_TOKEN].GetString();
         onRegister();
         break;
       case StatusCode::ALREADY_REGISTERED:

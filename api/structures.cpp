@@ -23,6 +23,10 @@
 #include "logger.h"
 #include "rapidjson/document.h"
 #include "structures.h"
+#if SECURE
+#include "crypting/cryptor.h"
+#include "icryptor.h"
+#endif  // SECURE
 
 // ----------------------------------------------
 LoginForm::LoginForm(
@@ -119,5 +123,34 @@ Message Message::fromJson(const std::string& json) {
     ERR("Message parse failed: invalid json: %s", json.c_str());
     throw ConvertException();
   }
+}
+
+// ----------------------------------------------
+Token Token::EMPTY = Token("");
+
+Token::Token(const std::string& input) {
+#if SECURE
+  secure::ICryptor* cryptor = new secure::Cryptor();
+  m_token = cryptor->encrypt(input);
+  delete cryptor;  cryptor = nullptr;
+#else
+  m_token = input;
+#endif  // SECURE
+}
+
+Token::Token(const Token& token)
+  : m_token(token.m_token) {
+}
+
+Token::~Token() {
+}
+
+const std::string& Token::get() const {
+  return m_token;
+}
+
+std::ostream& operator << (std::ostream& out, const Token& token) {
+  out << token.get();
+  return out;
 }
 

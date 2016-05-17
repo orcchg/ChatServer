@@ -104,8 +104,13 @@ void ServerApiImpl::sendStatus(StatusCode status, ID_t id) {
     default:
       return;
   }
+
+  auto it_peer = m_peers.find(id);
+  Token token = it_peer != m_peers.end() ? it_peer->second.getToken() : Token::EMPTY;
+
   json << "{\"" D_ITEM_CODE "\":" << static_cast<int>(status)
-       << ",\"" D_ITEM_ID "\":" << id << "}";
+       << ",\"" D_ITEM_ID "\":" << id
+       << ",\"" D_ITEM_TOKEN "\":\"" << token << "\"}";
   oss << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
       << json.str();
   MSG("Response: %s", oss.str().c_str());
@@ -322,6 +327,7 @@ bool ServerApiImpl::authenticate(const std::string& expected_pass, const std::st
 
 void ServerApiImpl::doLogin(ID_t id, const std::string& name) {
   Peer peer(id, name);
+  peer.setToken(name);
   peer.setSocket(m_socket);
   m_peers.insert(std::make_pair(id, peer));
 

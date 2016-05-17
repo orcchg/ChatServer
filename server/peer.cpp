@@ -21,11 +21,15 @@
 #include "peer.h"
 
 Peer::Peer(ID_t id, const std::string& name)
-  : m_id(id), m_name(name), m_channel(0), m_socket(-1) {
+  : m_id(id), m_name(name), m_channel(0), m_socket(-1), m_token(Token::EMPTY) {
 }
 
 void Peer::setChannel(int channel) {
   m_channel = channel;
+}
+
+void Peer::setToken(const std::string& input) {
+  m_token = Token(input);
 }
 
 void Peer::setSocket(int socket_id) {
