@@ -32,7 +32,7 @@
 #include "api/icryptor.h"
 #endif  // SECURE
 
-#define MESSAGE_SIZE 4096
+#define MESSAGE_SIZE 2048
 
 class Client {
 public:
