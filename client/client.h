@@ -33,6 +33,7 @@
 #endif  // SECURE
 
 #define MESSAGE_SIZE 2048
+#define USER_MESSAGE_MAX_SIZE 1600
 
 class Client {
 public:

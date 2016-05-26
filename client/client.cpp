@@ -388,6 +388,11 @@ void Client::startChat() {
         break;
     }
 
+    if (buffer.length() > USER_MESSAGE_MAX_SIZE) {
+      WRN("Message is too long, it should be less than %i bytes", USER_MESSAGE_MAX_SIZE);
+      buffer = buffer.substr(0, USER_MESSAGE_MAX_SIZE);
+    }
+
     // sending message
     uint64_t timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     Message message = Message::Builder(m_id)
