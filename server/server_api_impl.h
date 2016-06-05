@@ -65,6 +65,7 @@ public:
 
 private:
   int m_socket;
+  std::string m_payload;  // extra data
   MyParser m_parser;
   std::unordered_map<ID_t, Peer> m_peers;
   IPeerTable* m_peers_database;

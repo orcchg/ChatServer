@@ -31,6 +31,8 @@ static const char* STANDARD_HEADERS = "Server: ChatServer\r\nContent-Type: appli
 static const char* CONTENT_LENGTH_HEADER = "Content-Length: ";
 static const char* CONNECTION_CLOSE_HEADER = "Connection: close";
 
+static const char* NULL_PAYLOAD = "";
+
 /* Mapping */
 // ----------------------------------------------------------------------------
 PeerDTO LoginToPeerDTOMapper::map(const LoginForm& form) {
@@ -43,7 +45,8 @@ PeerDTO RegistrationToPeerDTOMapper::map(const RegistrationForm& form) {
 
 /* Server implementation */
 // ----------------------------------------------------------------------------
-ServerApiImpl::ServerApiImpl() {
+ServerApiImpl::ServerApiImpl()
+  : m_socket(0), m_payload(NULL_PAYLOAD) {
   m_peers_database = new db::PeerTable();
 }
 
@@ -110,11 +113,14 @@ void ServerApiImpl::sendStatus(StatusCode status, ID_t id) {
 
   json << "{\"" D_ITEM_CODE "\":" << static_cast<int>(status)
        << ",\"" D_ITEM_ID "\":" << id
-       << ",\"" D_ITEM_TOKEN "\":\"" << token << "\"}";
+       << ",\"" D_ITEM_TOKEN "\":\"" << token << "\""
+       << ",\"" D_ITEM_PAYLOAD "\":\"" << m_payload << "\"}";
   oss << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
       << json.str();
   MSG("Response: %s", oss.str().c_str());
   send(m_socket, oss.str().c_str(), oss.str().length(), 0);
+
+  m_payload = NULL_PAYLOAD;  // drop extra data
 }
 
 StatusCode ServerApiImpl::login(const std::string& json, ID_t& id) {
@@ -291,7 +297,7 @@ StatusCode ServerApiImpl::loginPeer(const LoginForm& form, ID_t& id) {
         ERR("Authentication failed: already logged in");
         return StatusCode::ALREADY_LOGGED_IN;
       }
-      doLogin(id, symbolic);
+      doLogin(id, peer.getLogin());
       return StatusCode::SUCCESS;
     } else {
       ERR("Authentication failed: wrong password");
@@ -330,6 +336,8 @@ void ServerApiImpl::doLogin(ID_t id, const std::string& name) {
   peer.setToken(name);
   peer.setSocket(m_socket);
   m_peers.insert(std::make_pair(id, peer));
+
+  m_payload = name;  // extra data
 
   // notify other peers
   std::ostringstream oss, json;

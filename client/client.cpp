@@ -219,12 +219,13 @@ void Client::tryLogin(LoginForm& form) {
   if (document.IsObject() &&
       document.HasMember(ITEM_CODE) && document[ITEM_CODE].IsInt() &&
       document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64() &&
-      document.HasMember(ITEM_TOKEN) && document[ITEM_TOKEN].IsString()) {
+      document.HasMember(ITEM_TOKEN) && document[ITEM_TOKEN].IsString() &&
+      document.HasMember(ITEM_PAYLOAD) && document[ITEM_PAYLOAD].IsString()) {
     StatusCode code = static_cast<StatusCode>(document[ITEM_CODE].GetInt());
     switch (code) {
       case StatusCode::SUCCESS:
         m_id = document[ITEM_ID].GetInt64();
-        m_name = form.getLogin();
+        m_name = document[ITEM_PAYLOAD].GetString();
         m_auth_token = document[ITEM_TOKEN].GetString();
         onLogin();
         break;
@@ -302,12 +303,13 @@ void Client::tryRegister(const RegistrationForm& form) {
   if (document.IsObject() &&
       document.HasMember(ITEM_CODE) && document[ITEM_CODE].IsInt() &&
       document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64() &&
-      document.HasMember(ITEM_TOKEN) && document[ITEM_TOKEN].IsString()) {
+      document.HasMember(ITEM_TOKEN) && document[ITEM_TOKEN].IsString() &&
+      document.HasMember(ITEM_PAYLOAD) && document[ITEM_PAYLOAD].IsString()) {
     StatusCode code = static_cast<StatusCode>(document[ITEM_CODE].GetInt());
     switch (code) {
       case StatusCode::SUCCESS:
         m_id = document[ITEM_ID].GetInt64();
-        m_name = form.getLogin();
+        m_name = document[ITEM_PAYLOAD].GetString();
         m_auth_token = document[ITEM_TOKEN].GetString();
         onRegister();
         break;
