@@ -81,22 +81,22 @@ void ServerApiImpl::sendStatus(StatusCode status, ID_t id) {
       oss << "200 OK\r\n" << STANDARD_HEADERS << "\r\n";
       break;
     case StatusCode::WRONG_PASSWORD:
-      oss << "403 Wrong password\r\n" << STANDARD_HEADERS << "\r\n";
+      oss << "200 Wrong password\r\n" << STANDARD_HEADERS << "\r\n";
       break;
     case StatusCode::NOT_REGISTERED:
-      oss << "404 Not registered\r\n" << STANDARD_HEADERS << "\r\n";
+      oss << "200 Not registered\r\n" << STANDARD_HEADERS << "\r\n";
       break;
     case StatusCode::ALREADY_REGISTERED:
-      oss << "409 Already registered\r\n" << STANDARD_HEADERS << "\r\n";
+      oss << "200 Already registered\r\n" << STANDARD_HEADERS << "\r\n";
+      break;
+    case StatusCode::ALREADY_LOGGED_IN:
+      oss << "200 Already logged in\r\n" << STANDARD_HEADERS << "\r\n";
       break;
     case StatusCode::INVALID_FORM:
       oss << "400 Invalid form\r\n" << STANDARD_HEADERS << "\r\n";
       break;
     case StatusCode::UNAUTHORIZED:
       oss << "401 Unauthorized\r\n" << STANDARD_HEADERS << "\r\n";
-      break;
-    case StatusCode::ALREADY_LOGGED_IN:
-      oss << "409 Already logged in\r\n" << STANDARD_HEADERS << "\r\n";
       break;
     case StatusCode::UNKNOWN:
       oss << "500 Internal server error\r\n" << STANDARD_HEADERS << "\r\n";
