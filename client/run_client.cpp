@@ -9,6 +9,7 @@ int main(int argc, char** argv) {
   std::string config_file = "../client/local.cfg";
   if (argc >= 2) {
     char buffer[256];
+    memset(buffer, 0, 256);
     strncpy(buffer, argv[1], strlen(argv[1]));
     config_file = std::string(buffer);
   }
