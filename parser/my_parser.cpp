@@ -198,12 +198,12 @@ StartLine MyParser::parseStartLine(const std::string& start_line) const {
   reduce(start_line);
   StartLine startline;
   int i1 = start_line.find_first_of(" ");
-  startline.method = start_line.substr(0, i1);
   int i2 = start_line.find_first_of("HTTP", i1 + 1);
   if (i1 == std::string::npos || i2 == std::string::npos) {
     ERR("Parse error: invalid start line: %s", start_line.c_str());
     throw ParseException();
   }
+  startline.method = start_line.substr(0, i1);
   startline.path = start_line.substr(i1 + 1, i2 - i1 - 2);
   startline.version = std::atoi(start_line.substr(i2 + 7).c_str());
   return startline;
@@ -213,13 +213,13 @@ CodeLine MyParser::parseCodeLine(const std::string& code_line) const {
   reduce(code_line);
   CodeLine codeline;
   int i1 = code_line.find_first_of("HTTP");
-  codeline.version = std::atoi(code_line.substr(i1 + 7, 1).c_str());
   int i2 = code_line.find_first_of(" ", i1 + 8);
   int i3 = code_line.find_first_of(" ", i2 + 1);
     if (i1 == std::string::npos || i2 == std::string::npos || i3 == std::string::npos) {
     ERR("Parse error: invalid code line: %s", code_line.c_str());
     throw ParseException();
   }
+  codeline.version = std::atoi(code_line.substr(i1 + 7, 1).c_str());
   codeline.code = std::atoi(code_line.substr(i2, i3 - i2).c_str());
   codeline.message = code_line.substr(i3 + 1);
   return codeline;
