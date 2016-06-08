@@ -259,7 +259,7 @@ void Server::handleRequest(int socket, ID_t connection_id) {
             {
               ID_t id = UNKNOWN_ID;
               auto login_status = m_api_impl->login(request.body, id);
-              m_api_impl->sendStatus(login_status, id);
+              m_api_impl->sendStatus(login_status, path, id);
             }
             break;
         }
@@ -273,7 +273,7 @@ void Server::handleRequest(int socket, ID_t connection_id) {
             {
               ID_t id = UNKNOWN_ID;
               auto register_status = m_api_impl->registrate(request.body, id);
-              m_api_impl->sendStatus(register_status, id);
+              m_api_impl->sendStatus(register_status, path, id);
             }
             break;
         }
@@ -284,7 +284,7 @@ void Server::handleRequest(int socket, ID_t connection_id) {
             {
               ID_t id = UNKNOWN_ID;
               auto message_status = m_api_impl->message(request.body, id);
-              m_api_impl->sendStatus(message_status, id);
+              m_api_impl->sendStatus(message_status, path, id);
             }
             break;
         }
@@ -295,7 +295,7 @@ void Server::handleRequest(int socket, ID_t connection_id) {
           {
             ID_t id = UNKNOWN_ID;
             auto logout_status = m_api_impl->logout(request.startline.path, id);
-            m_api_impl->sendStatus(logout_status, id);
+            m_api_impl->sendStatus(logout_status, path, id);
             return;  // terminate current peer thread
           }
         }
@@ -306,7 +306,7 @@ void Server::handleRequest(int socket, ID_t connection_id) {
           {
             ID_t id = UNKNOWN_ID;
             auto switch_status = m_api_impl->switchChannel(request.startline.path, id);
-            m_api_impl->sendStatus(switch_status, id);
+            m_api_impl->sendStatus(switch_status, path, id);
           }
           break;
         }

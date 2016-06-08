@@ -76,7 +76,7 @@ void ServerApiImpl::sendRegistrationForm() {
   send(m_socket, oss.str().c_str(), oss.str().length(), 0);
 }
 
-void ServerApiImpl::sendStatus(StatusCode status, ID_t id) {
+void ServerApiImpl::sendStatus(StatusCode status, Path action, ID_t id) {
   std::ostringstream oss, json;
   oss << "HTTP/1.1 ";
   switch (status) {
@@ -112,6 +112,7 @@ void ServerApiImpl::sendStatus(StatusCode status, ID_t id) {
   Token token = it_peer != m_peers.end() ? it_peer->second.getToken() : Token::EMPTY;
 
   json << "{\"" D_ITEM_CODE "\":" << static_cast<int>(status)
+       << ",\"" D_ITEM_ACTION "\":" << static_cast<int>(action)
        << ",\"" D_ITEM_ID "\":" << id
        << ",\"" D_ITEM_TOKEN "\":\"" << token << "\""
        << ",\"" D_ITEM_PAYLOAD "\":\"" << m_payload << "\"}";

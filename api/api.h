@@ -56,6 +56,7 @@
 #define D_ITEM_SIZE "size"
 #define D_ITEM_MESSAGE "message"
 
+#define D_ITEM_ACTION "action"
 #define D_ITEM_CODE "code"
 #define D_ITEM_SYSTEM "system"
 #define D_ITEM_TOKEN "token"
@@ -78,6 +79,7 @@ extern const char* ITEM_TIMESTAMP;
 extern const char* ITEM_SIZE;
 extern const char* ITEM_MESSAGE;
 
+extern const char* ITEM_ACTION;
 extern const char* ITEM_CODE;
 extern const char* ITEM_SYSTEM;
 extern const char* ITEM_TOKEN;
@@ -126,7 +128,7 @@ public:
 
   virtual void sendLoginForm() = 0;
   virtual void sendRegistrationForm() = 0;
-  virtual void sendStatus(StatusCode status, ID_t id) = 0;
+  virtual void sendStatus(StatusCode status, Path action, ID_t id) = 0;
 
   virtual StatusCode login(const std::string& json, ID_t& id) = 0;
   virtual StatusCode registrate(const std::string& json, ID_t& id) = 0;

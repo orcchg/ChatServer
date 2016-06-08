@@ -99,7 +99,7 @@ bool checkSystemMessage(const std::string& json, std::string* system) {
   rapidjson::Document document;
   document.Parse(json.c_str());
   bool result = document.IsObject() &&
-         document.HasMember(ITEM_SYSTEM) && document[ITEM_SYSTEM].IsString();
+      document.HasMember(ITEM_SYSTEM) && document[ITEM_SYSTEM].IsString();
   if (result) {
     *system = document[ITEM_SYSTEM].GetString();
   }

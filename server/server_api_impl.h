@@ -53,7 +53,7 @@ public:
   /* API */
   void sendLoginForm() override;
   void sendRegistrationForm() override;
-  void sendStatus(StatusCode status, ID_t id) override;
+  void sendStatus(StatusCode status, Path action, ID_t id) override;
 
   StatusCode login(const std::string& json, ID_t& id) override;
   StatusCode registrate(const std::string& json, ID_t& id) override;

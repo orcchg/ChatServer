@@ -218,6 +218,7 @@ void Client::tryLogin(LoginForm& form) {
 
   if (document.IsObject() &&
       document.HasMember(ITEM_CODE) && document[ITEM_CODE].IsInt() &&
+      document.HasMember(ITEM_ACTION) && document[ITEM_ACTION].IsInt() &&
       document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64() &&
       document.HasMember(ITEM_TOKEN) && document[ITEM_TOKEN].IsString() &&
       document.HasMember(ITEM_PAYLOAD) && document[ITEM_PAYLOAD].IsString()) {
@@ -302,6 +303,7 @@ void Client::tryRegister(const RegistrationForm& form) {
 
   if (document.IsObject() &&
       document.HasMember(ITEM_CODE) && document[ITEM_CODE].IsInt() &&
+      document.HasMember(ITEM_ACTION) && document[ITEM_ACTION].IsInt() &&
       document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64() &&
       document.HasMember(ITEM_TOKEN) && document[ITEM_TOKEN].IsString() &&
       document.HasMember(ITEM_PAYLOAD) && document[ITEM_PAYLOAD].IsString()) {

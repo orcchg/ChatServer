@@ -31,6 +31,7 @@ const char* ITEM_TIMESTAMP = D_ITEM_TIMESTAMP;
 const char* ITEM_SIZE = D_ITEM_SIZE;
 const char* ITEM_MESSAGE = D_ITEM_MESSAGE;
 
+const char* ITEM_ACTION = D_ITEM_ACTION;
 const char* ITEM_CODE = D_ITEM_CODE;
 const char* ITEM_SYSTEM = D_ITEM_SYSTEM;
 const char* ITEM_TOKEN = D_ITEM_TOKEN;
