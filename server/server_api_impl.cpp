@@ -129,7 +129,9 @@ void ServerApiImpl::sendCheck(bool check, Path action, ID_t id) {
   json << "{\"" D_ITEM_CHECK "\":" << (check ? 1 : 0)
        << ",\"" D_ITEM_ACTION "\":" << static_cast<int>(action)
        << ",\"" D_ITEM_ID "\":" << id << "}";
-  oss << "HTTP/1.1 " << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
+  oss << "HTTP/1.1 200 OK\r\n"
+      << STANDARD_HEADERS << "\r\n"
+      << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
       << json.str();
   MSG("Response: %s", oss.str().c_str());
   send(m_socket, oss.str().c_str(), oss.str().length(), 0);
