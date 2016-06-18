@@ -117,7 +117,7 @@ void ServerApiImpl::sendStatus(StatusCode status, Path action, ID_t id) {
        << ",\"" D_ITEM_TOKEN "\":\"" << token << "\""
        << ",\"" D_ITEM_PAYLOAD "\":\"" << m_payload << "\"}";
   oss << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
-      << json.str();
+      << json.str() << "\0";
   MSG("Response: %s", oss.str().c_str());
   send(m_socket, oss.str().c_str(), oss.str().length(), 0);
 
@@ -132,7 +132,7 @@ void ServerApiImpl::sendCheck(bool check, Path action, ID_t id) {
   oss << "HTTP/1.1 200 OK\r\n"
       << STANDARD_HEADERS << "\r\n"
       << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
-      << json.str();
+      << json.str() << "\0";
   MSG("Response: %s", oss.str().c_str());
   send(m_socket, oss.str().c_str(), oss.str().length(), 0);
 }
@@ -234,7 +234,7 @@ StatusCode ServerApiImpl::logout(const std::string& path, ID_t& id) {
       json << "{\"" D_ITEM_SYSTEM "\":\"" << name << " has logged out\"}";
       oss << "HTTP/1.1 200 Logged Out\r\n" << STANDARD_HEADERS << "\r\n"
           << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
-          << json.str();
+          << json.str() << "\0";
       send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
       oss.str("");
       json.str("");
@@ -274,7 +274,7 @@ StatusCode ServerApiImpl::switchChannel(const std::string& path, ID_t& id) {
       json << "{\"" D_ITEM_SYSTEM "\":\"" << name << " has entered channel\"}";
       oss << "HTTP/1.1 200 Switched channel\r\n" << STANDARD_HEADERS << "\r\n"
           << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
-          << json.str();
+          << json.str() << "\0";
       send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
       oss.str("");
       json.str("");
@@ -398,7 +398,7 @@ void ServerApiImpl::doLogin(ID_t id, const std::string& name) {
       json << "{\"" D_ITEM_SYSTEM "\":\"" << name << " has logged in\"}";
       oss << "HTTP/1.1 200 Logged In\r\n" << STANDARD_HEADERS << "\r\n"
           << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
-          << json.str();
+          << json.str() << "\0";
       send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
       oss.str("");
       json.str("");
