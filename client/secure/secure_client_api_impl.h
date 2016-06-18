@@ -44,6 +44,8 @@ public:
   void sendMessage(const Message& message) override;
   void logout(ID_t id, const std::string& name) override;
   void switchChannel(ID_t id, int channel, const std::string& name) override;
+  void isLoggedIn(const std::string& name) override;
+  void isRegistered(const std::string& name) override;
 
 private:
   BIO* m_bio;

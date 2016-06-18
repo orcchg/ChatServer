@@ -138,8 +138,9 @@ bool Client::readConfiguration(const std::string& config_file) {
 }
 
 void Client::goToMainMenu() {
-  std::string command;
-  printf("---------- Main ----------\n\n         login\n\n       register\n\n          exit\n\nEnter command: ");
+  std::string command, name;
+  printf("---------- Main ----------\n\n         login\n\n       register\n\n          exit\n\n       ?login [login]\n\n       ?register [login]\n");
+  printf("\nEnter command: ");
   while (std::cin >> command) {
     if (command.compare("login") == 0) {
       getLoginForm();
@@ -147,6 +148,14 @@ void Client::goToMainMenu() {
     } else if (command.compare("register") == 0) {
       getRegistrationForm();
       return;
+    } else if (command.compare("?login") == 0) {
+      std::cin >> name;
+      checkLoggedIn(name);
+      printf("\nEnter command: ");
+    } else if (command.compare("?register") == 0) {
+      std::cin >> name;
+      checkRegistered(name);
+      printf("\nEnter command: ");
     } else if (command.compare("exit") == 0) {
       end();
       return;
@@ -176,6 +185,30 @@ Response Client::getResponse(int socket, bool* is_closed) {
 // ----------------------------------------------------------------------------
 /* Login */
 // ----------------------------------------------
+void Client::checkLoggedIn(const std::string& name) {
+  bool is_closed = false;
+  m_api_impl->isLoggedIn(name);
+  Response check_response = getResponse(m_socket, &is_closed);
+
+  rapidjson::Document document;
+  document.Parse(check_response.body.c_str());
+
+  if (document.IsObject() &&
+      document.HasMember(ITEM_CHECK) && document[ITEM_CHECK].IsInt() &&
+      document.HasMember(ITEM_ACTION) && document[ITEM_ACTION].IsInt() &&
+      document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64()) {
+    bool check = document[ITEM_CHECK].GetInt() != 0;
+    if (check) {
+      printf("\e[5;00;36mUser with login [%s] is logged in\e[m\n", name.c_str());
+    } else {
+      printf("\e[5;00;33mUser with login [%s] is not logged in\e[m\n", name.c_str());
+    }
+  } else {
+    ERR("Check for logged in: server's responded with invalid form");
+    throw RuntimeException();
+  }
+}
+
 void Client::getLoginForm() {
   bool is_closed = false;
   m_api_impl->getLoginForm();
@@ -258,6 +291,30 @@ void Client::onLogin() {
 
 /* Registration */
 // ----------------------------------------------
+void Client::checkRegistered(const std::string& name) {
+  bool is_closed = false;
+  m_api_impl->isRegistered(name);
+  Response check_response = getResponse(m_socket, &is_closed);
+
+  rapidjson::Document document;
+  document.Parse(check_response.body.c_str());
+
+  if (document.IsObject() &&
+      document.HasMember(ITEM_CHECK) && document[ITEM_CHECK].IsInt() &&
+      document.HasMember(ITEM_ACTION) && document[ITEM_ACTION].IsInt() &&
+      document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64()) {
+    bool check = document[ITEM_CHECK].GetInt() != 0;
+    if (check) {
+      printf("\e[5;00;36mUser with login [%s] is registered\e[m\n", name.c_str());
+    } else {
+      printf("\e[5;00;33mUser with login [%s] is not registered\e[m\n", name.c_str());
+    }
+  } else {
+    ERR("Check for register: server's responded with invalid form");
+    throw RuntimeException();
+  }
+}
+
 void Client::getRegistrationForm() {
   bool is_closed = false;
   m_api_impl->getRegistrationForm();

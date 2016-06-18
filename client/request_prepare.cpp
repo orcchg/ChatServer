@@ -90,5 +90,21 @@ std::string switchChannel_request(const std::string& host, ID_t id, int channel,
   return oss.str();
 }
 
+std::string isLoggedIn_request(const std::string& host, const std::string& name) {
+  std::ostringstream oss;
+  oss << "GET " D_PATH_IS_LOGGED_IN "?" D_ITEM_LOGIN "=" << name
+      << " HTTP/1.1\r\nHost: " << host << "\r\n\r\n";
+  MSG("Request: %s", oss.str().c_str());
+  return oss.str();
+}
+
+std::string isRegistered_request(const std::string& host, const std::string& name) {
+  std::ostringstream oss;
+  oss << "GET " D_PATH_IS_REGISTERED "?" D_ITEM_LOGIN "=" << name
+      << " HTTP/1.1\r\nHost: " << host << "\r\n\r\n";
+  MSG("Request: %s", oss.str().c_str());
+  return oss.str();
+}
+
 }
 

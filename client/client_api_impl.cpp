@@ -70,3 +70,13 @@ void ClientApiImpl::switchChannel(ID_t id, int channel, const std::string& name)
   send(m_socket, request.c_str(), request.length(), 0);
 }
 
+void ClientApiImpl::isLoggedIn(const std::string& name) {
+  std::string request = util::isLoggedIn_request(m_host, name);
+  send(m_socket, request.c_str(), request.length(), 0);
+}
+
+void ClientApiImpl::isRegistered(const std::string& name) {
+  std::string request = util::isRegistered_request(m_host, name);
+  send(m_socket, request.c_str(), request.length(), 0);
+}
+

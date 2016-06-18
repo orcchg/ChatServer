@@ -34,6 +34,8 @@ std::string sendRegistrationForm_request(const std::string& host, const Registra
 std::string sendMessage_request(const std::string& host, const Message& message);
 std::string logout_request(const std::string& host, ID_t id, const std::string& name);
 std::string switchChannel_request(const std::string& host, ID_t id, int channel, const std::string& name);
+std::string isLoggedIn_request(const std::string& host, const std::string& name);
+std::string isRegistered_request(const std::string& host, const std::string& name);
 
 }
 

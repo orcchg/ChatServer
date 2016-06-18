@@ -67,11 +67,13 @@ protected:
   void goToMainMenu();
   virtual void end();
 
+  void checkLoggedIn(const std::string& name);
   void getLoginForm();
   void fillLoginForm(LoginForm* form);
   void tryLogin(LoginForm& form);
   void onLogin();
 
+  void checkRegistered(const std::string& name);
   void getRegistrationForm();
   void fillRegistrationForm(RegistrationForm* form);
   void tryRegister(const RegistrationForm& form);

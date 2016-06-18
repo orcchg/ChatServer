@@ -57,6 +57,7 @@
 #define D_ITEM_MESSAGE "message"
 
 #define D_ITEM_ACTION "action"
+#define D_ITEM_CHECK "check"
 #define D_ITEM_CODE "code"
 #define D_ITEM_SYSTEM "system"
 #define D_ITEM_TOKEN "token"
@@ -67,6 +68,8 @@
 #define D_PATH_MESSAGE "/message"
 #define D_PATH_LOGOUT "/logout"
 #define D_PATH_SWITCH_CHANNEL "/switch_channel"
+#define D_PATH_IS_LOGGED_IN "/is_logged_in"
+#define D_PATH_IS_REGISTERED "/is_registered"
 
 extern const char* ITEM_LOGIN;
 extern const char* ITEM_EMAIL;
@@ -80,6 +83,7 @@ extern const char* ITEM_SIZE;
 extern const char* ITEM_MESSAGE;
 
 extern const char* ITEM_ACTION;
+extern const char* ITEM_CHECK;
 extern const char* ITEM_CODE;
 extern const char* ITEM_SYSTEM;
 extern const char* ITEM_TOKEN;
@@ -90,13 +94,15 @@ extern const char* PATH_REGISTER;
 extern const char* PATH_MESSAGE;
 extern const char* PATH_LOGOUT;
 extern const char* PATH_SWITCH_CHANNEL;
+extern const char* PATH_IS_LOGGED_IN;
+extern const char* PATH_IS_REGISTERED;
 
 enum class Method : int {
   UNKNOWN = -1, GET = 0, POST = 1, PUT = 2, DELETE = 3
 };
 
 enum class Path : int {
-  UNKNOWN = -1, LOGIN = 0, REGISTER = 1, MESSAGE = 2, LOGOUT = 3, SWITCH_CHANNEL = 4
+  UNKNOWN = -1, LOGIN = 0, REGISTER = 1, MESSAGE = 2, LOGOUT = 3, SWITCH_CHANNEL = 4, IS_LOGGED_IN = 5, IS_REGISTERED = 6
 };
 
 enum class StatusCode : int {
@@ -116,6 +122,8 @@ public:
   virtual void sendMessage(const Message& message) = 0;
   virtual void logout(ID_t id, const std::string& name) = 0;
   virtual void switchChannel(ID_t id, int channel, const std::string& name) = 0;
+  virtual void isLoggedIn(const std::string& name) = 0;
+  virtual void isRegistered(const std::string& name) = 0;
 };
 
 /* Server API */
@@ -129,12 +137,15 @@ public:
   virtual void sendLoginForm() = 0;
   virtual void sendRegistrationForm() = 0;
   virtual void sendStatus(StatusCode status, Path action, ID_t id) = 0;
+  virtual void sendCheck(bool check, Path action, ID_t id) = 0;
 
   virtual StatusCode login(const std::string& json, ID_t& id) = 0;
   virtual StatusCode registrate(const std::string& json, ID_t& id) = 0;
   virtual StatusCode message(const std::string& json, ID_t& id) = 0;
   virtual StatusCode logout(const std::string& path, ID_t& id) = 0;
   virtual StatusCode switchChannel(const std::string& path, ID_t& id) = 0;
+  virtual bool checkLoggedIn(const std::string& path, ID_t& id) = 0;
+  virtual bool checkRegistered(const std::string& path, ID_t& id) = 0;
 
   virtual void terminate() = 0;
 };

@@ -97,6 +97,8 @@ Server::Server(int port_number)
   m_paths[PATH_MESSAGE] = Path::MESSAGE;
   m_paths[PATH_LOGOUT] = Path::LOGOUT;
   m_paths[PATH_SWITCH_CHANNEL] = Path::SWITCH_CHANNEL;
+  m_paths[PATH_IS_LOGGED_IN] = Path::IS_LOGGED_IN;
+  m_paths[PATH_IS_REGISTERED] = Path::IS_REGISTERED;
 
   m_api_impl = new ServerApiImpl();
   m_log_database = new db::LogTable();
@@ -309,6 +311,28 @@ void Server::handleRequest(int socket, ID_t connection_id) {
             m_api_impl->sendStatus(switch_status, path, id);
           }
           break;
+        }
+        break;
+      case Path::IS_LOGGED_IN:
+        switch (method) {
+          case Method::GET:
+            {
+              ID_t id = UNKNOWN_ID;
+              auto login_check = m_api_impl->checkLoggedIn(request.startline.path, id);
+              m_api_impl->sendCheck(login_check, path, id);
+            }
+            break;
+        }
+        break;
+      case Path::IS_REGISTERED:
+        switch (method) {
+          case Method::GET:
+            {
+              ID_t id = UNKNOWN_ID;
+              auto register_check = m_api_impl->checkRegistered(request.startline.path, id);
+              m_api_impl->sendCheck(register_check, path, id);
+            }
+            break;
         }
         break;
     }

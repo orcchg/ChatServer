@@ -71,5 +71,15 @@ void SecureClientApiImpl::switchChannel(ID_t id, int channel, const std::string&
   BIO_write(m_bio, request.c_str(), request.length());
 }
 
+void SecureClientApiImpl::isLoggedIn(const std::string& name) {
+  std::string request = util::isLoggedIn_request(m_host, name);
+  BIO_write(m_bio, request.c_str(), request.length());
+}
+
+void SecureClientApiImpl::isRegistered(const std::string& name) {
+  std::string request = util::isRegistered_request(m_host, name);
+  BIO_write(m_bio, request.c_str(), request.length());
+}
+
 #endif  // SECURE
 

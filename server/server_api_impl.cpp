@@ -124,6 +124,17 @@ void ServerApiImpl::sendStatus(StatusCode status, Path action, ID_t id) {
   m_payload = NULL_PAYLOAD;  // drop extra data
 }
 
+void ServerApiImpl::sendCheck(bool check, Path action, ID_t id) {
+  std::ostringstream oss, json;
+  json << "{\"" D_ITEM_CHECK "\":" << (check ? 1 : 0)
+       << ",\"" D_ITEM_ACTION "\":" << static_cast<int>(action)
+       << ",\"" D_ITEM_ID "\":" << id << "}";
+  oss << "HTTP/1.1 " << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
+      << json.str();
+  MSG("Response: %s", oss.str().c_str());
+  send(m_socket, oss.str().c_str(), oss.str().length(), 0);
+}
+
 StatusCode ServerApiImpl::login(const std::string& json, ID_t& id) {
   rapidjson::Document document;
   document.Parse(json.c_str());
@@ -270,6 +281,25 @@ StatusCode ServerApiImpl::switchChannel(const std::string& path, ID_t& id) {
   return StatusCode::SUCCESS;
 }
 
+// ----------------------------------------------
+bool ServerApiImpl::checkLoggedIn(const std::string& path, ID_t& id) {
+  std::string symbolic = getSymbolicFromQuery(path);
+  if (symbolic.empty()) {
+    return false;  // wrong query
+  }
+  PeerDTO peer = getPeerFromDatabase(symbolic, id);
+  return m_peers.find(id) != m_peers.end();
+}
+
+bool ServerApiImpl::checkRegistered(const std::string& path, ID_t& id) {
+  std::string symbolic = getSymbolicFromQuery(path);
+  if (symbolic.empty()) {
+    return false;  // wrong query
+  }
+  PeerDTO peer = getPeerFromDatabase(symbolic, id);
+  return id != UNKNOWN_ID;
+}
+
 void ServerApiImpl::terminate() {
   std::ostringstream oss;
   for (auto& it : m_peers) {
@@ -281,17 +311,36 @@ void ServerApiImpl::terminate() {
   }
 }
 
-/* Internals */
-// ----------------------------------------------------------------------------
-StatusCode ServerApiImpl::loginPeer(const LoginForm& form, ID_t& id) {
+/* Utility */
+// ----------------------------------------------
+std::string ServerApiImpl::getSymbolicFromQuery(const std::string& path) {
+  std::vector<Query> params;
+  m_parser.parsePath(path, &params);
+  for (auto& query : params) {
+    DBG("Query: %s: %s", query.key.c_str(), query.value.c_str());
+  }
+  if (params.size() < 1 || params[0].key.compare(ITEM_LOGIN) != 0) {
+    ERR("Check logged in failed: wrong query params: %s", path.c_str());
+    return "";  // simplified status
+  }
+  return params[0].value;
+}
+
+PeerDTO ServerApiImpl::getPeerFromDatabase(const std::string& symbolic, ID_t& id) {
   id = UNKNOWN_ID;
   PeerDTO peer = PeerDTO::EMPTY;
-  const std::string& symbolic = form.getLogin();
   if (symbolic.find("@") != std::string::npos) {
     peer = m_peers_database->getPeerByEmail(symbolic, &id);
   } else {
     peer = m_peers_database->getPeerByLogin(symbolic, &id);
   }
+  return peer;
+}
+
+/* Internals */
+// ----------------------------------------------------------------------------
+StatusCode ServerApiImpl::loginPeer(const LoginForm& form, ID_t& id) {
+  PeerDTO peer = getPeerFromDatabase(form.getLogin(), id);
   if (id != UNKNOWN_ID) {
     if (authenticate(peer.getPassword(), form.getPassword())) {
       if (m_peers.find(id) != m_peers.end()) {
@@ -305,7 +354,7 @@ StatusCode ServerApiImpl::loginPeer(const LoginForm& form, ID_t& id) {
       return StatusCode::WRONG_PASSWORD;
     }
   } else {
-    WRN("Peer with login ["%s"] not registered!", symbolic.c_str());
+    WRN("Peer with login ["%s"] not registered!", form.getLogin().c_str());
   }
   return StatusCode::NOT_REGISTERED;
 }

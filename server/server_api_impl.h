@@ -54,12 +54,15 @@ public:
   void sendLoginForm() override;
   void sendRegistrationForm() override;
   void sendStatus(StatusCode status, Path action, ID_t id) override;
+  void sendCheck(bool check, Path action, ID_t id) override;
 
   StatusCode login(const std::string& json, ID_t& id) override;
   StatusCode registrate(const std::string& json, ID_t& id) override;
   StatusCode message(const std::string& json, ID_t& id) override;
   StatusCode logout(const std::string& path, ID_t& id) override;
   StatusCode switchChannel(const std::string& path, ID_t& id) override;
+  bool checkLoggedIn(const std::string& path, ID_t& id) override;
+  bool checkRegistered(const std::string& path, ID_t& id) override;
 
   void terminate() override;
 
@@ -78,6 +81,10 @@ private:
   void doLogin(ID_t id, const std::string& name);
   bool isAuthorized(ID_t id) const;
   void broadcast(const Message& message);
+
+  /* Utility */
+  std::string getSymbolicFromQuery(const std::string& path);
+  PeerDTO getPeerFromDatabase(const std::string& symbolic, ID_t& id);
 };
 
 #endif  // CHAT_SERVER_SERVER_API_IMPL__H__
