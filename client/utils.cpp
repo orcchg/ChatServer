@@ -22,13 +22,17 @@
 #include <cstdio>
 #include <sstream>
 #include <iostream>
+#include <regex>
 #include <termios.h>
 #include <unistd.h>
 #include "api/api.h"
+#include "logger.h"
 #include "rapidjson/document.h"
 #include "utils.h"
 
 namespace util {
+
+const char* EMAIL_REGEX_PATTERN = "\\^[a-zA-Z0-9][a-zA-Z0-9\\_.]+@[a-zA-Z0-9_]+.[a-zA-Z0-9_.]+\\$";
 
 static void hideStdin() {
   termios old_terminal;
@@ -104,6 +108,16 @@ bool checkSystemMessage(const std::string& json, std::string* system) {
     *system = document[ITEM_SYSTEM].GetString();
   }
   return result;
+}
+
+bool isEmailValid(const std::string& email) {
+  try {
+    auto pattern = std::regex(EMAIL_REGEX_PATTERN);
+    return std::regex_match(email, pattern);
+  } catch (std::regex_error) {
+    ERR("Regular expressions aren't supported. Using simple verification...");
+    return email.find('@') != std::string::npos;
+  }
 }
 
 Command parseCommand(const std::string& command, ID_t& value) {

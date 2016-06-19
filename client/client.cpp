@@ -139,7 +139,7 @@ bool Client::readConfiguration(const std::string& config_file) {
 
 void Client::goToMainMenu() {
   std::string command, name;
-  printf("---------- Main ----------\n\n         login\n\n       register\n\n          exit\n\n       ?login [login]\n\n       ?register [login]\n");
+  printf("---------- Main ----------\n\n         login\n\n       register\n\n          exit\n\n       ?login    [login | email]\n\n       ?register [login | email]\n");
   printf("\nEnter command: ");
   while (std::cin >> command) {
     if (command.compare("login") == 0) {
@@ -160,7 +160,7 @@ void Client::goToMainMenu() {
       end();
       return;
     } else {
-      printf("Wrong command !\nEnter command: ");
+      printf("\e[5;00;33mWrong command !\e[m\nEnter command: ");
     }
   }
   end();  // close at end
@@ -231,7 +231,7 @@ void Client::getLoginForm() {
 
 void Client::fillLoginForm(LoginForm* form) {
   std::string login, password;
-  login = util::enterSymbolic("Login");
+  login = util::enterSymbolic("Login or Email");
 #if SECURE
   password = util::enterSymbolic("Password", m_cryptor, true);
 #else
@@ -338,13 +338,34 @@ void Client::getRegistrationForm() {
 
 void Client::fillRegistrationForm(RegistrationForm* form) {
   std::string login, email, password;
-  login = util::enterSymbolic("Login");
-  email = util::enterSymbolic("Email");
+
+  /* login */
+  bool flag = false;
+  do {
+    if (flag) {
+      printf("\e[5;00;33mLogin must not contain \'@\' (at) symbol! Retry\e[m\n");
+    }
+    login = util::enterSymbolic("Login");
+    flag = true;
+  } while (login.find('@') != std::string::npos);
+
+  /* email */
+  flag = false;  // drop flag
+  do {
+    if (flag) {
+      printf("\e[5;00;33mIncorrect email! Retry\e[m\n");
+    }
+    email = util::enterSymbolic("Email");
+    flag = true;
+  } while (!util::isEmailValid(email));
+
+  /* password */
 #if SECURE
   password = util::enterSymbolic("Password", m_cryptor, true);
 #else
   password = util::enterSymbolic("Password", true);
 #endif  // SECURE
+
   form->setLogin(login);
   form->setEmail(email);
   form->setPassword(password);
@@ -394,7 +415,7 @@ void Client::onRegister() {
 // ----------------------------------------------
 void Client::onWrongPassword(LoginForm& form) {
   std::string password;
-  printf("Wrong password. Retry\n");
+  printf("\e[5;00;33mWrong password! Retry\e[m\n");
 #if SECURE
   password = util::enterSymbolic("Password", m_cryptor, true);
 #else

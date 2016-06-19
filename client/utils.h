@@ -37,6 +37,7 @@ std::string enterSymbolic(const char* title, secure::ICryptor* cryptor, bool hid
 int selectChannel();
 bool checkStatus(const std::string& json);
 bool checkSystemMessage(const std::string& json, std::string* system);
+bool isEmailValid(const std::string& email);
 
 enum class Command : int {
   UNKNOWN = -1, DIRECT_MESSAGE = 0, SWITCH_CHANNEL = 1, LOGOUT = 2, MENU = 3
