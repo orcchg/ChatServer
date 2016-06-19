@@ -363,11 +363,7 @@ StatusCode ServerApiImpl::loginPeer(const LoginForm& form, ID_t& id) {
 
 ID_t ServerApiImpl::registerPeer(const RegistrationForm& form) {
   ID_t id = UNKNOWN_ID;
-  if (form.getLogin().find("@") != std::string::npos) {
-    m_peers_database->getPeerByEmail(form.getEmail(), &id);
-  } else {
-    m_peers_database->getPeerByLogin(form.getLogin(), &id);
-  }
+  m_peers_database->getPeerByEmail(form.getEmail(), &id);  // email must be unique
   if (id == UNKNOWN_ID) {
     PeerDTO peer = m_register_mapper.map(form);
     ID_t id = m_peers_database->addPeer(peer);
