@@ -174,6 +174,7 @@ Response Client::getResponse(int socket, bool* is_closed) {
   int read_bytes = recv(socket, buffer, MESSAGE_SIZE, 0);
   if (read_bytes == 0) {
     DBG("Connection closed");
+    printf("\e[5;00;31mSystem: Server shutdown\e[m\n");
     *is_closed = true;
     return Response::EMPTY;
   }
@@ -189,6 +190,9 @@ void Client::checkLoggedIn(const std::string& name) {
   bool is_closed = false;
   m_api_impl->isLoggedIn(name);
   Response check_response = getResponse(m_socket, &is_closed);
+  if (is_closed) {
+    return;
+  }
 
   rapidjson::Document document;
   document.Parse(check_response.body.c_str());
@@ -213,6 +217,9 @@ void Client::getLoginForm() {
   bool is_closed = false;
   m_api_impl->getLoginForm();
   Response login_form_response = getResponse(m_socket, &is_closed);
+  if (is_closed) {
+    return;
+  }
 
   rapidjson::Document document;
   document.Parse(login_form_response.body.c_str());
@@ -245,6 +252,9 @@ void Client::tryLogin(LoginForm& form) {
   bool is_closed = false;
   m_api_impl->sendLoginForm(form);
   Response code_response = getResponse(m_socket, &is_closed);
+  if (is_closed) {
+    return;
+  }
 
   rapidjson::Document document;
   document.Parse(code_response.body.c_str());
@@ -295,6 +305,9 @@ void Client::checkRegistered(const std::string& name) {
   bool is_closed = false;
   m_api_impl->isRegistered(name);
   Response check_response = getResponse(m_socket, &is_closed);
+  if (is_closed) {
+    return;
+  }
 
   rapidjson::Document document;
   document.Parse(check_response.body.c_str());
@@ -319,6 +332,9 @@ void Client::getRegistrationForm() {
   bool is_closed = false;
   m_api_impl->getRegistrationForm();
   Response register_form_response = getResponse(m_socket, &is_closed);
+  if (is_closed) {
+    return;
+  }
 
   rapidjson::Document document;
   document.Parse(register_form_response.body.c_str());
@@ -375,6 +391,9 @@ void Client::tryRegister(const RegistrationForm& form) {
   bool is_closed = false;
   m_api_impl->sendRegistrationForm(form);
   Response code_response = getResponse(m_socket, &is_closed);
+  if (is_closed) {
+    return;
+  }
 
   rapidjson::Document document;
   document.Parse(code_response.body.c_str());
