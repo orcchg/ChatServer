@@ -121,10 +121,12 @@ void PeerTable::removePeer(ID_t id) {
 
 // ----------------------------------------------
 PeerDTO PeerTable::getPeerByLogin(const std::string& login, ID_t* id) {
+  TRC("getPeerByLogin(%s)", login.c_str());
   return getPeerBySymbolic(COLUMN_NAME_LOGIN, login, id);
 }
 
 PeerDTO PeerTable::getPeerByEmail(const std::string& email, ID_t* id) {
+  TRC("getPeerByEmail(%s)", email.c_str());
   return getPeerBySymbolic(COLUMN_NAME_EMAIL, email, id);
 }
 

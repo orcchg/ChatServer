@@ -59,6 +59,7 @@ void ServerApiImpl::setSocket(int socket) {
 }
 
 void ServerApiImpl::sendLoginForm() {
+  TRC("sendLoginForm");
   std::string json = "{\"" D_ITEM_LOGIN "\":\"\",\"" D_ITEM_PASSWORD "\":\"\"}";
   std::ostringstream oss;
   oss << "HTTP/1.1 200 OK\r\n" << STANDARD_HEADERS << "\r\n"
@@ -68,6 +69,7 @@ void ServerApiImpl::sendLoginForm() {
 }
 
 void ServerApiImpl::sendRegistrationForm() {
+  TRC("sendRegistrationForm");
   std::string json = "{\"" D_ITEM_LOGIN "\":\"\",\"" D_ITEM_EMAIL "\":\"\",\"" D_ITEM_PASSWORD "\":\"\"}";
   std::ostringstream oss;
   oss << "HTTP/1.1 200 OK\r\n" << STANDARD_HEADERS << "\r\n"
@@ -77,6 +79,7 @@ void ServerApiImpl::sendRegistrationForm() {
 }
 
 void ServerApiImpl::sendStatus(StatusCode status, Path action, ID_t id) {
+  TRC("sendStatus(%i, %i, %lli)", static_cast<int>(status), static_cast<int>(action), id);
   std::ostringstream oss, json;
   oss << "HTTP/1.1 ";
   switch (status) {
@@ -125,6 +128,7 @@ void ServerApiImpl::sendStatus(StatusCode status, Path action, ID_t id) {
 }
 
 void ServerApiImpl::sendCheck(bool check, Path action, ID_t id) {
+  TRC("sendCheck(%i, %i, %lli)", check, static_cast<int>(action), id);
   std::ostringstream oss, json;
   json << "{\"" D_ITEM_CHECK "\":" << (check ? 1 : 0)
        << ",\"" D_ITEM_ACTION "\":" << static_cast<int>(action)
@@ -138,6 +142,7 @@ void ServerApiImpl::sendCheck(bool check, Path action, ID_t id) {
 }
 
 StatusCode ServerApiImpl::login(const std::string& json, ID_t& id) {
+  TRC("login(%s)", json.c_str());
   rapidjson::Document document;
   document.Parse(json.c_str());
 
@@ -155,6 +160,7 @@ StatusCode ServerApiImpl::login(const std::string& json, ID_t& id) {
 }
 
 StatusCode ServerApiImpl::registrate(const std::string& json, ID_t& id) {
+  TRC("registrate(%s)", json.c_str());
   rapidjson::Document document;
   document.Parse(json.c_str());
 
@@ -181,6 +187,7 @@ StatusCode ServerApiImpl::registrate(const std::string& json, ID_t& id) {
 }
 
 StatusCode ServerApiImpl::message(const std::string& json, ID_t& id) {
+  TRC("message(%s)", json.c_str());
   id = UNKNOWN_ID;
   rapidjson::Document document;
   document.Parse(json.c_str());
@@ -215,6 +222,7 @@ StatusCode ServerApiImpl::message(const std::string& json, ID_t& id) {
 }
 
 StatusCode ServerApiImpl::logout(const std::string& path, ID_t& id) {
+  TRC("logout(%s)", path.c_str());
   id = UNKNOWN_ID;
   std::vector<Query> params;
   m_parser.parsePath(path, &params);
@@ -244,6 +252,7 @@ StatusCode ServerApiImpl::logout(const std::string& path, ID_t& id) {
 }
 
 StatusCode ServerApiImpl::switchChannel(const std::string& path, ID_t& id) {
+  TRC("switchChannel(%s)", path.c_str());
   id = UNKNOWN_ID;
   std::vector<Query> params;
   m_parser.parsePath(path, &params);
@@ -285,6 +294,7 @@ StatusCode ServerApiImpl::switchChannel(const std::string& path, ID_t& id) {
 
 // ----------------------------------------------
 bool ServerApiImpl::checkLoggedIn(const std::string& path, ID_t& id) {
+  TRC("checkLoggedIn(%s)", path.c_str());
   std::string symbolic = getSymbolicFromQuery(path);
   if (symbolic.empty()) {
     return false;  // wrong query
@@ -294,6 +304,7 @@ bool ServerApiImpl::checkLoggedIn(const std::string& path, ID_t& id) {
 }
 
 bool ServerApiImpl::checkRegistered(const std::string& path, ID_t& id) {
+  TRC("checkRegistered(%s)", path.c_str());
   std::string symbolic = getSymbolicFromQuery(path);
   if (symbolic.empty()) {
     return false;  // wrong query
@@ -303,6 +314,7 @@ bool ServerApiImpl::checkRegistered(const std::string& path, ID_t& id) {
 }
 
 void ServerApiImpl::terminate() {
+  TRC("terminate");
   std::ostringstream oss;
   for (auto& it : m_peers) {
     oss << "HTTP/1.1 " << TERMINATE_CODE << " Terminate\r\n"
@@ -316,6 +328,7 @@ void ServerApiImpl::terminate() {
 /* Utility */
 // ----------------------------------------------
 std::string ServerApiImpl::getSymbolicFromQuery(const std::string& path) {
+  TRC("getSymbolicFromQuery(%s)", path.c_str());
   std::vector<Query> params;
   m_parser.parsePath(path, &params);
   for (auto& query : params) {
@@ -329,6 +342,7 @@ std::string ServerApiImpl::getSymbolicFromQuery(const std::string& path) {
 }
 
 PeerDTO ServerApiImpl::getPeerFromDatabase(const std::string& symbolic, ID_t& id) {
+  TRC("getPeerFromDatabase(%s", symbolic.c_str());
   id = UNKNOWN_ID;
   PeerDTO peer = PeerDTO::EMPTY;
   if (symbolic.find("@") != std::string::npos) {
@@ -342,6 +356,7 @@ PeerDTO ServerApiImpl::getPeerFromDatabase(const std::string& symbolic, ID_t& id
 /* Internals */
 // ----------------------------------------------------------------------------
 StatusCode ServerApiImpl::loginPeer(const LoginForm& form, ID_t& id) {
+  TRC("loginPeer");
   PeerDTO peer = getPeerFromDatabase(form.getLogin(), id);
   if (id != UNKNOWN_ID) {
     if (authenticate(peer.getPassword(), form.getPassword())) {
@@ -362,6 +377,7 @@ StatusCode ServerApiImpl::loginPeer(const LoginForm& form, ID_t& id) {
 }
 
 ID_t ServerApiImpl::registerPeer(const RegistrationForm& form) {
+  TRC("registerPeer");
   ID_t id = UNKNOWN_ID;
   m_peers_database->getPeerByEmail(form.getEmail(), &id);  // email must be unique
   if (id == UNKNOWN_ID) {
@@ -376,10 +392,12 @@ ID_t ServerApiImpl::registerPeer(const RegistrationForm& form) {
 }
 
 bool ServerApiImpl::authenticate(const std::string& expected_pass, const std::string& actual_pass) const {
+  TRC("authenticate");
   return expected_pass.compare(actual_pass) == 0;
 }
 
 void ServerApiImpl::doLogin(ID_t id, const std::string& name) {
+  TRC("doLogin(%lli, %s)", id, name.c_str());
   Peer peer(id, name);
   peer.setToken(name);
   peer.setSocket(m_socket);
@@ -403,10 +421,12 @@ void ServerApiImpl::doLogin(ID_t id, const std::string& name) {
 }
 
 bool ServerApiImpl::isAuthorized(ID_t id) const {
+  TRC("isAuthorized(%lli)", id);
   return m_peers.find(id) != m_peers.end();
 }
 
 void ServerApiImpl::broadcast(const Message& message) {
+  TRC("broadcast");
   std::ostringstream oss;
 
   // send to dedicated peer
