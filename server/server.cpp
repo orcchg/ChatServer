@@ -298,6 +298,7 @@ void Server::handleRequest(int socket, ID_t connection_id) {
             ID_t id = UNKNOWN_ID;
             auto logout_status = m_api_impl->logout(request.startline.path, id);
             m_api_impl->sendStatus(logout_status, path, id);
+            close(socket);  // shutdown peer socket
             return;  // terminate current peer thread
           }
         }
