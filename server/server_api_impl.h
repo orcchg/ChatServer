@@ -55,6 +55,7 @@ public:
   void sendRegistrationForm() override;
   void sendStatus(StatusCode status, Path action, ID_t id) override;
   void sendCheck(bool check, Path action, ID_t id) override;
+  void sendPeers(StatusCode status, const std::vector<Peer>& peers, int channel) override;
 
   StatusCode login(const std::string& json, ID_t& id) override;
   StatusCode registrate(const std::string& json, ID_t& id) override;
@@ -63,6 +64,7 @@ public:
   StatusCode switchChannel(const std::string& path, ID_t& id) override;
   bool checkLoggedIn(const std::string& path, ID_t& id) override;
   bool checkRegistered(const std::string& path, ID_t& id) override;
+  StatusCode getAllPeers(const std::string& path, std::vector<Peer>* peers, int& channel) override;
 
   void terminate() override;
 
@@ -70,7 +72,7 @@ private:
   int m_socket;
   std::string m_payload;  // extra data
   MyParser m_parser;
-  std::unordered_map<ID_t, Peer> m_peers;
+  std::unordered_map<ID_t, server::Peer> m_peers;
   IPeerTable* m_peers_database;
   LoginToPeerDTOMapper m_login_mapper;
   RegistrationToPeerDTOMapper m_register_mapper;

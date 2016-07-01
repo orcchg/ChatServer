@@ -141,6 +141,33 @@ void ServerApiImpl::sendCheck(bool check, Path action, ID_t id) {
   send(m_socket, oss.str().c_str(), oss.str().length(), 0);
 }
 
+void ServerApiImpl::sendPeers(StatusCode status, const std::vector<Peer>& peers, int channel) {
+  TRC("sendPeers(size = %zu, channel = %i)", peers.size(), channel);
+  std::string delimiter = "";
+  std::ostringstream oss, json;
+  json << "{\"" D_ITEM_PEERS "\":[";
+  for (auto it = peers.begin(); it != peers.end(); ++it) {
+    json << delimiter;
+    json << "{\"" D_ITEM_ID "\":" << it->getId()
+         << ",\"" D_ITEM_LOGIN "\":\"" << it->getLogin() << "\""
+         << ",\"" D_ITEM_CHANNEL "\":" << it->getChannel()
+         << "}";
+    delimiter = ",";
+  }
+  json << "]";
+  if (channel != WRONG_CHANNEL) {
+    json << ",\"" D_ITEM_CHANNEL "\":" << channel;
+  }
+  json << "}";
+  oss << "HTTP/1.1 200 OK\r\n"
+      << STANDARD_HEADERS << "\r\n"
+      << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
+      << json.str() << "\0";
+  MSG("Response: %s", oss.str().c_str());
+  send(m_socket, oss.str().c_str(), oss.str().length(), 0);
+}
+
+// ----------------------------------------------
 StatusCode ServerApiImpl::login(const std::string& json, ID_t& id) {
   TRC("login(%s)", json.c_str());
   rapidjson::Document document;
@@ -271,6 +298,11 @@ StatusCode ServerApiImpl::switchChannel(const std::string& path, ID_t& id) {
   id = std::stoll(params[0].value.c_str());
   int channel = std::stoi(params[1].value.c_str());
   std::string name = params[2].value;
+  if (channel == WRONG_CHANNEL) {
+    WRN("Attempt to switch to wrong channel! Skip");
+    return StatusCode::WRONG_CHANNEL;
+  }
+
   auto it = m_peers.find(id);
   if (it != m_peers.end()) {
     it->second.setChannel(channel);
@@ -319,6 +351,39 @@ bool ServerApiImpl::checkRegistered(const std::string& path, ID_t& id) {
   return id != UNKNOWN_ID;
 }
 
+// ----------------------------------------------
+StatusCode ServerApiImpl::getAllPeers(const std::string& path, std::vector<Peer>* peers, int& channel) {
+  TRC("getAllPeers(%s)", path.c_str());
+  channel = WRONG_CHANNEL;
+  std::vector<Query> params;
+  m_parser.parsePath(path, &params);
+  if (params.empty()) {  // no channel
+    for (auto it = m_peers.begin(); it != m_peers.end(); ++it) {
+      Peer peer = Peer::Builder(it->first)
+          .setLogin(it->second.getLogin())
+          .setChannel(it->second.getChannel())
+          .build();
+      peers->emplace_back(peer);
+    }
+  } else if (params[0].key.compare(ITEM_CHANNEL) == 0) {
+    channel = std::stoi(params[0].value.c_str());
+    for (auto it = m_peers.begin(); it != m_peers.end(); ++it) {
+      if (channel == it->second.getChannel()) {
+        Peer peer = Peer::Builder(it->first)
+            .setLogin(it->second.getLogin())
+            .setChannel(it->second.getChannel())
+            .build();
+        peers->emplace_back(peer);
+      }
+    }
+  } else {
+    ERR("Logout failed: wrong query params: %s", path.c_str());
+    return StatusCode::INVALID_QUERY;
+  }
+  return StatusCode::SUCCESS;
+}
+
+// ----------------------------------------------
 void ServerApiImpl::terminate() {
   TRC("terminate");
   std::ostringstream oss;
@@ -404,7 +469,7 @@ bool ServerApiImpl::authenticate(const std::string& expected_pass, const std::st
 
 void ServerApiImpl::doLogin(ID_t id, const std::string& name) {
   TRC("doLogin(%lli, %s)", id, name.c_str());
-  Peer peer(id, name);
+  server::Peer peer(id, name);
   peer.setToken(name);
   peer.setSocket(m_socket);
   m_peers.insert(std::make_pair(id, peer));

@@ -22,6 +22,7 @@
 #define CHAT_SERVER_API__H__
 
 #include <string>
+#include <vector>
 #include "structures.h"
 #include "types.h"
 
@@ -116,7 +117,7 @@ enum class Path : int {
 };
 
 enum class StatusCode : int {
-  UNKNOWN = -1, SUCCESS = 0, WRONG_PASSWORD = 1, NOT_REGISTERED = 2, ALREADY_REGISTERED = 3, ALREADY_LOGGED_IN = 4, INVALID_FORM = 5, INVALID_QUERY = 6, UNAUTHORIZED = 7
+  UNKNOWN = -1, SUCCESS = 0, WRONG_PASSWORD = 1, NOT_REGISTERED = 2, ALREADY_REGISTERED = 3, ALREADY_LOGGED_IN = 4, INVALID_FORM = 5, INVALID_QUERY = 6, UNAUTHORIZED = 7, WRONG_CHANNEL = 8
 };
 
 /* API json */
@@ -163,6 +164,7 @@ public:
   virtual void sendRegistrationForm() = 0;
   virtual void sendStatus(StatusCode status, Path action, ID_t id) = 0;
   virtual void sendCheck(bool check, Path action, ID_t id) = 0;
+  virtual void sendPeers(StatusCode status, const std::vector<Peer>& peers, int channel) = 0;
 
   virtual StatusCode login(const std::string& json, ID_t& id) = 0;
   virtual StatusCode registrate(const std::string& json, ID_t& id) = 0;
@@ -171,6 +173,7 @@ public:
   virtual StatusCode switchChannel(const std::string& path, ID_t& id) = 0;
   virtual bool checkLoggedIn(const std::string& path, ID_t& id) = 0;
   virtual bool checkRegistered(const std::string& path, ID_t& id) = 0;
+  virtual StatusCode getAllPeers(const std::string& path, std::vector<Peer>* peers, int& channel) = 0;
 
   virtual void terminate() = 0;
 };

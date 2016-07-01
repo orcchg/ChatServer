@@ -99,6 +99,7 @@ Server::Server(int port_number)
   m_paths[PATH_SWITCH_CHANNEL] = Path::SWITCH_CHANNEL;
   m_paths[PATH_IS_LOGGED_IN] = Path::IS_LOGGED_IN;
   m_paths[PATH_IS_REGISTERED] = Path::IS_REGISTERED;
+  m_paths[PATH_ALL_PEERS] = Path::ALL_PEERS;
 
   m_api_impl = new ServerApiImpl();
   m_log_database = new db::LogTable();
@@ -334,6 +335,18 @@ void Server::handleRequest(int socket, ID_t connection_id) {
               m_api_impl->sendCheck(register_check, path, id);
             }
             break;
+        }
+        break;
+      case Path::ALL_PEERS:
+        switch (method) {
+          case Method::GET:
+          {
+            std::vector<Peer> peers;
+            int channel = WRONG_CHANNEL;
+            auto get_all_status = m_api_impl->getAllPeers(request.startline.path, &peers, channel);
+            m_api_impl->sendPeers(get_all_status, peers, channel);
+          }
+          break;
         }
         break;
     }

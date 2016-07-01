@@ -136,6 +136,47 @@ private:
 };
 
 // ----------------------------------------------
+/**
+ * {
+ *   "id":102993,
+ *   "login":"Oleg",
+ *   "channel":500,
+ * }
+ */
+class Peer {
+public:
+  class Builder {
+  public:
+    Builder(ID_t id);
+    Builder& setLogin(const std::string& login);
+    Builder& setChannel(int channel);
+    Peer build();
+
+    inline ID_t getId() const { return m_id; }
+    inline const std::string& getLogin() const { return m_login; }
+    inline int getChannel() const { return m_channel; }
+
+  private:
+    ID_t m_id;
+    std::string m_login;
+    int m_channel;
+  };
+
+  Peer(const Builder& builder);
+  std::string toJson() const;
+  static Peer fromJson(const std::string& json);
+
+  inline ID_t getId() const { return m_id; }
+  inline const std::string& getLogin() const { return m_login; }
+  inline int getChannel() const { return m_channel; }
+
+private:
+  ID_t m_id;
+  std::string m_login;
+  int m_channel;
+};
+
+// ----------------------------------------------
 class Token {
 public:
   static Token EMPTY;

@@ -25,6 +25,8 @@
 #include "api/structures.h"
 #include "api/types.h"
 
+namespace server {
+
 class Peer {
 public:
   Peer(ID_t id, const std::string& name);
@@ -32,6 +34,8 @@ public:
   void setToken(const std::string& input);
   void setSocket(int socket_id);
 
+  inline ID_t getId() const { return m_id; }
+  inline const std::string& getLogin() const { return m_name; }
   inline int getChannel() const { return m_channel; }
   inline const Token& getToken() const { return m_token; }
   inline int getSocket() const { return m_socket; }
@@ -43,6 +47,8 @@ private:
   int m_channel;
   int m_socket;
 };
+
+}  // namespace server
 
 #endif  // CHAT_SERVER_PEER__H__
 

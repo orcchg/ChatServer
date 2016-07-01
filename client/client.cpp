@@ -205,7 +205,7 @@ void Client::listAllPeers() {
 void Client::listAllPeers(int channel) {
   m_api_impl->getAllPeers(channel);
   printf("\e[5;00;36mSystem: List of all logged in peers on channel: \e[m%i\n", channel);
-  receiveAndprocessListAllPeersResponse(true);
+  receiveAndprocessListAllPeersResponse(channel != WRONG_CHANNEL);
 }
 
 void Client::receiveAndprocessListAllPeersResponse(bool withChannel) {
@@ -221,7 +221,18 @@ void Client::receiveAndprocessListAllPeersResponse(bool withChannel) {
   if (document.IsObject() &&
       document.HasMember(ITEM_PEERS) && document[ITEM_PEERS].IsArray() &&
       (!withChannel || document.HasMember(ITEM_CHANNEL) && document[ITEM_CHANNEL].IsInt())) {
-    // TODO: impl
+    int channel = DEFAULT_CHANNEL;
+    if (withChannel) {
+      channel = document[ITEM_CHANNEL].GetInt();
+    }
+    auto peers = document[ITEM_PEERS].GetArray();
+    for (rapidjson::Value::ConstValueIterator it = peers.Begin(); it != peers.End(); ++it) {
+      ID_t id = (*it)[ITEM_ID].GetInt64();
+      std::string name = (*it)[ITEM_LOGIN].GetString();
+      int channel = (*it)[ITEM_CHANNEL].GetInt();
+      printf("\tPeer[%lli]: %s is on channel: %i\n", id, name.c_str(), channel);
+    }
+    printf("\n");
   } else {
     ERR("List all peers: server's responded with malformed payload");
     throw RuntimeException();

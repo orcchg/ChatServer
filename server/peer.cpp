@@ -20,6 +20,8 @@
 
 #include "peer.h"
 
+namespace server {
+
 Peer::Peer(ID_t id, const std::string& name)
   : m_id(id), m_name(name), m_channel(DEFAULT_CHANNEL), m_socket(-1), m_token(Token::EMPTY) {
 }
@@ -35,4 +37,6 @@ void Peer::setToken(const std::string& input) {
 void Peer::setSocket(int socket_id) {
   m_socket = socket_id;
 }
+
+}  // namespace server
 

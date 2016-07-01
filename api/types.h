@@ -5,10 +5,11 @@
 
 typedef sqlite3_int64 ID_t;
 
-#define UNKNOWN_ID 0
 #define STR_UNKNOWN_ID "0"
+static const int UNKNOWN_ID = 0;
 
-#define DEFAULT_CHANNEL 0
+static const int DEFAULT_CHANNEL = 0;
+static const int WRONG_CHANNEL = -1;
 
 #endif  // CHAT_SERVER_TYPES__H__
 

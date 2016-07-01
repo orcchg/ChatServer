@@ -126,6 +126,59 @@ Message Message::fromJson(const std::string& json) {
 }
 
 // ----------------------------------------------
+Peer::Builder::Builder(ID_t id)
+  : m_id(id) {
+}
+
+Peer::Builder& Peer::Builder::setLogin(const std::string& login) {
+  m_login = login;
+  return *this;
+}
+
+Peer::Builder& Peer::Builder::setChannel(int channel) {
+  m_channel = channel;
+  return *this;
+}
+
+Peer Peer::Builder::build() {
+  return Peer(*this);
+}
+
+Peer::Peer(const Peer::Builder& builder)
+  : m_id(builder.getId())
+  , m_login(builder.getLogin())
+  , m_channel(builder.getChannel()) {
+}
+
+std::string Peer::toJson() const {
+  std::ostringstream oss;
+  oss << "{\"" D_ITEM_ID "\":" << m_id
+      << ",\"" D_ITEM_LOGIN "\":\"" << m_login
+      << "\",\"" D_ITEM_CHANNEL "\":" << m_channel
+      << "\"}";
+  return oss.str();
+}
+
+Peer Peer::fromJson(const std::string& json) {
+  rapidjson::Document document;
+  document.Parse(json.c_str());
+
+  if (document.IsObject() &&
+      document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64() &&
+      document.HasMember(ITEM_LOGIN) && document[ITEM_LOGIN].IsString() &&
+      document.HasMember(ITEM_CHANNEL) && document[ITEM_CHANNEL].IsInt()) {
+    ID_t id = document[ITEM_ID].GetInt64();
+    std::string login = document[ITEM_LOGIN].GetString();
+    int channel = document[ITEM_CHANNEL].GetInt();
+
+    return Peer::Builder(id).setLogin(login).setChannel(channel).build();
+  } else {
+    ERR("Peer parse failed: invalid json: %s", json.c_str());
+    throw ConvertException();
+  }
+}
+
+// ----------------------------------------------
 Token Token::EMPTY = Token("");
 
 Token::Token(const std::string& input) {
