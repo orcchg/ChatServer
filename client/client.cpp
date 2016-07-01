@@ -138,8 +138,9 @@ bool Client::readConfiguration(const std::string& config_file) {
 }
 
 void Client::goToMainMenu() {
-  std::string command, name;
-  printf("---------- Main ----------\n\n         login\n\n       register\n\n          exit\n\n       ?login    [login | email]\n\n       ?register [login | email]\n");
+  std::string command, name, channel_str;
+  int channel = DEFAULT_CHANNEL;
+  printf("---------- Main ----------\n\n         login\n\n       register\n\n          exit\n\n       ?login    [login | email]\n\n       ?register [login | email]\n\n       list [channel]\n");
   printf("\nEnter command: ");
   while (std::cin >> command) {
     if (command.compare("login") == 0) {
@@ -155,6 +156,15 @@ void Client::goToMainMenu() {
     } else if (command.compare("?register") == 0) {
       std::cin >> name;
       checkRegistered(name);
+      printf("\nEnter command: ");
+    } else if (command.compare("list") == 0) {
+      std::cin >> channel_str;
+      if (channel_str.empty()) {
+        listAllPeers();
+      } else {
+        channel = std::atoi(channel_str.c_str());
+        listAllPeers(channel);
+      }
       printf("\nEnter command: ");
     } else if (command.compare("exit") == 0) {
       end();
@@ -184,6 +194,40 @@ Response Client::getResponse(int socket, bool* is_closed) {
 
 /* API invocations */
 // ----------------------------------------------------------------------------
+/* List all peers */
+// ----------------------------------------------
+void Client::listAllPeers() {
+  m_api_impl->getAllPeers();
+  printf("\e[5;00;36mSystem: List of all logged in peers\e[m\n");
+  receiveAndprocessListAllPeersResponse(false);
+}
+
+void Client::listAllPeers(int channel) {
+  m_api_impl->getAllPeers(channel);
+  printf("\e[5;00;36mSystem: List of all logged in peers on channel: \e[m%i\n", channel);
+  receiveAndprocessListAllPeersResponse(true);
+}
+
+void Client::receiveAndprocessListAllPeersResponse(bool withChannel) {
+  bool is_closed = false;
+  Response check_response = getResponse(m_socket, &is_closed);
+  if (is_closed) {
+    return;
+  }
+
+  rapidjson::Document document;
+  document.Parse(check_response.body.c_str());
+
+  if (document.IsObject() &&
+      document.HasMember(ITEM_PEERS) && document[ITEM_PEERS].IsArray() &&
+      (!withChannel || document.HasMember(ITEM_CHANNEL) && document[ITEM_CHANNEL].IsInt())) {
+    // TODO: impl
+  } else {
+    ERR("List all peers: server's responded with malformed payload");
+    throw RuntimeException();
+  }
+}
+
 /* Login */
 // ----------------------------------------------
 void Client::checkLoggedIn(const std::string& name) {

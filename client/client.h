@@ -67,6 +67,10 @@ protected:
   void goToMainMenu();
   virtual void end();
 
+  void listAllPeers();
+  void listAllPeers(int channel);
+  void receiveAndprocessListAllPeersResponse(bool withChannel);
+
   void checkLoggedIn(const std::string& name);
   void getLoginForm();
   void fillLoginForm(LoginForm* form);
