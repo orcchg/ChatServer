@@ -81,5 +81,15 @@ void SecureClientApiImpl::isRegistered(const std::string& name) {
   BIO_write(m_bio, request.c_str(), request.length());
 }
 
+void SecureClientApiImpl::getAllPeers() {
+  std::string request = util::getAllPeers_request(m_host);
+  BIO_write(m_bio, request.c_str(), request.length());
+}
+
+void SecureClientApiImpl::getAllPeers(int channel) {
+  std::string request = util::getAllPeers_request(m_host, channel);
+  BIO_write(m_bio, request.c_str(), request.length());
+}
+
 #endif  // SECURE
 

@@ -46,6 +46,8 @@ public:
   void switchChannel(ID_t id, int channel, const std::string& name) override;
   void isLoggedIn(const std::string& name) override;
   void isRegistered(const std::string& name) override;
+  void getAllPeers() override;
+  void getAllPeers(int channel) override;
 
 private:
   BIO* m_bio;

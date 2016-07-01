@@ -142,6 +142,8 @@ public:
   virtual void switchChannel(ID_t id, int channel, const std::string& name) = 0;
   virtual void isLoggedIn(const std::string& name) = 0;
   virtual void isRegistered(const std::string& name) = 0;
+  virtual void getAllPeers() = 0;
+  virtual void getAllPeers(int channel) = 0;
 };
 
 /* Server API */

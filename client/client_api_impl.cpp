@@ -80,3 +80,13 @@ void ClientApiImpl::isRegistered(const std::string& name) {
   send(m_socket, request.c_str(), request.length(), 0);
 }
 
+void ClientApiImpl::getAllPeers() {
+  std::string request = util::getAllPeers_request(m_host);
+  send(m_socket, request.c_str(), request.length(), 0);
+}
+
+void ClientApiImpl::getAllPeers(int channel) {
+  std::string request = util::getAllPeers_request(m_host, channel);
+  send(m_socket, request.c_str(), request.length(), 0);
+}
+

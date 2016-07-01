@@ -106,5 +106,20 @@ std::string isRegistered_request(const std::string& host, const std::string& nam
   return oss.str();
 }
 
+std::string getAllPeers_request(const std::string& host) {
+  std::ostringstream oss;
+  oss << "GET " D_PATH_ALL_PEERS << " HTTP/1.1\r\nHost: " << host << "\r\n\r\n";
+  MSG("Request: %s", oss.str().c_str());
+  return oss.str();
+}
+
+std::string getAllPeers_request(const std::string& host, int channel) {
+  std::ostringstream oss;
+  oss << "GET " D_PATH_ALL_PEERS "?" D_ITEM_CHANNEL "=" << channel
+      << " HTTP/1.1\r\nHost: " << host << "\r\n\r\n";
+  MSG("Request: %s", oss.str().c_str());
+  return oss.str();
+}
+
 }
 
