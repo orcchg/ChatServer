@@ -116,7 +116,7 @@ enum class StatusCode : int {
  * Registration form:  {"login":TEXT,"email":TEXT,"password":TEXT}
  * Message:            {"id":INT,"login":TEXT,"channel":INT,"dest_id":INT,"timestamp":INT,"message":TEXT}
  * Status:             {"code":INT,"action":INT,"id":INT,"token":TEXT,"payload":TEXT}
- * System:             {"system":TEXT,"id":INT,"payload":TEXT}
+ * System:             {"system":TEXT,"action":INT,"id":INT,"payload":TEXT}
  */
 
 /* Client API */

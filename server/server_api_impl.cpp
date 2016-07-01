@@ -240,6 +240,7 @@ StatusCode ServerApiImpl::logout(const std::string& path, ID_t& id) {
   for (auto& it : m_peers) {
     if (it.first != id) {
       json << "{\"" D_ITEM_SYSTEM "\":\"" << name << " has logged out\""
+           << ",\"" D_ITEM_ACTION "\":" << static_cast<int>(Path::LOGOUT)
            << ",\"" D_ITEM_ID "\":" << id
            << ",\"" D_ITEM_PAYLOAD "\":\"" << name << "\"}";
       oss << "HTTP/1.1 200 Logged Out\r\n" << STANDARD_HEADERS << "\r\n"
@@ -283,6 +284,7 @@ StatusCode ServerApiImpl::switchChannel(const std::string& path, ID_t& id) {
   for (auto& it : m_peers) {
     if (it.first != id && it.second.getChannel() == channel) {
       json << "{\"" D_ITEM_SYSTEM "\":\"" << name << " has entered channel\""
+           << ",\"" D_ITEM_ACTION "\":" << static_cast<int>(Path::SWITCH_CHANNEL)
            << ",\"" D_ITEM_ID "\":" << id
            << ",\"" D_ITEM_PAYLOAD "\":\"" << name << "\"}";
       oss << "HTTP/1.1 200 Switched channel\r\n" << STANDARD_HEADERS << "\r\n"
@@ -414,6 +416,7 @@ void ServerApiImpl::doLogin(ID_t id, const std::string& name) {
   for (auto& it : m_peers) {
     if (it.first != id) {
       json << "{\"" D_ITEM_SYSTEM "\":\"" << name << " has logged in\""
+           << ",\"" D_ITEM_ACTION "\":" << static_cast<int>(Path::LOGIN)
            << ",\"" D_ITEM_ID "\":" << id
            << ",\"" D_ITEM_PAYLOAD "\":\"" << name << "\"}";
       oss << "HTTP/1.1 200 Logged In\r\n" << STANDARD_HEADERS << "\r\n"
