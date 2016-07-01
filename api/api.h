@@ -109,6 +109,16 @@ enum class StatusCode : int {
   UNKNOWN = -1, SUCCESS = 0, WRONG_PASSWORD = 1, NOT_REGISTERED = 2, ALREADY_REGISTERED = 3, ALREADY_LOGGED_IN = 4, INVALID_FORM = 5, INVALID_QUERY = 6, UNAUTHORIZED = 7
 };
 
+/* API json */
+// ----------------------------------------------
+/**
+ * Login form:         {"login":TEXT,"password":TEXT}
+ * Registration form:  {"login":TEXT,"email":TEXT,"password":TEXT}
+ * Message:            {"id":INT,"login":TEXT,"channel":INT,"dest_id":INT,"timestamp":INT,"message":TEXT}
+ * Status:             {"code":INT,"action":INT,"id":INT,"token":TEXT,"payload":TEXT}
+ * System:             {"system":TEXT,"id":INT,"payload":TEXT}
+ */
+
 /* Client API */
 // ----------------------------------------------
 class ClientApi {
