@@ -32,13 +32,19 @@
  *
  *  GET   /login - get login form
  *  POST  /login - send filled login form
- *  DELETE   /logout?id=N&name=str - logout chat
+ *  DELETE   /logout?id=N&login=str - logout chat (login is optional)
  *
  *  GET   /register - get registration form
  *  POST  /register - send registration form
  *
  *  POST  /message - send message
- *  PUT   /switch_channel?id=N&channel=K&name=str - switch to another channel
+ *  PUT   /switch_channel?id=N&channel=K&login=str - switch to another channel (login is optional)
+ *
+ *  GET   /is_logged_in?login=str  - checks whether user is logged in (login or email)
+ *  GET   /is_registered?login=str - checks whether user is registered (login or email)
+ *
+ *  GET   /all_peers           - get list of all logged in peers
+ *  GET   /all_peers?channel=K - get list of all logged in peers on channel
  *
  *  terminate code: 99
  */
@@ -70,6 +76,7 @@
 #define D_PATH_SWITCH_CHANNEL "/switch_channel"
 #define D_PATH_IS_LOGGED_IN "/is_logged_in"
 #define D_PATH_IS_REGISTERED "/is_registered"
+#define D_PATH_ALL_PEERS "/all_peers"
 
 extern const char* ITEM_LOGIN;
 extern const char* ITEM_EMAIL;
@@ -96,13 +103,14 @@ extern const char* PATH_LOGOUT;
 extern const char* PATH_SWITCH_CHANNEL;
 extern const char* PATH_IS_LOGGED_IN;
 extern const char* PATH_IS_REGISTERED;
+extern const char* PATH_ALL_PEERS;
 
 enum class Method : int {
   UNKNOWN = -1, GET = 0, POST = 1, PUT = 2, DELETE = 3
 };
 
 enum class Path : int {
-  UNKNOWN = -1, LOGIN = 0, REGISTER = 1, MESSAGE = 2, LOGOUT = 3, SWITCH_CHANNEL = 4, IS_LOGGED_IN = 5, IS_REGISTERED = 6
+  UNKNOWN = -1, LOGIN = 0, REGISTER = 1, MESSAGE = 2, LOGOUT = 3, SWITCH_CHANNEL = 4, IS_LOGGED_IN = 5, IS_REGISTERED = 6, ALL_PEERS = 7
 };
 
 enum class StatusCode : int {
