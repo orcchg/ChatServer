@@ -68,6 +68,7 @@
 #define D_ITEM_SYSTEM "system"
 #define D_ITEM_TOKEN "token"
 #define D_ITEM_PAYLOAD "payload"
+#define D_ITEM_PEERS "peers"
 
 #define D_PATH_LOGIN "/login"
 #define D_PATH_REGISTER "/register"
@@ -95,6 +96,7 @@ extern const char* ITEM_CODE;
 extern const char* ITEM_SYSTEM;
 extern const char* ITEM_TOKEN;
 extern const char* ITEM_PAYLOAD;
+extern const char* ITEM_PEERS;
 
 extern const char* PATH_LOGIN;
 extern const char* PATH_REGISTER;
@@ -120,11 +122,14 @@ enum class StatusCode : int {
 /* API json */
 // ----------------------------------------------
 /**
- * Login form:         {"login":TEXT,"password":TEXT}
- * Registration form:  {"login":TEXT,"email":TEXT,"password":TEXT}
- * Message:            {"id":INT,"login":TEXT,"channel":INT,"dest_id":INT,"timestamp":INT,"message":TEXT}
- * Status:             {"code":INT,"action":INT,"id":INT,"token":TEXT,"payload":TEXT}
- * System:             {"system":TEXT,"action":INT,"id":INT,"payload":TEXT}
+ * Login form:            {"login":TEXT,"password":TEXT}
+ * Registration form:     {"login":TEXT,"email":TEXT,"password":TEXT}
+ * Message:               {"id":INT,"login":TEXT,"channel":INT,"dest_id":INT,"timestamp":INT,"message":TEXT}
+ * Status:                {"code":INT,"action":INT,"id":INT,"token":TEXT,"payload":TEXT}
+ * System:                {"system":TEXT,"action":INT,"id":INT,"payload":TEXT}
+ * Check:                 {"check":INT,"action":INT,"id":INT}
+ * List peers:            {"peers":[{"id":INT,"login":TEXT,"channel":INT},{},{},...]}
+ * List peers (channel):  {"peers":[{"id":INT,"login":TEXT,"channel":INT},{},{},...],"channel":INT}
  */
 
 /* Client API */

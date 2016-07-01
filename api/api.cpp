@@ -37,6 +37,7 @@ const char* ITEM_CODE = D_ITEM_CODE;
 const char* ITEM_SYSTEM = D_ITEM_SYSTEM;
 const char* ITEM_TOKEN = D_ITEM_TOKEN;
 const char* ITEM_PAYLOAD = D_ITEM_PAYLOAD;
+const char* ITEM_PEERS = D_ITEM_PEERS;
 
 const char* PATH_LOGIN = D_PATH_LOGIN;
 const char* PATH_REGISTER = D_PATH_REGISTER;
