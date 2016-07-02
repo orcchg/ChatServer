@@ -119,6 +119,9 @@ Response MyParser::parseResponse(char* http, int nbytes) {
 
 std::string MyParser::parsePath(const std::string& path, std::vector<Query>* params) {
   int i1 = path.find_first_of("?");
+  if (i1 == std::string::npos) {  // no query params
+    return path;
+  }
   std::stringstream ss(path.substr(i1 + 1));
   std::string item;
   while (std::getline(ss, item, '&')) {
