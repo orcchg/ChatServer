@@ -201,14 +201,18 @@ Response Client::getResponse(int socket, bool* is_closed) {
 /* List all peers */
 // ----------------------------------------------
 void Client::listAllPeers() {
-  m_api_impl->getAllPeers();
-  printf("\e[5;00;36mSystem: List of all logged in peers\e[m\n");
-  receiveAndprocessListAllPeersResponse(false);
+  listAllPeers(WRONG_CHANNEL);
 }
 
 void Client::listAllPeers(int channel) {
-  m_api_impl->getAllPeers(channel);
-  printf("\e[5;00;36mSystem: List of all logged in peers on channel: \e[m%i\n", channel);
+  printf("\e[5;00;36mSystem: List of all logged in peers\e[m");
+  if (channel == WRONG_CHANNEL) {
+    printf("\n");
+    m_api_impl->getAllPeers();
+  } else {
+    printf("\e[5;00;36m on channel: \e[m%i\n", channel);
+    m_api_impl->getAllPeers(channel);
+  }
   receiveAndprocessListAllPeersResponse(channel != WRONG_CHANNEL);
 }
 
