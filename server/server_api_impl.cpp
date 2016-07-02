@@ -272,7 +272,8 @@ StatusCode ServerApiImpl::logout(const std::string& path, ID_t& id) {
       json << "{\"" D_ITEM_SYSTEM "\":\"" << name << " has logged out\""
            << ",\"" D_ITEM_ACTION "\":" << static_cast<int>(Path::LOGOUT)
            << ",\"" D_ITEM_ID "\":" << id
-           << ",\"" D_ITEM_PAYLOAD "\":\"" << name << "\"}";
+           << ",\"" D_ITEM_PAYLOAD "\":" << "\"" D_ITEM_LOGIN "=" << name
+           << "\"}";
       oss << "HTTP/1.1 200 Logged Out\r\n" << STANDARD_HEADERS << "\r\n"
           << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
           << json.str() << "\0";
@@ -302,26 +303,44 @@ StatusCode ServerApiImpl::switchChannel(const std::string& path, ID_t& id) {
   int channel = std::stoi(params[1].value.c_str());
   std::string name = params[2].value;
   if (channel == WRONG_CHANNEL) {
-    WRN("Attempt to switch to wrong channel! Skip");
+    WRN("Attempt to switch to wrong channel! Return with status.");
     return StatusCode::WRONG_CHANNEL;
   }
 
+  int previous_channel = DEFAULT_CHANNEL;
   auto it = m_peers.find(id);
   if (it != m_peers.end()) {
+    previous_channel = it->second.getChannel();
     it->second.setChannel(channel);
   } else {
     ERR("Peer with id [%lli] not logged in!", id);
     return StatusCode::UNAUTHORIZED;
   }
 
+  if (channel == previous_channel) {
+    WRN("Attempt to switch to same channel! Skip.");
+    return StatusCode::SUCCESS;
+  }
+
   // notify other peers
   std::ostringstream oss, json;
   for (auto& it : m_peers) {
-    if (it.first != id && it.second.getChannel() == channel) {
-      json << "{\"" D_ITEM_SYSTEM "\":\"" << name << " has entered channel\""
-           << ",\"" D_ITEM_ACTION "\":" << static_cast<int>(Path::SWITCH_CHANNEL)
+    if (it.first != id &&
+        (it.second.getChannel() == channel || it.second.getChannel() == previous_channel)) {
+      ChannelMove move = ChannelMove::UNKNOWN;
+      json << "{\"" D_ITEM_SYSTEM "\":\"" << name;
+      if (it.second.getChannel() == channel) {
+        json << " has joined the channel\"";
+        move = ChannelMove::ENTER;
+      } else if (it.second.getChannel() == previous_channel) {
+        json << " has left the channel\"";
+        move = ChannelMove::EXIT;
+      }
+      json << ",\"" D_ITEM_ACTION "\":" << static_cast<int>(Path::SWITCH_CHANNEL)
            << ",\"" D_ITEM_ID "\":" << id
-           << ",\"" D_ITEM_PAYLOAD "\":\"" << name << "\"}";
+           << ",\"" D_ITEM_PAYLOAD "\":" << "\"" D_ITEM_LOGIN "=" << name
+                                         << "&" D_ITEM_CHANNEL_MOVE "=" << static_cast<int>(move)
+           << "\"}";
       oss << "HTTP/1.1 200 Switched channel\r\n" << STANDARD_HEADERS << "\r\n"
           << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
           << json.str() << "\0";
@@ -489,7 +508,8 @@ void ServerApiImpl::doLogin(ID_t id, const std::string& name) {
       json << "{\"" D_ITEM_SYSTEM "\":\"" << name << " has logged in\""
            << ",\"" D_ITEM_ACTION "\":" << static_cast<int>(Path::LOGIN)
            << ",\"" D_ITEM_ID "\":" << id
-           << ",\"" D_ITEM_PAYLOAD "\":\"" << name << "\"}";
+           << ",\"" D_ITEM_PAYLOAD "\":" << "\"" D_ITEM_LOGIN "=" << name
+           << "\"}";
       oss << "HTTP/1.1 200 Logged In\r\n" << STANDARD_HEADERS << "\r\n"
           << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
           << json.str() << "\0";

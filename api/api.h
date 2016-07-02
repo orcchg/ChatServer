@@ -64,6 +64,7 @@
 #define D_ITEM_MESSAGE "message"
 
 #define D_ITEM_ACTION "action"
+#define D_ITEM_CHANNEL_MOVE "channel_move"
 #define D_ITEM_CHECK "check"
 #define D_ITEM_CODE "code"
 #define D_ITEM_SYSTEM "system"
@@ -92,6 +93,7 @@ extern const char* ITEM_SIZE;
 extern const char* ITEM_MESSAGE;
 
 extern const char* ITEM_ACTION;
+extern const char* ITEM_CHANNEL_MOVE;
 extern const char* ITEM_CHECK;
 extern const char* ITEM_CODE;
 extern const char* ITEM_SYSTEM;
@@ -118,6 +120,10 @@ enum class Path : int {
 
 enum class StatusCode : int {
   UNKNOWN = -1, SUCCESS = 0, WRONG_PASSWORD = 1, NOT_REGISTERED = 2, ALREADY_REGISTERED = 3, ALREADY_LOGGED_IN = 4, INVALID_FORM = 5, INVALID_QUERY = 6, UNAUTHORIZED = 7, WRONG_CHANNEL = 8
+};
+
+enum class ChannelMove : int {
+  UNKNOWN = -1, ENTER = 0, EXIT = 1
 };
 
 /* API json */
