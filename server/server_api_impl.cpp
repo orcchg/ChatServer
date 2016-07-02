@@ -58,6 +58,19 @@ void ServerApiImpl::setSocket(int socket) {
   m_socket = socket;
 }
 
+void ServerApiImpl::logoutPeerAtConnectionReset(int socket) {
+  for (auto& it : m_peers) {
+    if (it.second.getSocket() == socket) {
+      INF("Logout peer with ID[%lli] at connection reset", it.first);
+      std::ostringstream oss;
+      oss << PATH_LOGOUT << "?" D_ITEM_ID "=" << it.first << "&" D_ITEM_LOGIN "=" << it.second.getLogin(); 
+      ID_t id = UNKNOWN_ID;
+      logout(oss.str(), id);
+      break;
+    }
+  }
+}
+
 void ServerApiImpl::sendLoginForm() {
   TRC("sendLoginForm");
   std::string json = "{\"" D_ITEM_LOGIN "\":\"\",\"" D_ITEM_PASSWORD "\":\"\"}";
@@ -383,20 +396,20 @@ StatusCode ServerApiImpl::getAllPeers(const std::string& path, std::vector<Peer>
     DBG("Query: %s: %s", query.key.c_str(), query.value.c_str());
   }
   if (params.empty()) {  // no channel
-    for (auto it = m_peers.begin(); it != m_peers.end(); ++it) {
-      Peer peer = Peer::Builder(it->first)
-          .setLogin(it->second.getLogin())
-          .setChannel(it->second.getChannel())
+    for (auto& it : m_peers) {
+      Peer peer = Peer::Builder(it.first)
+          .setLogin(it.second.getLogin())
+          .setChannel(it.second.getChannel())
           .build();
       peers->emplace_back(peer);
     }
   } else if (params[0].key.compare(ITEM_CHANNEL) == 0) {
     channel = std::stoi(params[0].value.c_str());
-    for (auto it = m_peers.begin(); it != m_peers.end(); ++it) {
-      if (channel == it->second.getChannel()) {
-        Peer peer = Peer::Builder(it->first)
-            .setLogin(it->second.getLogin())
-            .setChannel(it->second.getChannel())
+    for (auto& it : m_peers) {
+      if (channel == it.second.getChannel()) {
+        Peer peer = Peer::Builder(it.first)
+            .setLogin(it.second.getLogin())
+            .setChannel(it.second.getChannel())
             .build();
         peers->emplace_back(peer);
       }

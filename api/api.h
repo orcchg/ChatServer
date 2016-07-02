@@ -33,6 +33,7 @@
  *
  *  GET   /login - get login form
  *  POST  /login - send filled login form
+ *
  *  DELETE   /logout?id=N&login=str - logout chat (login is optional)
  *
  *  GET   /register - get registration form
@@ -165,6 +166,7 @@ public:
   virtual ~ServerApi() {}
 
   virtual void setSocket(int socket) = 0;
+  virtual void logoutPeerAtConnectionReset(int socket) = 0;
 
   virtual void sendLoginForm() = 0;
   virtual void sendRegistrationForm() = 0;

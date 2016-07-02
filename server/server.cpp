@@ -236,6 +236,7 @@ void Server::handleRequest(int socket, ID_t connection_id) {
     Request request = getRequest(socket, &is_closed);
     if (is_closed) {
       DBG("Stopping peer thread...");
+      m_api_impl->logoutPeerAtConnectionReset(socket);
       close(socket);
       return;
     }

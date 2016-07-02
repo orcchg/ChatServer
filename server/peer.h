@@ -29,6 +29,8 @@ namespace server {
 
 class Peer {
 public:
+  static Peer EMPTY;
+
   Peer(ID_t id, const std::string& name);
   void setChannel(int channel);
   void setToken(const std::string& input);

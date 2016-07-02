@@ -22,6 +22,8 @@
 
 namespace server {
 
+Peer Peer::EMPTY(UNKNOWN_ID, "");
+
 Peer::Peer(ID_t id, const std::string& name)
   : m_id(id), m_name(name), m_channel(DEFAULT_CHANNEL), m_socket(-1), m_token(Token::EMPTY) {
 }

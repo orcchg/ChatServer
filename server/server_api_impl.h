@@ -49,6 +49,7 @@ public:
   virtual ~ServerApiImpl();
 
   void setSocket(int socket) override;
+  void logoutPeerAtConnectionReset(int socket) override;
 
   /* API */
   void sendLoginForm() override;
