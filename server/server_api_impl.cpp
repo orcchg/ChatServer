@@ -331,8 +331,8 @@ StatusCode ServerApiImpl::switchChannel(const std::string& path, ID_t& id) {
   }
 
   if (channel == previous_channel) {
-    WRN("Attempt to switch to same channel! Skip.");
-    return StatusCode::SUCCESS;
+    WRN("Attempt to switch to same channel! Return with status.");
+    return StatusCode::SAME_CHANNEL;
   }
 
   // notify other peers
