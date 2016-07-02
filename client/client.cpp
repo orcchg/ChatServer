@@ -188,7 +188,7 @@ Response Client::getResponse(int socket, bool* is_closed) {
     *is_closed = true;
     return Response::EMPTY;
   }
-  DBG("Raw response: %.*s", (int) read_bytes, buffer);
+  DBG("Raw response[%i bytes]: %.*s", read_bytes, (int) read_bytes, buffer);
   return m_parser.parseResponse(buffer, read_bytes);
 }
 

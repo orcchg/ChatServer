@@ -222,7 +222,7 @@ Request Server::getRequest(int socket, bool* is_closed) {
     *is_closed = true;
     return Request::EMPTY;
   }
-  DBG("Raw request: %.*s", (int) read_bytes, buffer);
+  DBG("Raw request[%i bytes]: %.*s", read_bytes, (int) read_bytes, buffer);
   return m_parser.parseRequest(buffer, read_bytes);
 }
 

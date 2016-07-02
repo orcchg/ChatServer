@@ -253,6 +253,9 @@ StatusCode ServerApiImpl::logout(const std::string& path, ID_t& id) {
   id = UNKNOWN_ID;
   std::vector<Query> params;
   m_parser.parsePath(path, &params);
+  for (auto& query : params) {
+    DBG("Query: %s: %s", query.key.c_str(), query.value.c_str());
+  }
   if (params.empty() || params[0].key.compare(ITEM_ID) != 0 ||
       (params.size() >= 2 && params[1].key.compare(ITEM_LOGIN) != 0)) {
     ERR("Logout failed: wrong query params: %s", path.c_str());
@@ -357,6 +360,9 @@ StatusCode ServerApiImpl::getAllPeers(const std::string& path, std::vector<Peer>
   channel = WRONG_CHANNEL;
   std::vector<Query> params;
   m_parser.parsePath(path, &params);
+  for (auto& query : params) {
+    DBG("Query: %s: %s", query.key.c_str(), query.value.c_str());
+  }
   if (params.empty()) {  // no channel
     for (auto it = m_peers.begin(); it != m_peers.end(); ++it) {
       Peer peer = Peer::Builder(it->first)
@@ -377,7 +383,7 @@ StatusCode ServerApiImpl::getAllPeers(const std::string& path, std::vector<Peer>
       }
     }
   } else {
-    ERR("Logout failed: wrong query params: %s", path.c_str());
+    ERR("Get all peers failed: wrong query params: %s", path.c_str());
     return StatusCode::INVALID_QUERY;
   }
   return StatusCode::SUCCESS;
