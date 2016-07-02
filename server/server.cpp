@@ -19,6 +19,7 @@
  */
 
 #include <thread>
+#include <errno.h>
 #include "common.h"
 #include "server.h"
 #include "server_api_impl.h"
@@ -217,7 +218,10 @@ Request Server::getRequest(int socket, bool* is_closed) {
   char buffer[MESSAGE_SIZE];
   memset(buffer, 0, MESSAGE_SIZE);
   int read_bytes = recv(socket, buffer, MESSAGE_SIZE, 0);
-  if (read_bytes == 0) {
+  if (read_bytes <= 0) {
+    if (read_bytes == -1) {
+      ERR("getRequest() error: %s", strerror(errno));
+    }
     DBG("Connection closed");
     *is_closed = true;
     return Request::EMPTY;

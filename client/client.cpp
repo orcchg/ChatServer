@@ -23,6 +23,7 @@
 #include <cstring>
 #include <iostream>
 #include <sstream>
+#include <errno.h>
 #include "client.h"
 #include "logger.h"
 #include "rapidjson/document.h"
@@ -182,7 +183,10 @@ Response Client::getResponse(int socket, bool* is_closed) {
   char buffer[MESSAGE_SIZE];
   memset(buffer, 0, MESSAGE_SIZE);
   int read_bytes = recv(socket, buffer, MESSAGE_SIZE, 0);
-  if (read_bytes == 0) {
+  if (read_bytes <= 0) {
+    if (read_bytes == -1) {
+      ERR("getResponse() error: %s", strerror(errno));
+    }
     DBG("Connection closed");
     printf("\e[5;00;31mSystem: Server shutdown\e[m\n");
     *is_closed = true;
