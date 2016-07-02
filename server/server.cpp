@@ -140,6 +140,11 @@ void Server::stop() {
 
 void Server::logIncoming() {
   m_should_store_requests = !m_should_store_requests;
+  if (m_should_store_requests) {
+    INF("Logging: ENABLED");
+  } else {
+    WRN("Logging: DISABLED");
+  }
 }
 
 /* Looper */
@@ -176,6 +181,7 @@ void Server::printClientInfo(sockaddr_in& peeraddr) {
 }
 
 Connection Server::storeClientInfo(sockaddr_in& peeraddr) {
+  printClientInfo(peeraddr);
   std::ostringstream oss;
   oss << ((ntohl(peeraddr.sin_addr.s_addr) >> 24) & 0xff) << '.'
       << ((ntohl(peeraddr.sin_addr.s_addr) >> 16) & 0xff) << '.'
