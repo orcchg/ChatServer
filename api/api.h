@@ -34,13 +34,13 @@
  *  GET   /login - get login form
  *  POST  /login - send filled login form
  *
- *  DELETE   /logout?id=N&login=str - logout chat (login is optional)
+ *  DELETE   /logout?id=N - logout chat
  *
  *  GET   /register - get registration form
  *  POST  /register - send registration form
  *
  *  POST  /message - send message
- *  PUT   /switch_channel?id=N&channel=K&login=str - switch to another channel (login is optional)
+ *  PUT   /switch_channel?id=N&channel=K - switch to another channel
  *
  *  GET   /is_logged_in?login=str  - checks whether user is logged in (login or email)
  *  GET   /is_registered?login=str - checks whether user is registered (login or email)
@@ -132,7 +132,7 @@ enum class ChannelMove : int {
 /**
  * Login form:            {"login":TEXT,"password":TEXT}
  * Registration form:     {"login":TEXT,"email":TEXT,"password":TEXT}
- * Message:               {"id":INT,"login":TEXT,"channel":INT,"dest_id":INT,"timestamp":INT,"message":TEXT}
+ * Message:               {"id":INT,"login":TEXT,"email":TEXT,"channel":INT,"dest_id":INT,"timestamp":INT,"message":TEXT}
  * Status:                {"code":INT,"action":INT,"id":INT,"token":TEXT,"payload":TEXT}
  * System:                {"system":TEXT,"action":INT,"id":INT,"payload":TEXT}
  * Check:                 {"check":INT,"action":INT,"id":INT}
@@ -151,8 +151,8 @@ public:
   virtual void sendLoginForm(const LoginForm& form) = 0;
   virtual void sendRegistrationForm(const RegistrationForm& form) = 0;
   virtual void sendMessage(const Message& message) = 0;
-  virtual void logout(ID_t id, const std::string& name) = 0;
-  virtual void switchChannel(ID_t id, int channel, const std::string& name) = 0;
+  virtual void logout(ID_t id) = 0;
+  virtual void switchChannel(ID_t id, int channel) = 0;
   virtual void isLoggedIn(const std::string& name) = 0;
   virtual void isRegistered(const std::string& name) = 0;
   virtual void getAllPeers() = 0;

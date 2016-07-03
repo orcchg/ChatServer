@@ -81,7 +81,7 @@ private:
   StatusCode loginPeer(const LoginForm& form, ID_t& id);
   ID_t registerPeer(const RegistrationForm& form);
   bool authenticate(const std::string& expected_pass, const std::string& actual_pass) const;
-  void doLogin(ID_t id, const std::string& name);
+  void doLogin(ID_t id, const std::string& name, const std::string& email);
   bool isAuthorized(ID_t id) const;
   void broadcast(const Message& message);
 

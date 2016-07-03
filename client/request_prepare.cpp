@@ -61,30 +61,23 @@ std::string sendRegistrationForm_request(const std::string& host, const Registra
 std::string sendMessage_request(const std::string& host, const Message& message) {
   std::ostringstream oss;
   oss << "POST " D_PATH_MESSAGE " HTTP/1.1\r\nHost: " << host << "\r\n\r\n"
-      << "{\"" D_ITEM_ID "\":" << message.getId()
-      << ",\"" D_ITEM_LOGIN "\":\"" << message.getLogin()
-      << "\",\"" D_ITEM_CHANNEL "\":" << message.getChannel()
-      << ",\"" D_ITEM_DEST_ID "\":" << message.getDestId()
-      << ",\"" D_ITEM_TIMESTAMP "\":" << message.getTimestamp()
-      << ",\"" D_ITEM_MESSAGE "\":\"" << message.getMessage() << "\"}";
+      << message.toJson();
   MSG("Request: %s", oss.str().c_str());
   return oss.str();
 }
 
-std::string logout_request(const std::string& host, ID_t id, const std::string& name) {
+std::string logout_request(const std::string& host, ID_t id) {
   std::ostringstream oss;
   oss << "DELETE " D_PATH_LOGOUT "?" D_ITEM_ID "=" << id
-      << "&" D_ITEM_LOGIN "=" << name
       << " HTTP/1.1\r\nHost: " << host << "\r\n\r\n";
   MSG("Request: %s", oss.str().c_str());
   return oss.str();
 }
 
-std::string switchChannel_request(const std::string& host, ID_t id, int channel, const std::string& name) {
+std::string switchChannel_request(const std::string& host, ID_t id, int channel) {
   std::ostringstream oss;
   oss << "PUT " D_PATH_SWITCH_CHANNEL "?" D_ITEM_ID "=" << id
       << "&" D_ITEM_CHANNEL "=" << channel
-      << "&" D_ITEM_LOGIN "=" << name
       << " HTTP/1.1\r\nHost: " << host << "\r\n\r\n";
   MSG("Request: %s", oss.str().c_str());
   return oss.str();

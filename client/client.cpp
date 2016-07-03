@@ -34,7 +34,7 @@
 #endif  // SECURE
 
 Client::Client(const std::string& config_file)
-  : m_id(UNKNOWN_ID), m_name(""), m_auth_token(""), m_channel(0), m_dest_id(UNKNOWN_ID)
+  : m_id(UNKNOWN_ID), m_name(""), m_email(""), m_auth_token(""), m_channel(0), m_dest_id(UNKNOWN_ID)
   , m_is_connected(false), m_is_stopped(false)
   , m_socket(-1), m_ip_address(""), m_port("http") {
   if (!readConfiguration(config_file)) {
@@ -284,16 +284,11 @@ void Client::getLoginForm() {
     return;
   }
 
-  rapidjson::Document document;
-  document.Parse(login_form_response.body.c_str());
-
-  if (document.IsObject() &&
-      document.HasMember(ITEM_LOGIN) && document[ITEM_LOGIN].IsString() &&
-      document.HasMember(ITEM_PASSWORD) && document[ITEM_PASSWORD].IsString()) {
-    LoginForm form(document[ITEM_LOGIN].GetString(), document[ITEM_PASSWORD].GetString());
+  try {
+    LoginForm form = LoginForm::fromJson(login_form_response.body);
     fillLoginForm(&form);
     tryLogin(form);
-  } else {
+  } catch (ConvertException e) {
     ERR("Login failed: server's responded with invalid form");
     throw RuntimeException();
   }
@@ -322,6 +317,7 @@ void Client::tryLogin(LoginForm& form) {
   rapidjson::Document document;
   document.Parse(code_response.body.c_str());
 
+  std::vector<Query> out;
   if (document.IsObject() &&
       document.HasMember(ITEM_CODE) && document[ITEM_CODE].IsInt() &&
       document.HasMember(ITEM_ACTION) && document[ITEM_ACTION].IsInt() &&
@@ -332,8 +328,10 @@ void Client::tryLogin(LoginForm& form) {
     switch (code) {
       case StatusCode::SUCCESS:
         m_id = document[ITEM_ID].GetInt64();
-        m_name = document[ITEM_PAYLOAD].GetString();
         m_auth_token = document[ITEM_TOKEN].GetString();
+        m_parser.parsePayload(document[ITEM_PAYLOAD].GetString(), &out);
+        m_name = out[0].value;
+        m_email = out[1].value;
         onLogin();
         break;
       case StatusCode::WRONG_PASSWORD:
@@ -399,17 +397,11 @@ void Client::getRegistrationForm() {
     return;
   }
 
-  rapidjson::Document document;
-  document.Parse(register_form_response.body.c_str());
-
-  if (document.IsObject() &&
-      document.HasMember(ITEM_LOGIN) && document[ITEM_LOGIN].IsString() &&
-      document.HasMember(ITEM_EMAIL) && document[ITEM_EMAIL].IsString() &&
-      document.HasMember(ITEM_PASSWORD) && document[ITEM_PASSWORD].IsString()) {
-    RegistrationForm form(document[ITEM_LOGIN].GetString(), document[ITEM_EMAIL].GetString(), document[ITEM_PASSWORD].GetString());
+  try {
+    RegistrationForm form = RegistrationForm::fromJson(register_form_response.body);
     fillRegistrationForm(&form);
     tryRegister(form);
-  } else {
+  } catch (ConvertException e) {
     ERR("Registration failed: server's responded with invalid form");
     throw RuntimeException();
   }
@@ -461,6 +453,7 @@ void Client::tryRegister(const RegistrationForm& form) {
   rapidjson::Document document;
   document.Parse(code_response.body.c_str());
 
+  std::vector<Query> out;
   if (document.IsObject() &&
       document.HasMember(ITEM_CODE) && document[ITEM_CODE].IsInt() &&
       document.HasMember(ITEM_ACTION) && document[ITEM_ACTION].IsInt() &&
@@ -471,8 +464,10 @@ void Client::tryRegister(const RegistrationForm& form) {
     switch (code) {
       case StatusCode::SUCCESS:
         m_id = document[ITEM_ID].GetInt64();
-        m_name = document[ITEM_PAYLOAD].GetString();
         m_auth_token = document[ITEM_TOKEN].GetString();
+        m_parser.parsePayload(document[ITEM_PAYLOAD].GetString(), &out);
+        m_name = out[0].value;
+        m_email = out[1].value;
         onRegister();
         break;
       case StatusCode::ALREADY_REGISTERED:
@@ -534,10 +529,10 @@ void Client::startChat() {
         continue;
       case util::Command::SWITCH_CHANNEL:
         m_channel = value;
-        m_api_impl->switchChannel(m_id, static_cast<int>(m_channel), m_name);
+        m_api_impl->switchChannel(m_id, static_cast<int>(m_channel));
         continue;
       case util::Command::LOGOUT:
-        m_api_impl->logout(m_id, m_name);
+        m_api_impl->logout(m_id);
         end();
         continue;
       case util::Command::MENU:
@@ -560,7 +555,7 @@ void Client::startChat() {
     // sending message
     uint64_t timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     Message message = Message::Builder(m_id)
-        .setLogin(m_name).setChannel(m_channel).setDestId(m_dest_id)
+        .setLogin(m_name).setEmail(m_email).setChannel(m_channel).setDestId(m_dest_id)
         .setTimestamp(timestamp).setMessage(buffer).build();
     m_api_impl->sendMessage(message);
 

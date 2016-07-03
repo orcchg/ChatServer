@@ -22,10 +22,10 @@
 
 namespace server {
 
-Peer Peer::EMPTY(UNKNOWN_ID, "");
+Peer Peer::EMPTY(UNKNOWN_ID, "", "");
 
-Peer::Peer(ID_t id, const std::string& name)
-  : m_id(id), m_name(name), m_channel(DEFAULT_CHANNEL), m_socket(-1), m_token(Token::EMPTY) {
+Peer::Peer(ID_t id, const std::string& name, const std::string& email)
+  : m_id(id), m_name(name), m_email(email), m_channel(DEFAULT_CHANNEL), m_socket(-1), m_token(Token::EMPTY) {
 }
 
 void Peer::setChannel(int channel) {

@@ -60,13 +60,13 @@ void ClientApiImpl::sendMessage(const Message& message) {
   send(m_socket, request.c_str(), request.length(), 0);
 }
 
-void ClientApiImpl::logout(ID_t id, const std::string& name) {
-  std::string request = util::logout_request(m_host, id, name);
+void ClientApiImpl::logout(ID_t id) {
+  std::string request = util::logout_request(m_host, id);
   send(m_socket, request.c_str(), request.length(), 0);
 }
 
-void ClientApiImpl::switchChannel(ID_t id, int channel, const std::string& name) {
-  std::string request = util::switchChannel_request(m_host, id, channel, name);
+void ClientApiImpl::switchChannel(ID_t id, int channel) {
+  std::string request = util::switchChannel_request(m_host, id, channel);
   send(m_socket, request.c_str(), request.length(), 0);
 }
 

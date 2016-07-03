@@ -93,6 +93,8 @@ public:
 
   std::string parsePath(const std::string& path, std::vector<Query>* params);
 
+  void parsePayload(const std::string& payload, std::vector<Query>* out);
+
 protected:
   StartLine parseStartLine(const std::string& start_line) const;
   CodeLine parseCodeLine(const std::string& code_line) const;
@@ -102,6 +104,7 @@ protected:
 
 std::string trim(const std::string& str, const std::string& whitespace = " \t");
 std::string reduce(const std::string& str, const std::string& fill = " ", const std::string& whitespace = " \t");
+void parseParams(const std::string& input, std::vector<Query>* params);
 
 #endif  // MY_PARSER__H__
 

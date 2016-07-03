@@ -61,13 +61,13 @@ void SecureClientApiImpl::sendMessage(const Message& message) {
   BIO_write(m_bio, request.c_str(), request.length());
 }
 
-void SecureClientApiImpl::logout(ID_t id, const std::string& name) {
-  std::string request = util::logout_request(m_host, id, name);
+void SecureClientApiImpl::logout(ID_t id) {
+  std::string request = util::logout_request(m_host, id);
   BIO_write(m_bio, request.c_str(), request.length());
 }
 
-void SecureClientApiImpl::switchChannel(ID_t id, int channel, const std::string& name) {
-  std::string request = util::switchChannel_request(m_host, id, channel, name);
+void SecureClientApiImpl::switchChannel(ID_t id, int channel) {
+  std::string request = util::switchChannel_request(m_host, id, channel);
   BIO_write(m_bio, request.c_str(), request.length());
 }
 

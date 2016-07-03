@@ -24,7 +24,6 @@
 #include <vector>
 #include "all.h"
 #include "database/peer_table_impl.h"
-#include "rapidjson/document.h"
 #include "server_api_impl.h"
 
 static const char* STANDARD_HEADERS = "Server: ChatServer\r\nContent-Type: application/json";
@@ -183,17 +182,10 @@ void ServerApiImpl::sendPeers(StatusCode status, const std::vector<Peer>& peers,
 // ----------------------------------------------
 StatusCode ServerApiImpl::login(const std::string& json, ID_t& id) {
   TRC("login(%s)", json.c_str());
-  rapidjson::Document document;
-  document.Parse(json.c_str());
-
-  if (document.IsObject() &&
-      document.HasMember(ITEM_LOGIN) && document[ITEM_LOGIN].IsString() &&
-      document.HasMember(ITEM_PASSWORD) && document[ITEM_PASSWORD].IsString()) {
-    std::string login = document[ITEM_LOGIN].GetString();
-    std::string password = document[ITEM_PASSWORD].GetString();
-    LoginForm form(login, password);
+  try {
+    LoginForm form = LoginForm::fromJson(json);
     return loginPeer(form, id);
-  } else {
+  } catch (ConvertException e) {
     ERR("Login failed: invalid form: %s", json.c_str());
   }
   return StatusCode::INVALID_FORM;
@@ -201,17 +193,8 @@ StatusCode ServerApiImpl::login(const std::string& json, ID_t& id) {
 
 StatusCode ServerApiImpl::registrate(const std::string& json, ID_t& id) {
   TRC("registrate(%s)", json.c_str());
-  rapidjson::Document document;
-  document.Parse(json.c_str());
-
-  if (document.IsObject() &&
-      document.HasMember(ITEM_LOGIN) && document[ITEM_LOGIN].IsString() &&
-      document.HasMember(ITEM_EMAIL) && document[ITEM_EMAIL].IsString() &&
-      document.HasMember(ITEM_PASSWORD) && document[ITEM_PASSWORD].IsString()) {
-    std::string login = document[ITEM_LOGIN].GetString();
-    std::string email = document[ITEM_EMAIL].GetString();
-    std::string password = document[ITEM_PASSWORD].GetString();
-    RegistrationForm form(login, email, password);
+  try {
+    RegistrationForm form = RegistrationForm::fromJson(json);
     id = registerPeer(form);
     if (id != UNKNOWN_ID) {
       INF("Registration succeeded: new id [%lli]", id);
@@ -220,7 +203,7 @@ StatusCode ServerApiImpl::registrate(const std::string& json, ID_t& id) {
       ERR("Registration failed: already registered");
       return StatusCode::ALREADY_REGISTERED;
     }
-  } else {
+  } catch (ConvertException e) {
     ERR("Registration failed: invalid form: %s", json.c_str());
   }
   return StatusCode::INVALID_FORM;
@@ -228,34 +211,18 @@ StatusCode ServerApiImpl::registrate(const std::string& json, ID_t& id) {
 
 StatusCode ServerApiImpl::message(const std::string& json, ID_t& id) {
   TRC("message(%s)", json.c_str());
-  id = UNKNOWN_ID;
-  rapidjson::Document document;
-  document.Parse(json.c_str());
+  try {
+    Message message = Message::fromJson(json);
 
-  if (document.IsObject() &&
-      document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64() &&
-      document.HasMember(ITEM_LOGIN) && document[ITEM_LOGIN].IsString() &&
-      document.HasMember(ITEM_CHANNEL) && document[ITEM_CHANNEL].IsInt() &&
-      document.HasMember(ITEM_DEST_ID) && document[ITEM_DEST_ID].IsInt64() &&
-      document.HasMember(ITEM_TIMESTAMP) && document[ITEM_TIMESTAMP].IsUint64() &&
-      document.HasMember(ITEM_MESSAGE) && document[ITEM_MESSAGE].IsString()) {
-    id = document[ITEM_ID].GetInt64();
+    id = message.getId();
     if (!isAuthorized(id)) {
       ERR("Peer with id [%lli] is not authorized", id);
       return StatusCode::UNAUTHORIZED;
     }
-    std::string login = document[ITEM_LOGIN].GetString();
-    int channel = document[ITEM_CHANNEL].GetInt();
-    ID_t dest_id = document[ITEM_DEST_ID].GetInt64();
-    uint64_t timestamp = document[ITEM_TIMESTAMP].GetUint64();
-    std::string message = document[ITEM_MESSAGE].GetString();
-    Message message_object =
-        Message::Builder(id).setLogin(login).setChannel(channel)
-            .setDestId(dest_id).setTimestamp(timestamp)
-            .setMessage(message).build();
-    broadcast(message_object);
+
+    broadcast(message);
     return StatusCode::SUCCESS;
-  } else {
+  } catch (ConvertException e) {
     ERR("Message failed: invalid json: %s", json.c_str());
   }
   return StatusCode::INVALID_FORM;
@@ -269,13 +236,21 @@ StatusCode ServerApiImpl::logout(const std::string& path, ID_t& id) {
   for (auto& query : params) {
     DBG("Query: %s: %s", query.key.c_str(), query.value.c_str());
   }
-  if (params.empty() || params[0].key.compare(ITEM_ID) != 0 ||
-      (params.size() >= 2 && params[1].key.compare(ITEM_LOGIN) != 0)) {
+  if (params.empty() || params[0].key.compare(ITEM_ID) != 0) {
     ERR("Logout failed: wrong query params: %s", path.c_str());
     return StatusCode::INVALID_QUERY;
   }
   id = std::stoll(params[0].value.c_str());
-  std::string name = params[1].value;
+  std::string name = "";
+  std::string email = "";
+  auto it = m_peers.find(id);
+  if (it != m_peers.end()) {
+    name = it->second.getLogin();
+    email = it->second.getEmail();
+  } else {
+    ERR("Peer with id [%lli] is not logged in!", id);
+    return StatusCode::UNAUTHORIZED;
+  }
   m_peers.erase(id);
 
   // notify other peers
@@ -286,6 +261,7 @@ StatusCode ServerApiImpl::logout(const std::string& path, ID_t& id) {
            << ",\"" D_ITEM_ACTION "\":" << static_cast<int>(Path::LOGOUT)
            << ",\"" D_ITEM_ID "\":" << id
            << ",\"" D_ITEM_PAYLOAD "\":" << "\"" D_ITEM_LOGIN "=" << name
+                                         << "&" D_ITEM_EMAIL "=" << email
            << "\"}";
       oss << "HTTP/1.1 200 Logged Out\r\n" << STANDARD_HEADERS << "\r\n"
           << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
@@ -307,26 +283,28 @@ StatusCode ServerApiImpl::switchChannel(const std::string& path, ID_t& id) {
     DBG("Query: %s: %s", query.key.c_str(), query.value.c_str());
   }
   if (params.size() < 2 || params[0].key.compare(ITEM_ID) != 0 ||
-      params[1].key.compare(ITEM_CHANNEL) != 0 ||
-      (params.size() >= 3 && params[2].key.compare(ITEM_LOGIN) != 0)) {
+      params[1].key.compare(ITEM_CHANNEL) != 0) {
     ERR("Switch channel failed: wrong query params: %s", path.c_str());
     return StatusCode::INVALID_QUERY;
   }
   id = std::stoll(params[0].value.c_str());
   int channel = std::stoi(params[1].value.c_str());
-  std::string name = params[2].value;
   if (channel == WRONG_CHANNEL) {
     WRN("Attempt to switch to wrong channel! Return with status.");
     return StatusCode::WRONG_CHANNEL;
   }
 
   int previous_channel = DEFAULT_CHANNEL;
+  std::string name = "";
+  std::string email = "";
   auto it = m_peers.find(id);
   if (it != m_peers.end()) {
     previous_channel = it->second.getChannel();
+    name = it->second.getLogin();
+    email = it->second.getEmail();
     it->second.setChannel(channel);
   } else {
-    ERR("Peer with id [%lli] not logged in!", id);
+    ERR("Peer with id [%lli] is not logged in!", id);
     return StatusCode::UNAUTHORIZED;
   }
 
@@ -352,6 +330,7 @@ StatusCode ServerApiImpl::switchChannel(const std::string& path, ID_t& id) {
       json << ",\"" D_ITEM_ACTION "\":" << static_cast<int>(Path::SWITCH_CHANNEL)
            << ",\"" D_ITEM_ID "\":" << id
            << ",\"" D_ITEM_PAYLOAD "\":" << "\"" D_ITEM_LOGIN "=" << name
+                                         << "&" D_ITEM_EMAIL "=" << email
                                          << "&" D_ITEM_CHANNEL_MOVE "=" << static_cast<int>(move)
            << "\"}";
       oss << "HTTP/1.1 200 Switched channel\r\n" << STANDARD_HEADERS << "\r\n"
@@ -473,7 +452,7 @@ StatusCode ServerApiImpl::loginPeer(const LoginForm& form, ID_t& id) {
         ERR("Authentication failed: already logged in");
         return StatusCode::ALREADY_LOGGED_IN;
       }
-      doLogin(id, peer.getLogin());
+      doLogin(id, peer.getLogin(), peer.getEmail());
       return StatusCode::SUCCESS;
     } else {
       ERR("Authentication failed: wrong password");
@@ -492,7 +471,7 @@ ID_t ServerApiImpl::registerPeer(const RegistrationForm& form) {
   if (id == UNKNOWN_ID) {
     PeerDTO peer = m_register_mapper.map(form);
     ID_t id = m_peers_database->addPeer(peer);
-    doLogin(id, peer.getLogin());  // login after register
+    doLogin(id, peer.getLogin(), peer.getEmail());  // login after register
     return id;
   } else {
     WRN("Peer with login ["%s"] and email ["%s"] has already been registered!", form.getLogin().c_str(), form.getEmail().c_str());
@@ -505,14 +484,17 @@ bool ServerApiImpl::authenticate(const std::string& expected_pass, const std::st
   return expected_pass.compare(actual_pass) == 0;
 }
 
-void ServerApiImpl::doLogin(ID_t id, const std::string& name) {
+void ServerApiImpl::doLogin(ID_t id, const std::string& name, const std::string& email) {
   TRC("doLogin(%lli, %s)", id, name.c_str());
-  server::Peer peer(id, name);
+  server::Peer peer(id, name, email);
   peer.setToken(name);
   peer.setSocket(m_socket);
   m_peers.insert(std::make_pair(id, peer));
 
-  m_payload = name;  // extra data
+  std::ostringstream oss_payload;
+  oss_payload << "" D_ITEM_LOGIN "=" << name
+              << "&" D_ITEM_EMAIL "=" << email;
+  m_payload = oss_payload.str();  // extra data
 
   // notify other peers
   std::ostringstream oss, json;
@@ -521,7 +503,7 @@ void ServerApiImpl::doLogin(ID_t id, const std::string& name) {
       json << "{\"" D_ITEM_SYSTEM "\":\"" << name << " has logged in\""
            << ",\"" D_ITEM_ACTION "\":" << static_cast<int>(Path::LOGIN)
            << ",\"" D_ITEM_ID "\":" << id
-           << ",\"" D_ITEM_PAYLOAD "\":" << "\"" D_ITEM_LOGIN "=" << name
+           << ",\"" D_ITEM_PAYLOAD "\":\"" << m_payload
            << "\"}";
       oss << "HTTP/1.1 200 Logged In\r\n" << STANDARD_HEADERS << "\r\n"
           << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"

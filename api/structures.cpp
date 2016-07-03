@@ -35,12 +35,60 @@ LoginForm::LoginForm(
   : m_login(login), m_password(password) {
 }
 
+std::string LoginForm::toJson() const {
+  std::ostringstream oss;
+  oss << "{\"" D_ITEM_LOGIN "\":\"" << m_login
+      << "\",\"" D_ITEM_PASSWORD "\":\"" << m_password
+      << "\"}";
+  return oss.str();
+}
+
+LoginForm LoginForm::fromJson(const std::string& json) {
+  rapidjson::Document document;
+  document.Parse(json.c_str());
+
+  if (document.IsObject() &&
+      document.HasMember(ITEM_LOGIN) && document[ITEM_LOGIN].IsString() &&
+      document.HasMember(ITEM_PASSWORD) && document[ITEM_PASSWORD].IsString()) {
+    LoginForm form(document[ITEM_LOGIN].GetString(), document[ITEM_PASSWORD].GetString());
+    return form;
+  } else {
+    ERR("Login Form parse failed: invalid json: %s", json.c_str());
+    throw ConvertException();
+  }
+}
+
 // ----------------------------------------------
 RegistrationForm::RegistrationForm(
     const std::string& login,
     const std::string& email,
     const std::string& password)
   : LoginForm(login, password), m_email(email) {
+}
+
+std::string RegistrationForm::toJson() const {
+  std::ostringstream oss;
+  oss << "{\"" D_ITEM_LOGIN "\":\"" << m_login
+      << "\",\"" D_ITEM_EMAIL "\":\"" << m_email
+      << "\",\"" D_ITEM_PASSWORD "\":\"" << m_password
+      << "\"}";
+  return oss.str();
+}
+
+RegistrationForm RegistrationForm::fromJson(const std::string& json) {
+  rapidjson::Document document;
+  document.Parse(json.c_str());
+
+  if (document.IsObject() &&
+      document.HasMember(ITEM_LOGIN) && document[ITEM_LOGIN].IsString() &&
+      document.HasMember(ITEM_EMAIL) && document[ITEM_EMAIL].IsString() &&
+      document.HasMember(ITEM_PASSWORD) && document[ITEM_PASSWORD].IsString()) {
+    RegistrationForm form(document[ITEM_LOGIN].GetString(), document[ITEM_EMAIL].GetString(), document[ITEM_PASSWORD].GetString());
+    return form;
+  } else {
+    ERR("Registration Form parse failed: invalid json: %s", json.c_str());
+    throw ConvertException();
+  }
 }
 
 // ----------------------------------------------
@@ -50,6 +98,11 @@ Message::Builder::Builder(ID_t id)
 
 Message::Builder& Message::Builder::setLogin(const std::string& login) {
   m_login = login;
+  return *this;
+}
+
+Message::Builder& Message::Builder::setEmail(const std::string& email) {
+  m_email = email;
   return *this;
 }
 
@@ -80,6 +133,7 @@ Message Message::Builder::build() {
 Message::Message(const Message::Builder& builder)
   : m_id(builder.getId())
   , m_login(builder.getLogin())
+  , m_email(builder.getEmail())
   , m_channel(builder.getChannel())
   , m_dest_id(builder.getDestId())
   , m_timestamp(builder.getTimestamp())
@@ -90,6 +144,7 @@ std::string Message::toJson() const {
   std::ostringstream oss;
   oss << "{\"" D_ITEM_ID "\":" << m_id
       << ",\"" D_ITEM_LOGIN "\":\"" << m_login
+      << "\",\"" D_ITEM_EMAIL "\":\"" << m_email
       << "\",\"" D_ITEM_CHANNEL "\":" << m_channel
       << ",\"" D_ITEM_DEST_ID "\":" << m_dest_id
       << ",\"" D_ITEM_TIMESTAMP "\":" << m_timestamp
@@ -105,18 +160,20 @@ Message Message::fromJson(const std::string& json) {
   if (document.IsObject() &&
       document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64() &&
       document.HasMember(ITEM_LOGIN) && document[ITEM_LOGIN].IsString() &&
+      document.HasMember(ITEM_EMAIL) && document[ITEM_EMAIL].IsString() &&
       document.HasMember(ITEM_CHANNEL) && document[ITEM_CHANNEL].IsInt() &&
       document.HasMember(ITEM_DEST_ID) && document[ITEM_DEST_ID].IsInt64() &&
       document.HasMember(ITEM_TIMESTAMP) && document[ITEM_TIMESTAMP].IsInt64() &&
       document.HasMember(ITEM_MESSAGE) && document[ITEM_MESSAGE].IsString()) {
     ID_t id = document[ITEM_ID].GetInt64();
     std::string login = document[ITEM_LOGIN].GetString();
+    std::string email = document[ITEM_EMAIL].GetString();
     int channel = document[ITEM_CHANNEL].GetInt();
     ID_t dest_id = document[ITEM_DEST_ID].GetInt64();
     uint64_t timestamp = document[ITEM_TIMESTAMP].GetInt64();
     std::string message = document[ITEM_MESSAGE].GetString();
 
-    return Message::Builder(id).setLogin(login).setChannel(channel)
+    return Message::Builder(id).setLogin(login).setEmail(email).setChannel(channel)
         .setDestId(dest_id).setTimestamp(timestamp).setMessage(message)
         .build();
   } else {

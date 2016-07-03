@@ -31,13 +31,14 @@ class Peer {
 public:
   static Peer EMPTY;
 
-  Peer(ID_t id, const std::string& name);
+  Peer(ID_t id, const std::string& name, const std::string& email);
   void setChannel(int channel);
   void setToken(const std::string& input);
   void setSocket(int socket_id);
 
   inline ID_t getId() const { return m_id; }
   inline const std::string& getLogin() const { return m_name; }
+  inline const std::string& getEmail() const { return m_email; }
   inline int getChannel() const { return m_channel; }
   inline const Token& getToken() const { return m_token; }
   inline int getSocket() const { return m_socket; }
@@ -45,6 +46,7 @@ public:
 private:
   ID_t m_id;
   std::string m_name;
+  std::string m_email;
   Token m_token;
   int m_channel;
   int m_socket;

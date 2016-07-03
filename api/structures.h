@@ -47,6 +47,9 @@ public:
   inline void setLogin(const std::string& login) { m_login = login; }
   inline void setPassword(const std::string& password) { m_password = password; }
 
+  std::string toJson() const;
+  static LoginForm fromJson(const std::string& json);
+
 protected:
   std::string m_login;
   std::string m_password;
@@ -71,6 +74,9 @@ public:
 
   inline void setEmail(const std::string& email) { m_email = email; }
 
+  std::string toJson() const;
+  static RegistrationForm fromJson(const std::string& json);
+
 protected:
   std::string m_email;
 };
@@ -92,6 +98,7 @@ public:
   public:
     Builder(ID_t id);
     Builder& setLogin(const std::string& login);
+    Builder& setEmail(const std::string& email);
     Builder& setChannel(int channel);
     Builder& setDestId(ID_t dest_id);
     Builder& setTimestamp(uint64_t timestamp);
@@ -100,6 +107,7 @@ public:
 
     inline ID_t getId() const { return m_id; }
     inline const std::string& getLogin() const { return m_login; }
+    inline const std::string& getEmail() const { return m_email; }
     inline int getChannel() const { return m_channel; }
     inline ID_t getDestId() const { return m_dest_id; }
     inline uint64_t getTimestamp() const { return m_timestamp; }
@@ -108,6 +116,7 @@ public:
   private:
     ID_t m_id;
     std::string m_login;
+    std::string m_email;
     int m_channel;
     ID_t m_dest_id;
     uint64_t m_timestamp;
@@ -120,6 +129,7 @@ public:
 
   inline ID_t getId() const { return m_id; }
   inline const std::string& getLogin() const { return m_login; }
+  inline const std::string& getEmail() const { return m_email; }
   inline int getChannel() const { return m_channel; }
   inline ID_t getDestId() const { return m_dest_id; }
   inline uint64_t getTimestamp() const { return m_timestamp; }
@@ -128,6 +138,7 @@ public:
 private:
   ID_t m_id;
   std::string m_login;
+  std::string m_email;
   int m_channel;
   ID_t m_dest_id;
   uint64_t m_timestamp;

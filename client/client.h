@@ -46,6 +46,7 @@ public:
 protected:
   ID_t m_id;
   std::string m_name;
+  std::string m_email;
   std::string m_auth_token;
   int m_channel;
   ID_t m_dest_id;
