@@ -27,7 +27,7 @@
 #include "types.h"
 
 /* HTTP Chat-Server API */
-// ----------------------------------------------
+// ----------------------------------------------------------------------------
 /**
  *  Body format: JSON
  *
@@ -51,6 +51,134 @@
  *  terminate code: 99
  */
 
+/* API details */
+// ----------------------------------------------------------------------------
+/* Login */
+// ----------------------------------------------
+/**
+ *  GET /login
+ *
+ *  Request for empty login form.
+ *
+ *  @response_body: {"login":TEXT,"password":TEXT}
+ */
+
+/**
+ *  POST /login
+ *
+ *  Send filled login form.
+ *
+ *  @request_body:   {"login":TEXT,"password":TEXT}
+ *
+ *  @response_body:  {"code":INT,"action":INT,"id":INT,"token":TEXT,"payload":TEXT}
+ *  @payload:        {"login":TEXT,"email":TEXT}
+ */
+
+/* Logout */
+// ----------------------------------------------
+/**
+ *  DELETE /logout
+ *
+ *  Logout from chat.
+ *
+ *  @params: id  :  INT - peer's id
+ *
+ *  @response_body:  {"code":INT,"action":INT,"id":INT,"token":TEXT,"payload":TEXT}
+ *  @system_body:    {"system":TEXT,"action":INT,"id":INT,"payload":TEXT}
+ *  @payload:        {"login":TEXT,"email":TEXT}
+ *
+ *  @note:  @system_body is sent to the rest logged in peers.
+ */
+
+/* Registration */
+// ----------------------------------------------
+/**
+ *  GET /register
+ *
+ *  Request for empty registration form.
+ *
+ *  @response_body:  {"login":TEXT,"email":TEXT,"password":TEXT}
+ */
+
+/**
+ *  POST /register
+ *
+ *  Send filled registration form.
+ *
+ *  @request_body:   {"login":TEXT,"email":TEXT,"password":TEXT}
+ *
+ *  @response_body:  {"code":INT,"action":INT,"id":INT,"token":TEXT,"payload":TEXT}
+ *  @payload:        {"login":TEXT,"email":TEXT}
+ *
+ *  @note:  successfull registration leads to automatic logging in.
+ */
+
+/* Message */
+// ----------------------------------------------
+/**
+ *  POST /message
+ *
+ *  Send message to all peers on the same channel or send message to dedicated peer.
+ *
+ *  @request_body:   {"id":INT,"login":TEXT,"email":TEXT,"channel":INT,"dest_id":INT,"timestamp":INT,"message":TEXT}
+ *
+ *  @response_body:  {"code":INT,"action":INT,"id":INT,"token":TEXT,"payload":TEXT}
+ */
+
+/* Switch Channel */
+// ----------------------------------------------
+/**
+ *  PUT /switch_channel
+ *
+ *  Switch peer's current channel to another.
+ *
+ *  @params: id       :  INT - peer's id
+ *           channel  :  INT - destination channel
+ *
+ *  @response_body:  {"code":INT,"action":INT,"id":INT,"token":TEXT,"payload":TEXT}
+ *  @system_body:    {"system":TEXT,"action":INT,"id":INT,"payload":TEXT}
+ *  @payload:        {"login":TEXT,"email":TEXT,"channel_move":INT}
+ *
+ *  @note:  @system_body is sent to the rest logged in peers.
+ */
+
+/* Check for peer */
+// ----------------------------------------------
+/**
+ *  GET /is_logged_in
+ *
+ *  Check whether peer is logged in.
+ *
+ *  @params: login    : TEXT - peer's login or email
+ *
+ *  @response_body:  {"check":INT,"action":INT,"id":INT}
+ */
+
+/**
+ *  GET /is_registered
+ *
+ *  Check whether peer is registered.
+ *
+ *  @params: login    : TEXT - peer's login or email
+ *
+ *  @response_body:  {"check":INT,"action":INT,"id":INT}
+ */
+
+/* List all peers */
+// ----------------------------------------------
+/**
+ *  GET /all_peers
+ *
+ *  Get list of all logged in peers [on channel];
+ *
+ *  @params: channel  : INT - channel to get peers on [OPTIONAL]
+ *
+ *  @response_body:  {"peers":[{"id":INT,"login":TEXT,"channel":INT},{},{},...],"channel":INT}
+ *
+ *  @note:  channel could be missing in @response_body, if it was not specified in @params.
+ */
+
+// ----------------------------------------------------------------------------
 #define TERMINATE_CODE 99
 
 #define D_ITEM_LOGIN "login"
