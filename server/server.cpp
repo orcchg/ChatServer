@@ -142,8 +142,10 @@ void Server::logIncoming() {
   m_should_store_requests = !m_should_store_requests;
   if (m_should_store_requests) {
     INF("Logging: ENABLED");
+    printf("\e[5;00;32mLogging: ENABLED\e[m\n");
   } else {
     WRN("Logging: DISABLED");
+    printf("\e[5;00;33mLogging: DISABLED\e[m\n");
   }
 }
 
@@ -383,6 +385,7 @@ int main(int argc, char** argv) {
   if (argc > 1) {
     port = std::atoi(argv[1]);
   }
+  printf("\e[5;00;33m\t***    Chat Server " D_VERSION "    ***\t\e[m\n");
 
   Server server(port);
   server.run();

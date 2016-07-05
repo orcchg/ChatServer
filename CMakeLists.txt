@@ -18,6 +18,7 @@
 
 cmake_minimum_required( VERSION 2.8 )
 PROJECT( ChatServer )
+SET( D_VERSION "1.0" )
 
 # -----------------------------------------------------------------------------
 # --------------------------- Common header -----------------------------------
@@ -32,9 +33,11 @@ endif()
 if( DEBUG )
     MESSAGE( STATUS "Build configuration: DEBUG" )
     ADD_DEFINITIONS( -DENABLED_LOGGING=1 )
+    ADD_DEFINITIONS( -DD_VERSION="${D_VERSION}-DEBUG" )
 else()
     MESSAGE( STATUS "Build configuration: RELEASE" )
     ADD_DEFINITIONS( -DENABLED_LOGGING=0 )
+    ADD_DEFINITIONS( -DD_VERSION="${D_VERSION}-RELEASE" )
 endif()
 
 if( SECURE )
