@@ -26,7 +26,7 @@
 #include "database/peer_table_impl.h"
 #include "server_api_impl.h"
 
-static const char* STANDARD_HEADERS = "Server: ChatServer\r\nContent-Type: application/json";
+static const char* STANDARD_HEADERS = "Server: ChatServer-" D_VERSION "\r\nContent-Type: application/json";
 static const char* CONTENT_LENGTH_HEADER = "Content-Length: ";
 static const char* CONNECTION_CLOSE_HEADER = "Connection: close";
 

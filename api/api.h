@@ -179,6 +179,7 @@
  */
 
 // ----------------------------------------------------------------------------
+#define D_VERSION "1.0"
 #define TERMINATE_CODE 99
 
 #define D_ITEM_LOGIN "login"
