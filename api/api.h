@@ -85,7 +85,7 @@
  *
  *  @response_body:  {"code":INT,"action":INT,"id":INT,"token":TEXT,"payload":TEXT}
  *  @system_body:    {"system":TEXT,"action":INT,"id":INT,"payload":TEXT}
- *  @payload:        {"login":TEXT,"email":TEXT}
+ *  @payload:        {"login":TEXT,"email":TEXT,"channel":INT}
  *
  *  @note:  @system_body is sent to the rest logged in peers.
  */
@@ -137,7 +137,7 @@
  *
  *  @response_body:  {"code":INT,"action":INT,"id":INT,"token":TEXT,"payload":TEXT}
  *  @system_body:    {"system":TEXT,"action":INT,"id":INT,"payload":TEXT}
- *  @payload:        {"login":TEXT,"email":TEXT,"channel_move":INT}
+ *  @payload:        {"login":TEXT,"email":TEXT,"channel_prev":INT,"channel_next":INT,"channel_move":INT}
  *
  *  @note:  @system_body is sent to the rest logged in peers.
  */
@@ -173,7 +173,7 @@
  *
  *  @params: channel  : INT - channel to get peers on [OPTIONAL]
  *
- *  @response_body:  {"peers":[{"id":INT,"login":TEXT,"channel":INT},{},{},...],"channel":INT}
+ *  @response_body:  {"peers":[{"id":INT,"login":TEXT,"email":TEXT,"channel":INT},{},{},...],"channel":INT}
  *
  *  @note:  channel could be missing in @response_body, if it was not specified in @params.
  */
@@ -193,6 +193,8 @@
 #define D_ITEM_MESSAGE "message"
 
 #define D_ITEM_ACTION "action"
+#define D_ITEM_CHANNEL_PREV "channel_prev"
+#define D_ITEM_CHANNEL_NEXT "channel_next"
 #define D_ITEM_CHANNEL_MOVE "channel_move"
 #define D_ITEM_CHECK "check"
 #define D_ITEM_CODE "code"
@@ -222,6 +224,8 @@ extern const char* ITEM_SIZE;
 extern const char* ITEM_MESSAGE;
 
 extern const char* ITEM_ACTION;
+extern const char* ITEM_CHANNEL_PREV;
+extern const char* ITEM_CHANNEL_NEXT;
 extern const char* ITEM_CHANNEL_MOVE;
 extern const char* ITEM_CHECK;
 extern const char* ITEM_CODE;
@@ -264,8 +268,8 @@ enum class ChannelMove : int {
  * Status:                {"code":INT,"action":INT,"id":INT,"token":TEXT,"payload":TEXT}
  * System:                {"system":TEXT,"action":INT,"id":INT,"payload":TEXT}
  * Check:                 {"check":INT,"action":INT,"id":INT}
- * List peers:            {"peers":[{"id":INT,"login":TEXT,"channel":INT},{},{},...]}
- * List peers (channel):  {"peers":[{"id":INT,"login":TEXT,"channel":INT},{},{},...],"channel":INT}
+ * List peers:            {"peers":[{"id":INT,"login":TEXT,"email":TEXT,"channel":INT},{},{},...]}
+ * List peers (channel):  {"peers":[{"id":INT,"login":TEXT,"email":TEXT,"channel":INT},{},{},...],"channel":INT}
  */
 
 /* Client API */

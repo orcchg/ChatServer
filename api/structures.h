@@ -151,6 +151,7 @@ private:
  * {
  *   "id":102993,
  *   "login":"Oleg",
+ *   "email":"oleg@ya.ru",
  *   "channel":500,
  * }
  */
@@ -160,16 +161,19 @@ public:
   public:
     Builder(ID_t id);
     Builder& setLogin(const std::string& login);
+    Builder& setEmail(const std::string& email);
     Builder& setChannel(int channel);
     Peer build();
 
     inline ID_t getId() const { return m_id; }
     inline const std::string& getLogin() const { return m_login; }
+    inline const std::string& getEmail() const { return m_email; }
     inline int getChannel() const { return m_channel; }
 
   private:
     ID_t m_id;
     std::string m_login;
+    std::string m_email;
     int m_channel;
   };
 
@@ -179,11 +183,13 @@ public:
 
   inline ID_t getId() const { return m_id; }
   inline const std::string& getLogin() const { return m_login; }
+  inline const std::string& getEmail() const { return m_email; }
   inline int getChannel() const { return m_channel; }
 
 private:
   ID_t m_id;
   std::string m_login;
+  std::string m_email;
   int m_channel;
 };
 

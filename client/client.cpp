@@ -237,8 +237,9 @@ void Client::receiveAndprocessListAllPeersResponse(bool withChannel) {
     for (rapidjson::Value::ConstValueIterator it = peers.Begin(); it != peers.End(); ++it) {
       ID_t id = (*it)[ITEM_ID].GetInt64();
       std::string name = (*it)[ITEM_LOGIN].GetString();
+      std::string email = (*it)[ITEM_EMAIL].GetString();
       int channel = (*it)[ITEM_CHANNEL].GetInt();
-      printf("\tPeer[%lli]: %s is on channel: %i\n", id, name.c_str(), channel);
+      printf("\tPeer[%lli]: %s <%s> is on channel: %i\n", id, name.c_str(), email.c_str(), channel);
     }
     printf("\n");
   } else {

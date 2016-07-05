@@ -192,6 +192,11 @@ Peer::Builder& Peer::Builder::setLogin(const std::string& login) {
   return *this;
 }
 
+Peer::Builder& Peer::Builder::setEmail(const std::string& email) {
+  m_email = email;
+  return *this;
+}
+
 Peer::Builder& Peer::Builder::setChannel(int channel) {
   m_channel = channel;
   return *this;
@@ -211,6 +216,7 @@ std::string Peer::toJson() const {
   std::ostringstream oss;
   oss << "{\"" D_ITEM_ID "\":" << m_id
       << ",\"" D_ITEM_LOGIN "\":\"" << m_login
+      << "\",\"" D_ITEM_EMAIL "\":\"" << m_email
       << "\",\"" D_ITEM_CHANNEL "\":" << m_channel
       << "\"}";
   return oss.str();
@@ -223,12 +229,14 @@ Peer Peer::fromJson(const std::string& json) {
   if (document.IsObject() &&
       document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64() &&
       document.HasMember(ITEM_LOGIN) && document[ITEM_LOGIN].IsString() &&
+      document.HasMember(ITEM_EMAIL) && document[ITEM_EMAIL].IsString() &&
       document.HasMember(ITEM_CHANNEL) && document[ITEM_CHANNEL].IsInt()) {
     ID_t id = document[ITEM_ID].GetInt64();
     std::string login = document[ITEM_LOGIN].GetString();
+    std::string email = document[ITEM_EMAIL].GetString();
     int channel = document[ITEM_CHANNEL].GetInt();
 
-    return Peer::Builder(id).setLogin(login).setChannel(channel).build();
+    return Peer::Builder(id).setLogin(login).setEmail(email).setChannel(channel).build();
   } else {
     ERR("Peer parse failed: invalid json: %s", json.c_str());
     throw ConvertException();

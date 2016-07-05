@@ -243,10 +243,12 @@ StatusCode ServerApiImpl::logout(const std::string& path, ID_t& id) {
   id = std::stoll(params[0].value.c_str());
   std::string name = "";
   std::string email = "";
+  int channel = DEFAULT_CHANNEL;
   auto it = m_peers.find(id);
   if (it != m_peers.end()) {
     name = it->second.getLogin();
     email = it->second.getEmail();
+    channel = it->second.getChannel();
   } else {
     ERR("Peer with id [%lli] is not logged in!", id);
     return StatusCode::UNAUTHORIZED;
@@ -262,6 +264,7 @@ StatusCode ServerApiImpl::logout(const std::string& path, ID_t& id) {
            << ",\"" D_ITEM_ID "\":" << id
            << ",\"" D_ITEM_PAYLOAD "\":" << "\"" D_ITEM_LOGIN "=" << name
                                          << "&" D_ITEM_EMAIL "=" << email
+                                         << "&" D_ITEM_CHANNEL "=" << channel
            << "\"}";
       oss << "HTTP/1.1 200 Logged Out\r\n" << STANDARD_HEADERS << "\r\n"
           << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
@@ -331,6 +334,8 @@ StatusCode ServerApiImpl::switchChannel(const std::string& path, ID_t& id) {
            << ",\"" D_ITEM_ID "\":" << id
            << ",\"" D_ITEM_PAYLOAD "\":" << "\"" D_ITEM_LOGIN "=" << name
                                          << "&" D_ITEM_EMAIL "=" << email
+                                         << "&" D_ITEM_CHANNEL_PREV "=" << previous_channel
+                                         << "&" D_ITEM_CHANNEL_NEXT "=" << channel
                                          << "&" D_ITEM_CHANNEL_MOVE "=" << static_cast<int>(move)
            << "\"}";
       oss << "HTTP/1.1 200 Switched channel\r\n" << STANDARD_HEADERS << "\r\n"
