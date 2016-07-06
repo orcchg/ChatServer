@@ -33,6 +33,7 @@ public:
   virtual ~Cryptor();
 
   std::string encrypt(const std::string& source) override;
+  std::string decrypt(const std::string& source) override;
 };
 
 }

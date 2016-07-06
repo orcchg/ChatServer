@@ -32,7 +32,10 @@ public:
   virtual ~ICryptor() {}
 
   virtual std::string encrypt(const std::string& source) = 0;
+  virtual std::string decrypt(const std::string& source) = 0;
 };
+
+struct UnsupportedOperationException {};
 
 }
 

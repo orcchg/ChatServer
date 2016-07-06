@@ -25,6 +25,7 @@
 #include <cstring>
 #include <openssl/sha.h>
 #include "cryptor.h"
+#include "logger.h"
 
 namespace secure {
 
@@ -45,6 +46,11 @@ std::string Cryptor::encrypt(const std::string& source) {
     oss << std::hex << (int) buffer[i];
   }
   return oss.str();
+}
+
+std::string Cryptor::decrypt(const std::string& source) {
+  ERR("Operation not supported!");
+  throw UnsupportedOperationException();
 }
 
 }
