@@ -25,22 +25,32 @@ const char* ITEM_EMAIL    = D_ITEM_EMAIL;
 const char* ITEM_PASSWORD = D_ITEM_PASSWORD;
 
 const char* ITEM_ID        = D_ITEM_ID;
+const char* ITEM_SRC_ID    = D_ITEM_SRC_ID;
 const char* ITEM_DEST_ID   = D_ITEM_DEST_ID;
 const char* ITEM_CHANNEL   = D_ITEM_CHANNEL;
 const char* ITEM_TIMESTAMP = D_ITEM_TIMESTAMP;
 const char* ITEM_SIZE      = D_ITEM_SIZE;
 const char* ITEM_MESSAGE   = D_ITEM_MESSAGE;
 
+const char* ITEM_ACCEPT       = D_ITEM_ACCEPT;
 const char* ITEM_ACTION       = D_ITEM_ACTION;
 const char* ITEM_CHANNEL_PREV = D_ITEM_CHANNEL_PREV;
 const char* ITEM_CHANNEL_NEXT = D_ITEM_CHANNEL_NEXT;
 const char* ITEM_CHANNEL_MOVE = D_ITEM_CHANNEL_MOVE;
 const char* ITEM_CHECK        = D_ITEM_CHECK;
 const char* ITEM_CODE         = D_ITEM_CODE;
+const char* ITEM_KEY          = D_ITEM_KEY;
 const char* ITEM_SYSTEM       = D_ITEM_SYSTEM;
 const char* ITEM_TOKEN        = D_ITEM_TOKEN;
 const char* ITEM_PAYLOAD      = D_ITEM_PAYLOAD;
 const char* ITEM_PEERS        = D_ITEM_PEERS;
+
+#if SECURE
+const char* ITEM_PRIVATE_REQUEST = D_ITEM_PRIVATE_REQUEST;
+const char* ITEM_PRIVATE_CONFIRM = D_ITEM_PRIVATE_CONFIRM;
+const char* ITEM_PRIVATE_ABORT   = D_ITEM_PRIVATE_ABORT;
+const char* ITEM_PRIVATE_PUBKEY  = D_ITEM_PRIVATE_PUBKEY;
+#endif  // SECURE
 
 const char* PATH_LOGIN          = D_PATH_LOGIN;
 const char* PATH_REGISTER       = D_PATH_REGISTER;

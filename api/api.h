@@ -187,7 +187,8 @@
  *
  *  Send request to establish private secure communication with dedicated peer.
  *
- *  @params: id  :  INT - destination peer's id
+ *  @params:  src_id   :  INT - source peer's id
+ *            dest_id  :  INT - destination peer's id
  *
  *  @response_body: --
  *
@@ -201,7 +202,8 @@
  *
  *  Send confirmation or rejection to received private secure communication request.
  *
- *  @params: id  : INT - destination peer's id
+ *  @params:  src_id   :  INT - source peer's id
+ *            dest_id  :  INT - destination peer's id
  *
  *  @response_body: --
  *
@@ -218,7 +220,8 @@
  *
  *  Closes an established private communication or aborts an establishment process.
  *
- *  @params: id  : INT - destination peer's id
+ *  @params:  src_id   :  INT - source peer's id
+ *            dest_id  :  INT - destination peer's id
  *
  *  @response_body: --
  *
@@ -232,7 +235,9 @@
  *
  *  Send public key for key exchanging between communicating peers.
  *
- *  @request_body:  {"private_pubkey":{"src_id":INT,"key":TEXT}}
+ *  @params:  id   :  INT - source peer's id
+ *
+ *  @request_body:  {"private_pubkey":{"key":TEXT}}
  *
  *  @response_body: --
  */
@@ -245,22 +250,32 @@
 #define D_ITEM_PASSWORD  "password"
 
 #define D_ITEM_ID         "id"
+#define D_ITEM_SRC_ID     "src_id"
 #define D_ITEM_DEST_ID    "dest_id"
 #define D_ITEM_CHANNEL    "channel"
 #define D_ITEM_TIMESTAMP  "timestamp"
 #define D_ITEM_SIZE       "size"
 #define D_ITEM_MESSAGE    "message"
 
+#define D_ITEM_ACCEPT        "accept"
 #define D_ITEM_ACTION        "action"
 #define D_ITEM_CHANNEL_PREV  "channel_prev"
 #define D_ITEM_CHANNEL_NEXT  "channel_next"
 #define D_ITEM_CHANNEL_MOVE  "channel_move"
 #define D_ITEM_CHECK         "check"
 #define D_ITEM_CODE          "code"
+#define D_ITEM_KEY           "key"
 #define D_ITEM_SYSTEM        "system"
 #define D_ITEM_TOKEN         "token"
 #define D_ITEM_PAYLOAD       "payload"
 #define D_ITEM_PEERS         "peers"
+
+#if SECURE
+#define D_ITEM_PRIVATE_REQUEST "private_request"
+#define D_ITEM_PRIVATE_CONFIRM "private_confirm"
+#define D_ITEM_PRIVATE_ABORT   "private_abort"
+#define D_ITEM_PRIVATE_PUBKEY  "private_pubkey"
+#endif  // SECURE
 
 #define D_PATH_LOGIN           "/login"
 #define D_PATH_REGISTER        "/register"
@@ -283,22 +298,32 @@ extern const char* ITEM_EMAIL;
 extern const char* ITEM_PASSWORD;
 
 extern const char* ITEM_ID;
+extern const char* ITEM_SRC_ID;
 extern const char* ITEM_DEST_ID;
 extern const char* ITEM_CHANNEL;
 extern const char* ITEM_TIMESTAMP;
 extern const char* ITEM_SIZE;
 extern const char* ITEM_MESSAGE;
 
+extern const char* ITEM_ACCEPT;
 extern const char* ITEM_ACTION;
 extern const char* ITEM_CHANNEL_PREV;
 extern const char* ITEM_CHANNEL_NEXT;
 extern const char* ITEM_CHANNEL_MOVE;
 extern const char* ITEM_CHECK;
 extern const char* ITEM_CODE;
+extern const char* ITEM_KEY;
 extern const char* ITEM_SYSTEM;
 extern const char* ITEM_TOKEN;
 extern const char* ITEM_PAYLOAD;
 extern const char* ITEM_PEERS;
+
+#if SECURE
+extern const char* ITEM_PRIVATE_REQUEST;
+extern const char* ITEM_PRIVATE_CONFIRM;
+extern const char* ITEM_PRIVATE_ABORT;
+extern const char* ITEM_PRIVATE_PUBKEY;
+#endif  // SECURE
 
 extern const char* PATH_LOGIN;
 extern const char* PATH_REGISTER;
@@ -387,10 +412,10 @@ public:
   virtual void getAllPeers() = 0;
   virtual void getAllPeers(int channel) = 0;
 #if SECURE
-  virtual void privateRequest(int src_id, int dest_id) = 0;
-  virtual void privateConfirm(int src_id, int dest_id) = 0;
-  virtual void privateAbort(int src_id, int dest_id) = 0;
-  virtual void privatePubKey(int src_id, const std::string& key) = 0;
+  virtual void privateRequest(int src_id, int dest_id) = 0;  // send request to Server from src peer
+  virtual void privateConfirm(int src_id, int dest_id, bool accept) = 0;  // send confirm to Server from src peer
+  virtual void privateAbort(int src_id, int dest_id) = 0;    // send abort to Server from src peer
+  virtual void privatePubKey(int src_id, const std::string& key) = 0;  // send public key to Server from src peer
 #endif  // SECURE
 };
 
@@ -418,10 +443,10 @@ public:
   virtual bool checkRegistered(const std::string& path, ID_t& id) = 0;
   virtual StatusCode getAllPeers(const std::string& path, std::vector<Peer>* peers, int& channel) = 0;
 #if SECURE
-  virtual StatusCode privateRequest(int src_id, int dest_id) = 0;
-  virtual StatusCode privateConfirm(int src_id, int dest_id) = 0;
-  virtual StatusCode privateAbort(int src_id, int dest_id) = 0;
-  virtual StatusCode privatePubKey(int src_id, const std::string& key) = 0;
+  virtual StatusCode privateRequest(int src_id, int dest_id) = 0;  // forward request to dest peer
+  virtual StatusCode privateConfirm(int src_id, int dest_id, bool accept) = 0;  // forward confirm to dest peer
+  virtual StatusCode privateAbort(int src_id, int dest_id) = 0;    // forward abort to dest peer
+  virtual StatusCode privatePubKey(int dest_id, const std::string& key) = 0;  // forward public key to dest peer
 #endif  // SECURE
 
   virtual void terminate() = 0;

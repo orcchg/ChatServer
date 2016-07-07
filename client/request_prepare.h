@@ -38,6 +38,12 @@ std::string isLoggedIn_request(const std::string& host, const std::string& name)
 std::string isRegistered_request(const std::string& host, const std::string& name);
 std::string getAllPeers_request(const std::string& host);
 std::string getAllPeers_request(const std::string& host, int channel);
+#if SECURE
+std::string privateRequest_request(const std::string& host, int src_id, int dest_id);
+std::string privateConfirm_request(const std::string& host, int src_id, int dest_id, bool accept);
+std::string privateAbort_request(const std::string& host, int src_id, int dest_id);
+std::string privatePubKey_request(const std::string& host, int id, const std::string& key);
+#endif  // SECURE
 
 }
 

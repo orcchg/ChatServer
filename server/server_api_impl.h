@@ -68,9 +68,9 @@ public:
   StatusCode getAllPeers(const std::string& path, std::vector<Peer>* peers, int& channel) override;
 #if SECURE
   StatusCode privateRequest(int src_id, int dest_id) override;
-  StatusCode privateConfirm(int src_id, int dest_id) override;
+  StatusCode privateConfirm(int src_id, int dest_id, bool accept) override;
   StatusCode privateAbort(int src_id, int dest_id) override;
-  StatusCode privatePubKey(int src_id, const std::string& key) override;
+  StatusCode privatePubKey(int dest_id, const std::string& key) override;
 #endif  // SECURE
 
   void terminate() override;

@@ -114,5 +114,54 @@ std::string getAllPeers_request(const std::string& host, int channel) {
   return oss.str();
 }
 
+/* Private secure communication */
+// ----------------------------------------------------------------------------
+#if SECURE
+
+std::string privateRequest_request(const std::string& host, int src_id, int dest_id) {
+  std::ostringstream oss;
+  oss << "POST " D_PATH_PRIVATE_REQUEST "?" D_ITEM_SRC_ID "=" << src_id
+      << "&" D_ITEM_DEST_ID "=" << dest_id
+      << " HTTP/1.1\r\nHost: " << host << "\r\n\r\n"
+      << "{\"" D_ITEM_PRIVATE_REQUEST "\":{\"" D_ITEM_SRC_ID "\":" << src_id
+      << ",\"" D_ITEM_DEST_ID "\":" << dest_id << "}}";
+  MSG("Request: %s", oss.str().c_str());
+  return oss.str();
+}
+
+std::string privateConfirm_request(const std::string& host, int src_id, int dest_id, bool accept) {
+  std::ostringstream oss;
+  oss << "POST " D_PATH_PRIVATE_CONFIRM "?" D_ITEM_SRC_ID "=" << src_id
+      << "&" D_ITEM_DEST_ID "=" << dest_id
+      << " HTTP/1.1\r\nHost: " << host << "\r\n\r\n"
+      << "{\"" D_ITEM_PRIVATE_CONFIRM "\":{\"" D_ITEM_SRC_ID "\":" << src_id
+      << ",\"" D_ITEM_DEST_ID "\":" << dest_id
+      << ",\"" D_ITEM_ACCEPT "\":" << (accept ? 1 : 0) << "}}";
+  MSG("Request: %s", oss.str().c_str());
+  return oss.str();
+}
+
+std::string privateAbort_request(const std::string& host, int src_id, int dest_id) {
+  std::ostringstream oss;
+  oss << "POST " D_PATH_PRIVATE_ABORT "?" D_ITEM_SRC_ID "=" << src_id
+      << "&" D_ITEM_DEST_ID "=" << dest_id
+      << " HTTP/1.1\r\nHost: " << host << "\r\n\r\n"
+      << "{\"" D_ITEM_PRIVATE_ABORT "\":{\"" D_ITEM_SRC_ID "\":" << src_id
+      << ",\"" D_ITEM_DEST_ID "\":" << dest_id << "}}";
+  MSG("Request: %s", oss.str().c_str());
+  return oss.str();
+}
+
+std::string privatePubKey_request(const std::string& host, int id, const std::string& key) {
+  std::ostringstream oss;
+  oss << "POST " D_PATH_PRIVATE_PUBKEY "?" D_ITEM_ID "=" << id
+      << " HTTP/1.1\r\nHost: " << host << "\r\n\r\n"
+      << "{\"" D_ITEM_PRIVATE_PUBKEY "\":{\"" D_ITEM_KEY "\":\"" << key << "\"}}";
+  MSG("Request: %s", oss.str().c_str());
+  return oss.str();
+}
+
+#endif  // SECURE
+
 }
 
