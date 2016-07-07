@@ -17,7 +17,11 @@
 #   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 
 SET( SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR} )
-SET( SOURCES ${SOURCE_DIR}/cryptor.cpp )
+SET( SOURCES
+    ${SOURCE_DIR}/cryptor.cpp
+    ${SOURCE_DIR}/random_util.cpp
+    ${SOURCE_DIR}/sym_key.cpp
+)
 ADD_LIBRARY( ${CRYPTOR} SHARED ${SOURCES} )
 TARGET_LINK_LIBRARIES( ${CRYPTOR} ${OPENSSL_LIBS} )
 

@@ -20,34 +20,30 @@
 
 #if SECURE
 
-#include <iomanip>
-#include <sstream>
+#include <climits>
 #include <cstring>
-#include <openssl/sha.h>
-#include "cryptor.h"
-#include "logger.h"
+#include <ctime>
+#include "random_util.h"
 #include "sym_key.h"
 
 namespace secure {
 
-Cryptor::Cryptor() {
+SymmetricKey::SymmetricKey() {
+  auto current = time(nullptr);
+  srand(current % INT_MAX + 1);
+  int length = rand() % 71 + 10;
+  std::string source = random::generateString(length);
+  generate(source);
 }
 
-Cryptor::~Cryptor() {
+SymmetricKey::SymmetricKey(const std::string& source) {
+  generate(source);
 }
 
-std::string Cryptor::encrypt(const std::string& source) {
-  SymmetricKey key(source);
-  std::ostringstream oss;
-  for (int i = 0; i < SHA256_DIGEST_LENGTH; ++i) {
-    oss << std::hex << (int) key.key[i];
-  }
-  return oss.str();
-}
-
-std::string Cryptor::decrypt(const std::string& source) {
-  ERR("Operation not supported!");
-  throw UnsupportedOperationException();
+void SymmetricKey::generate(const std::string& source) {
+  char input[source.length()];
+  strncpy(input, source.c_str(), source.length());
+  SHA256((unsigned char*) input, source.length(), key);
 }
 
 }

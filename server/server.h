@@ -28,6 +28,10 @@
 #include "database/system_table.h"
 #include "parser/my_parser.h"
 
+#if SECURE
+#include "crypting/sym_key.h"
+#endif  // SECURE
+
 // ----------------------------------------------
 class Connection {
 public:
@@ -71,6 +75,9 @@ private:
   ServerApi* m_api_impl;
   db::LogTable* m_log_database;
   db::SystemTable* m_system_database;
+#if SECURE
+  secure::SymmetricKey m_sym_key;
+#endif  // SECURE
 
   void runListener();
   void printClientInfo(sockaddr_in& peeraddr);

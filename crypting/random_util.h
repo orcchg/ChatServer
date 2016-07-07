@@ -18,39 +18,22 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
+#ifndef CHAT_SERVER_RANDOM_UTIL__H__
+#define CHAT_SERVER_RANDOM_UTIL__H__
+
 #if SECURE
 
-#include <iomanip>
-#include <sstream>
-#include <cstring>
-#include <openssl/sha.h>
-#include "cryptor.h"
-#include "logger.h"
-#include "sym_key.h"
+#include <string>
 
 namespace secure {
+namespace random {
 
-Cryptor::Cryptor() {
+std::string generateString(int length);
+
 }
-
-Cryptor::~Cryptor() {
-}
-
-std::string Cryptor::encrypt(const std::string& source) {
-  SymmetricKey key(source);
-  std::ostringstream oss;
-  for (int i = 0; i < SHA256_DIGEST_LENGTH; ++i) {
-    oss << std::hex << (int) key.key[i];
-  }
-  return oss.str();
-}
-
-std::string Cryptor::decrypt(const std::string& source) {
-  ERR("Operation not supported!");
-  throw UnsupportedOperationException();
-}
-
 }
 
 #endif  // SECURE
+
+#endif  // CHAT_SERVER_RANDOM_UTIL__H__
 
