@@ -90,3 +90,14 @@ void ClientApiImpl::getAllPeers(int channel) {
   send(m_socket, request.c_str(), request.length(), 0);
 }
 
+/* Private secure communication */
+// ----------------------------------------------------------------------------
+#if SECURE
+
+void ClientApiImpl::privateRequest(int src_id, int dest_id) {}
+void ClientApiImpl::privateConfirm(int src_id, int dest_id) {}
+void ClientApiImpl::privateAbort(int src_id, int dest_id) {}
+void ClientApiImpl::privatePubKey(int src_id, const std::string& key) {}
+
+#endif  // SECURE
+

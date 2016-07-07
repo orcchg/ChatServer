@@ -575,3 +575,14 @@ void ServerApiImpl::broadcast(const Message& message) {
   }
 }
 
+/* Private secure communication */
+// ----------------------------------------------------------------------------
+#if SECURE
+
+StatusCode ServerApiImpl::privateRequest(int src_id, int dest_id) {}
+StatusCode ServerApiImpl::privateConfirm(int src_id, int dest_id) {}
+StatusCode ServerApiImpl::privateAbort(int src_id, int dest_id) {}
+StatusCode ServerApiImpl::privatePubKey(int src_id, const std::string& key) {}
+
+#endif  // SECURE
+

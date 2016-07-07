@@ -20,34 +20,42 @@
 
 #include "api.h"
 
-const char* ITEM_LOGIN = D_ITEM_LOGIN;
-const char* ITEM_EMAIL = D_ITEM_EMAIL;
+const char* ITEM_LOGIN    = D_ITEM_LOGIN;
+const char* ITEM_EMAIL    = D_ITEM_EMAIL;
 const char* ITEM_PASSWORD = D_ITEM_PASSWORD;
 
-const char* ITEM_ID = D_ITEM_ID;
-const char* ITEM_DEST_ID = D_ITEM_DEST_ID;
-const char* ITEM_CHANNEL = D_ITEM_CHANNEL;
+const char* ITEM_ID        = D_ITEM_ID;
+const char* ITEM_DEST_ID   = D_ITEM_DEST_ID;
+const char* ITEM_CHANNEL   = D_ITEM_CHANNEL;
 const char* ITEM_TIMESTAMP = D_ITEM_TIMESTAMP;
-const char* ITEM_SIZE = D_ITEM_SIZE;
-const char* ITEM_MESSAGE = D_ITEM_MESSAGE;
+const char* ITEM_SIZE      = D_ITEM_SIZE;
+const char* ITEM_MESSAGE   = D_ITEM_MESSAGE;
 
-const char* ITEM_ACTION = D_ITEM_ACTION;
+const char* ITEM_ACTION       = D_ITEM_ACTION;
 const char* ITEM_CHANNEL_PREV = D_ITEM_CHANNEL_PREV;
 const char* ITEM_CHANNEL_NEXT = D_ITEM_CHANNEL_NEXT;
 const char* ITEM_CHANNEL_MOVE = D_ITEM_CHANNEL_MOVE;
-const char* ITEM_CHECK = D_ITEM_CHECK;
-const char* ITEM_CODE = D_ITEM_CODE;
-const char* ITEM_SYSTEM = D_ITEM_SYSTEM;
-const char* ITEM_TOKEN = D_ITEM_TOKEN;
-const char* ITEM_PAYLOAD = D_ITEM_PAYLOAD;
-const char* ITEM_PEERS = D_ITEM_PEERS;
+const char* ITEM_CHECK        = D_ITEM_CHECK;
+const char* ITEM_CODE         = D_ITEM_CODE;
+const char* ITEM_SYSTEM       = D_ITEM_SYSTEM;
+const char* ITEM_TOKEN        = D_ITEM_TOKEN;
+const char* ITEM_PAYLOAD      = D_ITEM_PAYLOAD;
+const char* ITEM_PEERS        = D_ITEM_PEERS;
 
-const char* PATH_LOGIN = D_PATH_LOGIN;
-const char* PATH_REGISTER = D_PATH_REGISTER;
-const char* PATH_MESSAGE = D_PATH_MESSAGE;
-const char* PATH_LOGOUT = D_PATH_LOGOUT;
+const char* PATH_LOGIN          = D_PATH_LOGIN;
+const char* PATH_REGISTER       = D_PATH_REGISTER;
+const char* PATH_MESSAGE        = D_PATH_MESSAGE;
+const char* PATH_LOGOUT         = D_PATH_LOGOUT;
 const char* PATH_SWITCH_CHANNEL = D_PATH_SWITCH_CHANNEL;
-const char* PATH_IS_LOGGED_IN = D_PATH_IS_LOGGED_IN;
-const char* PATH_IS_REGISTERED = D_PATH_IS_REGISTERED;
-const char* PATH_ALL_PEERS = D_PATH_ALL_PEERS;
+const char* PATH_IS_LOGGED_IN   = D_PATH_IS_LOGGED_IN;
+const char* PATH_IS_REGISTERED  = D_PATH_IS_REGISTERED;
+const char* PATH_ALL_PEERS      = D_PATH_ALL_PEERS;
+
+#if SECURE
+const char* PATH_PRIVATE_REQUEST = D_PATH_PRIVATE_REQUEST;
+const char* PATH_PRIVATE_CONFIRM = D_PATH_PRIVATE_CONFIRM;
+const char* PATH_PRIVATE_ABORT   = D_PATH_PRIVATE_ABORT;
+const char* PATH_PRIVATE_PUBKEY  = D_PATH_PRIVATE_PUBKEY;
+#endif  // SECURE
+
 

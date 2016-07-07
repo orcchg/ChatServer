@@ -123,6 +123,8 @@
  *  @request_body:   {"id":INT,"login":TEXT,"email":TEXT,"channel":INT,"dest_id":INT,"timestamp":INT,"message":TEXT}
  *
  *  @response_body:  {"code":INT,"action":INT,"id":INT,"token":TEXT,"payload":TEXT}
+ *
+ *  @note:  message as @request_body is then sent to peer[s].
  */
 
 /* Switch Channel */
@@ -178,39 +180,103 @@
  *  @note:  channel could be missing in @response_body, if it was not specified in @params.
  */
 
+/* Private secure communication */
+// ----------------------------------------------
+/**
+ *  POST /private_request
+ *
+ *  Send request to establish private secure communication with dedicated peer.
+ *
+ *  @params: id  :  INT - destination peer's id
+ *
+ *  @response_body: --
+ *
+ *  @note:  destination peer receives the following payload in json format:
+ *
+ *          {"private_request":{"src_id":INT,"dest_id":INT}}
+ */
+
+/**
+ *  POST /private_confirm
+ *
+ *  Send confirmation or rejection to received private secure communication request.
+ *
+ *  @params: id  : INT - destination peer's id
+ *
+ *  @response_body: --
+ *
+ *  @note:  destination peer receives the following payload in json format:
+ *
+ *          {"private_confirm":{"src_id":INT,"dest_id":INT,"accept":INT}}
+ *
+ *          @accept field could be 0 - rejected request, otherwise - confirmed request.
+ *          @dest_id is the @src_id in previous API method and vice versa.
+ */
+
+/**
+ *  DELETE /private_abort
+ *
+ *  Closes an established private communication or aborts an establishment process.
+ *
+ *  @params: id  : INT - destination peer's id
+ *
+ *  @response_body: --
+ *
+ *  @note:  destination peer receives the following payload in json format:
+ *
+ *          {"private_confirm":{"src_id":INT,"dest_id":INT,"accept":INT}}
+ */
+
+/**
+ *  POST /private_pubkey
+ *
+ *  Send public key for key exchanging between communicating peers.
+ *
+ *  @request_body:  {"private_pubkey":{"src_id":INT,"key":TEXT}}
+ *
+ *  @response_body: --
+ */
+
 // ----------------------------------------------------------------------------
 #define TERMINATE_CODE 99
 
-#define D_ITEM_LOGIN "login"
-#define D_ITEM_EMAIL "email"
-#define D_ITEM_PASSWORD "password"
+#define D_ITEM_LOGIN     "login"
+#define D_ITEM_EMAIL     "email"
+#define D_ITEM_PASSWORD  "password"
 
-#define D_ITEM_ID "id"
-#define D_ITEM_DEST_ID "dest_id"
-#define D_ITEM_CHANNEL "channel"
-#define D_ITEM_TIMESTAMP "timestamp"
-#define D_ITEM_SIZE "size"
-#define D_ITEM_MESSAGE "message"
+#define D_ITEM_ID         "id"
+#define D_ITEM_DEST_ID    "dest_id"
+#define D_ITEM_CHANNEL    "channel"
+#define D_ITEM_TIMESTAMP  "timestamp"
+#define D_ITEM_SIZE       "size"
+#define D_ITEM_MESSAGE    "message"
 
-#define D_ITEM_ACTION "action"
-#define D_ITEM_CHANNEL_PREV "channel_prev"
-#define D_ITEM_CHANNEL_NEXT "channel_next"
-#define D_ITEM_CHANNEL_MOVE "channel_move"
-#define D_ITEM_CHECK "check"
-#define D_ITEM_CODE "code"
-#define D_ITEM_SYSTEM "system"
-#define D_ITEM_TOKEN "token"
-#define D_ITEM_PAYLOAD "payload"
-#define D_ITEM_PEERS "peers"
+#define D_ITEM_ACTION        "action"
+#define D_ITEM_CHANNEL_PREV  "channel_prev"
+#define D_ITEM_CHANNEL_NEXT  "channel_next"
+#define D_ITEM_CHANNEL_MOVE  "channel_move"
+#define D_ITEM_CHECK         "check"
+#define D_ITEM_CODE          "code"
+#define D_ITEM_SYSTEM        "system"
+#define D_ITEM_TOKEN         "token"
+#define D_ITEM_PAYLOAD       "payload"
+#define D_ITEM_PEERS         "peers"
 
-#define D_PATH_LOGIN "/login"
-#define D_PATH_REGISTER "/register"
-#define D_PATH_MESSAGE "/message"
-#define D_PATH_LOGOUT "/logout"
-#define D_PATH_SWITCH_CHANNEL "/switch_channel"
-#define D_PATH_IS_LOGGED_IN "/is_logged_in"
-#define D_PATH_IS_REGISTERED "/is_registered"
-#define D_PATH_ALL_PEERS "/all_peers"
+#define D_PATH_LOGIN           "/login"
+#define D_PATH_REGISTER        "/register"
+#define D_PATH_MESSAGE         "/message"
+#define D_PATH_LOGOUT          "/logout"
+#define D_PATH_SWITCH_CHANNEL  "/switch_channel"
+#define D_PATH_IS_LOGGED_IN    "/is_logged_in"
+#define D_PATH_IS_REGISTERED   "/is_registered"
+#define D_PATH_ALL_PEERS       "/all_peers"
+
+#if SECURE
+#define D_PATH_PRIVATE_REQUEST  "/private_request"
+#define D_PATH_PRIVATE_CONFIRM  "/private_confirm"
+#define D_PATH_PRIVATE_ABORT    "/private_abort"
+#define D_PATH_PRIVATE_PUBKEY   "/private_pubkey"
+#endif  // SECURE
 
 extern const char* ITEM_LOGIN;
 extern const char* ITEM_EMAIL;
@@ -243,16 +309,47 @@ extern const char* PATH_IS_LOGGED_IN;
 extern const char* PATH_IS_REGISTERED;
 extern const char* PATH_ALL_PEERS;
 
+#if SECURE
+extern const char* PATH_PRIVATE_REQUEST;
+extern const char* PATH_PRIVATE_CONFIRM;
+extern const char* PATH_PRIVATE_ABORT;
+extern const char* PATH_PRIVATE_PUBKEY;
+#endif  // SECURE
+
 enum class Method : int {
   UNKNOWN = -1, GET = 0, POST = 1, PUT = 2, DELETE = 3
 };
 
 enum class Path : int {
-  UNKNOWN = -1, LOGIN = 0, REGISTER = 1, MESSAGE = 2, LOGOUT = 3, SWITCH_CHANNEL = 4, IS_LOGGED_IN = 5, IS_REGISTERED = 6, ALL_PEERS = 7
+  UNKNOWN        = -1,
+  LOGIN          = 0,
+  REGISTER       = 1,
+  MESSAGE        = 2,
+  LOGOUT         = 3,
+  SWITCH_CHANNEL = 4,
+  IS_LOGGED_IN   = 5,
+  IS_REGISTERED  = 6,
+  ALL_PEERS      = 7
+#if SECURE
+  , PRIVATE_REQUEST   = 8
+  , PRIVATE_CONFIRM   = 9
+  , PRIVATE_ABORT     = 10
+  , PRIVATE_PUBKEY    = 11
+#endif  // SECURE
 };
 
 enum class StatusCode : int {
-  UNKNOWN = -1, SUCCESS = 0, WRONG_PASSWORD = 1, NOT_REGISTERED = 2, ALREADY_REGISTERED = 3, ALREADY_LOGGED_IN = 4, INVALID_FORM = 5, INVALID_QUERY = 6, UNAUTHORIZED = 7, WRONG_CHANNEL = 8, SAME_CHANNEL = 9
+  UNKNOWN            = -1,
+  SUCCESS            = 0,
+  WRONG_PASSWORD     = 1,
+  NOT_REGISTERED     = 2,
+  ALREADY_REGISTERED = 3,
+  ALREADY_LOGGED_IN  = 4,
+  INVALID_FORM       = 5,
+  INVALID_QUERY      = 6,
+  UNAUTHORIZED       = 7,
+  WRONG_CHANNEL      = 8,
+  SAME_CHANNEL       = 9
 };
 
 enum class ChannelMove : int {
@@ -289,6 +386,12 @@ public:
   virtual void isRegistered(const std::string& name) = 0;
   virtual void getAllPeers() = 0;
   virtual void getAllPeers(int channel) = 0;
+#if SECURE
+  virtual void privateRequest(int src_id, int dest_id) = 0;
+  virtual void privateConfirm(int src_id, int dest_id) = 0;
+  virtual void privateAbort(int src_id, int dest_id) = 0;
+  virtual void privatePubKey(int src_id, const std::string& key) = 0;
+#endif  // SECURE
 };
 
 /* Server API */
@@ -314,6 +417,12 @@ public:
   virtual bool checkLoggedIn(const std::string& path, ID_t& id) = 0;
   virtual bool checkRegistered(const std::string& path, ID_t& id) = 0;
   virtual StatusCode getAllPeers(const std::string& path, std::vector<Peer>* peers, int& channel) = 0;
+#if SECURE
+  virtual StatusCode privateRequest(int src_id, int dest_id) = 0;
+  virtual StatusCode privateConfirm(int src_id, int dest_id) = 0;
+  virtual StatusCode privateAbort(int src_id, int dest_id) = 0;
+  virtual StatusCode privatePubKey(int src_id, const std::string& key) = 0;
+#endif  // SECURE
 
   virtual void terminate() = 0;
 };

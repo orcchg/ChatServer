@@ -91,5 +91,12 @@ void SecureClientApiImpl::getAllPeers(int channel) {
   BIO_write(m_bio, request.c_str(), request.length());
 }
 
+/* Private secure communication */
+// ----------------------------------------------------------------------------
+void SecureClientApiImpl::privateRequest(int src_id, int dest_id) {}
+void SecureClientApiImpl::privateConfirm(int src_id, int dest_id) {}
+void SecureClientApiImpl::privateAbort(int src_id, int dest_id) {}
+void SecureClientApiImpl::privatePubKey(int src_id, const std::string& key) {}
+
 #endif  // SECURE
 

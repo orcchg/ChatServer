@@ -48,6 +48,12 @@ public:
   void isRegistered(const std::string& name) override;
   void getAllPeers() override;
   void getAllPeers(int channel) override;
+#if SECURE
+  void privateRequest(int src_id, int dest_id) override;
+  void privateConfirm(int src_id, int dest_id) override;
+  void privateAbort(int src_id, int dest_id) override;
+  void privatePubKey(int src_id, const std::string& key) override;
+#endif  // SECURE
 
 private:
   BIO* m_bio;

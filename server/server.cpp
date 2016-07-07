@@ -89,18 +89,25 @@ Server::Server(int port_number)
   listen(m_socket, 20);
 
   // utility table
-  m_methods["GET"] = Method::GET;
-  m_methods["POST"] = Method::POST;
-  m_methods["PUT"] = Method::PUT;
+  m_methods["GET"]    = Method::GET;
+  m_methods["POST"]   = Method::POST;
+  m_methods["PUT"]    = Method::PUT;
   m_methods["DELETE"] = Method::DELETE;
-  m_paths[PATH_LOGIN] = Path::LOGIN;
-  m_paths[PATH_REGISTER] = Path::REGISTER;
-  m_paths[PATH_MESSAGE] = Path::MESSAGE;
-  m_paths[PATH_LOGOUT] = Path::LOGOUT;
+
+  m_paths[PATH_LOGIN]          = Path::LOGIN;
+  m_paths[PATH_REGISTER]       = Path::REGISTER;
+  m_paths[PATH_MESSAGE]        = Path::MESSAGE;
+  m_paths[PATH_LOGOUT]         = Path::LOGOUT;
   m_paths[PATH_SWITCH_CHANNEL] = Path::SWITCH_CHANNEL;
-  m_paths[PATH_IS_LOGGED_IN] = Path::IS_LOGGED_IN;
-  m_paths[PATH_IS_REGISTERED] = Path::IS_REGISTERED;
-  m_paths[PATH_ALL_PEERS] = Path::ALL_PEERS;
+  m_paths[PATH_IS_LOGGED_IN]   = Path::IS_LOGGED_IN;
+  m_paths[PATH_IS_REGISTERED]  = Path::IS_REGISTERED;
+  m_paths[PATH_ALL_PEERS]      = Path::ALL_PEERS;
+#if SECURE
+  m_paths[PATH_PRIVATE_REQUEST] = Path::PRIVATE_REQUEST;
+  m_paths[PATH_PRIVATE_CONFIRM] = Path::PRIVATE_CONFIRM;
+  m_paths[PATH_PRIVATE_ABORT]   = Path::PRIVATE_ABORT;
+  m_paths[PATH_PRIVATE_PUBKEY]  = Path::PRIVATE_PUBKEY;
+#endif  // SECURE
 
   m_api_impl = new ServerApiImpl();
   m_log_database = new db::LogTable();
