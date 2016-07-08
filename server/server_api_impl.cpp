@@ -24,6 +24,9 @@
 #include <vector>
 #include "all.h"
 #include "database/peer_table_impl.h"
+#if SECURE
+#include "database/keys_table_impl.h"
+#endif  // SECURE
 #include "server_api_impl.h"
 
 static const char* STANDARD_HEADERS = "Server: ChatServer-" D_VERSION "\r\nContent-Type: application/json";
@@ -47,10 +50,16 @@ PeerDTO RegistrationToPeerDTOMapper::map(const RegistrationForm& form) {
 ServerApiImpl::ServerApiImpl()
   : m_socket(0), m_payload(NULL_PAYLOAD) {
   m_peers_database = new db::PeerTable();
+#if SECURE
+  m_keys_database = new db::KeysTable();
+#endif  // SECURE
 }
 
 ServerApiImpl::~ServerApiImpl() {
   delete m_peers_database;  m_peers_database = nullptr;
+#if SECURE
+  delete m_keys_database;  m_keys_database = nullptr;
+#endif  // SECURE
 }
 
 void ServerApiImpl::setSocket(int socket) {
@@ -660,11 +669,12 @@ StatusCode ServerApiImpl::privateRequest(const std::string& path, ID_t& id) {
   }
   auto dest_peer_it = m_peers.find(dest_id);
   if (dest_peer_it != m_peers.end()) {
+    recordPendingHandshake(id, dest_id);  // id --> dest_id
     std::ostringstream oss, json;
     json << "{\"" D_ITEM_PRIVATE_REQUEST "\":{\"" D_ITEM_SRC_ID "\":" << id
          << ",\"" D_ITEM_DEST_ID "\":" << dest_id
          << "}}";
-    oss << "HTTP/1.1 200 Switched channel\r\n" << STANDARD_HEADERS << "\r\n"
+    oss << "HTTP/1.1 200 Handshake request\r\n" << STANDARD_HEADERS << "\r\n"
         << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
         << json.str() << "\0";
     send(dest_peer_it->second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
@@ -679,15 +689,16 @@ StatusCode ServerApiImpl::privateRequest(const std::string& path, ID_t& id) {
 
 StatusCode ServerApiImpl::privateConfirm(const std::string& path, ID_t& id) {
   TRC("privateConfirm(%s)", path.c_str());
-  return sendPrivateConfirm(path, false, id);
+  ID_t dest_id = UNKNOWN_ID;
+  return sendPrivateConfirm(path, false, id, dest_id);
 }
 
 StatusCode ServerApiImpl::privateAbort(const std::string& path, ID_t& id) {
   TRC("privateAbort(%s)", path.c_str());
-  return sendPrivateConfirm(path, true, id);
+  ID_t dest_id = UNKNOWN_ID;
+  return sendPrivateConfirm(path, true, id, dest_id);
 }
 
-// {"private_pubkey":{"key":TEXT}}
 StatusCode ServerApiImpl::privatePubKey(const std::string& path, const std::string& json, ID_t& id) {
   TRC("privatePubKey(%s)", path.c_str());
   id = UNKNOWN_ID;
@@ -713,8 +724,9 @@ StatusCode ServerApiImpl::privatePubKey(const std::string& path, const std::stri
 
 /* Utility */
 // ----------------------------------------------
-StatusCode ServerApiImpl::sendPrivateConfirm(const std::string& path, bool i_reject, ID_t& id) {
-  id = UNKNOWN_ID;
+StatusCode ServerApiImpl::sendPrivateConfirm(const std::string& path, bool i_reject, ID_t& src_id, ID_t& dest_id) {
+  TRC("sendPrivateConfirm(%s, %i)", path.c_str(), static_cast<int>(i_reject));
+  src_id = UNKNOWN_ID, dest_id = UNKNOWN_ID;
   std::vector<Query> params;
   m_parser.parsePath(path, &params);
   for (auto& query : params) {
@@ -727,25 +739,37 @@ StatusCode ServerApiImpl::sendPrivateConfirm(const std::string& path, bool i_rej
     ERR("Private confirm failed: wrong query params: %s", path.c_str());
     return StatusCode::INVALID_QUERY;
   }
-  id = std::stoll(params[0].value.c_str());
-  ID_t dest_id = std::stoll(params[1].value.c_str());
+  src_id = std::stoll(params[0].value.c_str());
+  dest_id = std::stoll(params[1].value.c_str());
   bool accept = i_reject ? false : (std::stoi(params[2].value.c_str()) != 0);
-  if (!isAuthorized(id)) {
+  if (!isAuthorized(src_id)) {
     ERR("Source peer with id [%lli] is not authorized", id);
     return StatusCode::UNAUTHORIZED;
   }
-  if (id == dest_id) {
+  if (src_id == dest_id) {
     ERR("Same id in query params: src_id [%lli], dest_id [%lli]", id, dest_id);
     return StatusCode::INVALID_QUERY;
   }
   auto dest_peer_it = m_peers.find(dest_id);
   if (dest_peer_it != m_peers.end()) {
+    if (!hasPendingHandshake(dest_id, src_id)) {
+      ERR("Attempt to confirm secure handshake without any request from another peer");
+      return StatusCode::NOT_REQUESTED;
+    }
+    if (accept) {
+      satisfyPendingHandshake(dest_id, src_id);
+      DBG("Handshake between peer [%lli] and peer [%lli] has been established", id, dest_id);
+    } else {
+      rejectPendingHandshake(dest_id, src_id);
+      DBG("Peer [%lli] has rejected to establish handshake with peer [%lli]", id, dest_id);
+    }
     std::ostringstream oss, json;
-    json << "{\"" D_ITEM_PRIVATE_CONFIRM "\":{\"" D_ITEM_SRC_ID "\":" << id
+    json << "{\"" D_ITEM_PRIVATE_CONFIRM "\":{\"" D_ITEM_SRC_ID "\":" << src_id
          << ",\"" D_ITEM_DEST_ID "\":" << dest_id
          << ",\"" D_ITEM_ACCEPT "\":" << (accept ? 1 : 0)
          << "}}";
-    oss << "HTTP/1.1 200 Switched channel\r\n" << STANDARD_HEADERS << "\r\n"
+    oss << "HTTP/1.1 200 Handshake " << (accept ? "confirmed" : "rejected") << "\r\n"
+        << STANDARD_HEADERS << "\r\n"
         << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
         << json.str() << "\0";
     send(dest_peer_it->second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
@@ -759,7 +783,56 @@ StatusCode ServerApiImpl::sendPrivateConfirm(const std::string& path, bool i_rej
 }
 
 void ServerApiImpl::storePublicKey(ID_t id, const PublicKey& key) {
-  // TODO
+  TRC("storePublicKey(%lli)", id);
+  KeyDTO key_dto(id, key.getKey());
+  m_keys_database->addKey(id, key_dto);
+}
+
+/* Handshake */
+// ----------------------------------------------
+void ServerApiImpl::recordPendingHandshake(ID_t src_id, ID_t dest_id) {
+  TRC("recordPendingHandshake(%lli, %lli)", src_id, dest_id);
+  auto it = m_handshakes.find(src_id);
+  std::pair<ID_t, bool> input(dest_id, false);
+  if (it == m_handshakes.end()) {
+    std::pair<ID_t, std::unordered_map<ID_t, bool>> empty_pair(src_id, std::unordered_map<ID_t, bool>());
+    empty_pair.second.insert(input);
+    m_handshakes.insert(empty_pair);
+  } else {
+    it->second.insert(input);
+  }
+}
+
+bool ServerApiImpl::hasPendingHandshake(ID_t src_id, ID_t dest_id) {
+  TRC("hasPendingHandshake(%lli, %lli)", src_id, dest_id);
+  auto it = m_handshakes.find(src_id);
+  if (it != m_handshakes.end()) {
+    auto dit = it->second.find(dest_id);
+    return dit != it->second.end();
+  }
+  return false;
+}
+
+void ServerApiImpl::satisfyPendingHandshake(ID_t src_id, ID_t dest_id) {
+  TRC("satisfyPendingHandshake(%lli, %lli)", src_id, dest_id);
+  auto it = m_handshakes.find(src_id);
+  if (it != m_handshakes.end()) {
+    auto dit = it->second.find(dest_id);
+    if (dit != it->second.end()) {
+      dit->second = true;
+    }
+  }
+}
+
+void ServerApiImpl::rejectPendingHandshake(ID_t src_id, ID_t dest_id) {
+  TRC("rejectPendingHandshake(%lli, %lli)", src_id, dest_id);
+  auto it = m_handshakes.find(src_id);
+  if (it != m_handshakes.end()) {
+    auto dit = it->second.find(dest_id);
+    if (dit != it->second.end()) {
+      it->second.erase(dit);
+    }
+  }
 }
 
 #endif  // SECURE

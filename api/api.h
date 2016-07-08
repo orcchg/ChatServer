@@ -376,7 +376,8 @@ enum class StatusCode : int {
   UNAUTHORIZED       = 7,
   WRONG_CHANNEL      = 8,
   SAME_CHANNEL       = 9,
-  NO_SUCH_PEER       = 10
+  NO_SUCH_PEER       = 10,
+  NOT_REQUESTED      = 11
 };
 
 enum class ChannelMove : int {

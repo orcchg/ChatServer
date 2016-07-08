@@ -26,6 +26,7 @@
 
 #define TABLE_NAME D_KEYS_TABLE_NAME
 
+const char* COLUMN_NAME_SOURCE_ID = D_COLUMN_NAME_SOURCE_ID;
 const char* COLUMN_NAME_KEY = D_COLUMN_NAME_KEY;
 
 namespace db {
@@ -116,9 +117,9 @@ KeyDTO KeysTable::getKey(ID_t src_id) {
   INF("enter KeysTable::getKey().");
   std::string select_statement = "SELECT * FROM '";
   select_statement += this->m_table_name;
-  delete_statement += "' WHERE " D_COLUMN_NAME_SOURCE_ID " == '";
-  delete_statement += std::to_string(src_id);
-  delete_statement += "';";
+  select_statement += "' WHERE " D_COLUMN_NAME_SOURCE_ID " == '";
+  select_statement += std::to_string(src_id);
+  select_statement += "';";
   this->__prepare_statement__(select_statement);
   sqlite3_step(this->m_db_statement);
   ID_t check_id = sqlite3_column_int64(this->m_db_statement, 1);
@@ -129,10 +130,10 @@ KeyDTO KeysTable::getKey(ID_t src_id) {
         check_id, this->m_table_name.c_str(), this->m_db_name.c_str());
 
     const void* raw_key = reinterpret_cast<const char*>(sqlite3_column_text(this->m_db_statement, 2));
-    WrappedString key(raw_key);
+    WrappedString key_str(raw_key);
 
-    DBG("Loaded column data: " D_COLUMN_NAME_KEY " ["%s"].", key.c_str());
-    key = KeyDTO(src_id, key.get());
+    DBG("Loaded column data: " D_COLUMN_NAME_KEY " ["%s"].", key_str.c_str());
+    key = KeyDTO(src_id, key_str.get());
     DBG("Proper key instance has been constructed.");
   } else {
     WRN("Key with src_id [%lli] is missing in table ["%s"] of database %p!",

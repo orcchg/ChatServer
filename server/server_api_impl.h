@@ -28,6 +28,9 @@
 #include "parser/my_parser.h"
 #include "peer.h"
 #include "storage/peer_table.h"
+#if SECURE
+#include "storage/keys_table.h"
+#endif  // SECURE
 
 /* Mapping */
 // ----------------------------------------------------------------------------
@@ -84,6 +87,10 @@ private:
   MyParser m_parser;
   std::unordered_map<ID_t, server::Peer> m_peers;
   IPeerTable* m_peers_database;
+#if SECURE
+  IKeysTable* m_keys_database;
+  std::unordered_map<ID_t, std::unordered_map<ID_t, bool>> m_handshakes;
+#endif  // SECURE
   LoginToPeerDTOMapper m_login_mapper;
   RegistrationToPeerDTOMapper m_register_mapper;
 
@@ -100,8 +107,14 @@ private:
   std::ostringstream& prepareSimpleResponse(std::ostringstream& out, int code, const std::string& message) const;
   void simpleResponse(const std::vector<ID_t>& ids, int code, const std::string& message) const;
 #if SECURE
-  StatusCode sendPrivateConfirm(const std::string& path, bool i_reject, ID_t& id);
+  StatusCode sendPrivateConfirm(const std::string& path, bool i_reject, ID_t& src_id, ID_t& dest_id);
   void storePublicKey(ID_t id, const PublicKey& key);
+
+  /* Handshake */
+  void recordPendingHandshake(ID_t src_id, ID_t dest_id);
+  bool hasPendingHandshake(ID_t src_id, ID_t dest_id);
+  void satisfyPendingHandshake(ID_t src_id, ID_t dest_id);
+  void rejectPendingHandshake(ID_t src_id, ID_t dest_id);
 #endif  // SECURE
 };
 
