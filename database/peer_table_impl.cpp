@@ -18,11 +18,11 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
+#include "common.h"
 #include "logger.h"
 #include "peer_table_impl.h"
 
-#define TABLE_NAME "peers"
-#define BASE_ID 1000
+#define TABLE_NAME D_PEERS_TABLE_NAME
 
 namespace db {
 
