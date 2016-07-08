@@ -109,7 +109,7 @@ void ClientApiImpl::privateAbort(int src_id, int dest_id) {
   send(m_socket, request.c_str(), request.length(), 0);
 }
 
-void ClientApiImpl::privatePubKey(int id, const std::string& key) {
+void ClientApiImpl::privatePubKey(int id, const PublicKey& key) {
   std::string request = util::privatePubKey_request(m_host, id, key);
   send(m_socket, request.c_str(), request.length(), 0);
 }

@@ -272,3 +272,34 @@ std::ostream& operator << (std::ostream& out, const Token& token) {
   return out;
 }
 
+// ----------------------------------------------
+#if SECURE
+
+PublicKey::PublicKey(ID_t id, const std::string& key)
+  : m_id(id), m_key(key) {
+}
+
+std::string PublicKey::toJson() const {
+  std::ostringstream oss;
+  oss << "{\"" D_ITEM_ID "\":" << m_id
+      << ",\"" D_ITEM_KEY "\":\"" << m_key
+      << "\"}";
+  return oss.str();
+}
+
+PublicKey PublicKey::fromJson(const std::string& json) {
+  rapidjson::Document document;
+  document.Parse(json.c_str());
+
+  if (document.IsObject() &&
+      document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64() &&
+      document.HasMember(ITEM_KEY) && document[ITEM_KEY].IsString()) {
+    return PublicKey(document[ITEM_ID].GetInt64(), document[ITEM_KEY].GetString());
+  } else {
+    ERR("Public Key parse failed: invalid json: %s", json.c_str());
+    throw ConvertException();
+  }
+}
+
+#endif  // SECURE
+

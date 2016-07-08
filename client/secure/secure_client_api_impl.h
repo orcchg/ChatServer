@@ -52,7 +52,7 @@ public:
   void privateRequest(int src_id, int dest_id) override;
   void privateConfirm(int src_id, int dest_id, bool accept) override;
   void privateAbort(int src_id, int dest_id) override;
-  void privatePubKey(int id, const std::string& key) override;
+  void privatePubKey(int id, const PublicKey& key) override;
 #endif  // SECURE
 
 private:

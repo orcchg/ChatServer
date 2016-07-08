@@ -238,7 +238,7 @@
  *
  *  @params:  id   :  INT - source peer's id
  *
- *  @request_body:  {"private_pubkey":{"key":TEXT}}
+ *  @request_body:  {"private_pubkey":{"id":INT,"key":TEXT}}
  *
  *  @response_body: --
  */
@@ -417,7 +417,7 @@ public:
   virtual void privateRequest(int src_id, int dest_id) = 0;  // send request to Server from src peer
   virtual void privateConfirm(int src_id, int dest_id, bool accept) = 0;  // send confirm to Server from src peer
   virtual void privateAbort(int src_id, int dest_id) = 0;    // send abort to Server from src peer
-  virtual void privatePubKey(int src_id, const std::string& key) = 0;  // send public key to Server from src peer
+  virtual void privatePubKey(int src_id, const PublicKey& key) = 0;  // send public key to Server from src peer
 #endif  // SECURE
 };
 
@@ -439,7 +439,7 @@ public:
   virtual void sendCheck(bool check, Path action, ID_t id) = 0;
   virtual void sendPeers(StatusCode status, const std::vector<Peer>& peers, int channel) = 0;
 #if SECURE
-  virtual void sendPubKey(const std::string& key, ID_t dest_id) = 0;
+  virtual void sendPubKey(const PublicKey& key, ID_t dest_id) = 0;  // forward stored public key to dest peer
 #endif
 
   virtual StatusCode login(const std::string& json, ID_t& id) = 0;

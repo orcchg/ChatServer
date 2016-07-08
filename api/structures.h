@@ -210,5 +210,21 @@ private:
 
 std::ostream& operator << (std::ostream& out, const Token& token);
 
+// ----------------------------------------------
+#if SECURE
+
+class PublicKey {
+public:
+  PublicKey(ID_t id, const std::string& key);
+  std::string toJson() const;
+  static PublicKey fromJson(const std::string& json);
+
+private:
+  ID_t m_id;
+  std::string m_key;
+};
+
+#endif  // SECURE
+
 #endif  // CHAT_SERVER_STRUCTURES__H__
 

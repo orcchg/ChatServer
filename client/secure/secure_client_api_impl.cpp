@@ -108,7 +108,7 @@ void SecureClientApiImpl::privateAbort(int src_id, int dest_id) {
   BIO_write(m_bio, request.c_str(), request.length());
 }
 
-void SecureClientApiImpl::privatePubKey(int id, const std::string& key) {
+void SecureClientApiImpl::privatePubKey(int id, const PublicKey& key) {
   std::string request = util::privatePubKey_request(m_host, id, key);
   BIO_write(m_bio, request.c_str(), request.length());
 }

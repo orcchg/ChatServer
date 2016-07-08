@@ -180,10 +180,25 @@ void ServerApiImpl::sendPeers(StatusCode status, const std::vector<Peer>& peers,
 }
 
 #if SECURE
-void ServerApiImpl::sendPubKey(const std::string& key, ID_t dest_id) {
-  // TODO:
+
+void ServerApiImpl::sendPubKey(const PublicKey& key, ID_t dest_id) {
+  TRC("sendPubKey(dest_id = %lli)", dest_id);
+  auto dest_peer_it = m_peers.find(dest_id);
+  if (dest_peer_it == m_peers.end()) {
+    ERR("Destination peer with id [%lli] is not authorized!");
+    return;
+  }
+  std::ostringstream oss, json;
+  json << "{\"" D_ITEM_PRIVATE_PUBKEY "\":" << key.toJson() << "}";
+  oss << "HTTP/1.1 200 OK\r\n"
+      << STANDARD_HEADERS << "\r\n"
+      << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
+      << json.str() << "\0";
+  MSG("Response: %s", oss.str().c_str());
+  send(dest_peer_it->second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
 }
-#endif
+
+#endif  // SECURE
 
 // ----------------------------------------------
 StatusCode ServerApiImpl::login(const std::string& json, ID_t& id) {
@@ -635,6 +650,10 @@ StatusCode ServerApiImpl::privateRequest(const std::string& path, ID_t& id) {
   }
   id = std::stoll(params[0].value.c_str());
   ID_t dest_id = std::stoll(params[1].value.c_str());
+  if (!isAuthorized(id)) {
+    ERR("Source peer with id [%lli] is not authorized", id);
+    return StatusCode::UNAUTHORIZED;
+  }
   if (id == dest_id) {
     ERR("Same id in query params: src_id [%lli], dest_id [%lli]", id, dest_id);
     return StatusCode::INVALID_QUERY;
@@ -651,11 +670,11 @@ StatusCode ServerApiImpl::privateRequest(const std::string& path, ID_t& id) {
     send(dest_peer_it->second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
     oss.str("");
     json.str("");
-    return StatusCode::SUCCESS;
   } else {
     ERR("Destination peer hasn't logged in, dest_id [%lli]", dest_id);
     return StatusCode::NO_SUCH_PEER;
   }
+  return StatusCode::SUCCESS;
 }
 
 StatusCode ServerApiImpl::privateConfirm(const std::string& path, ID_t& id) {
@@ -682,6 +701,14 @@ StatusCode ServerApiImpl::privatePubKey(const std::string& path, const std::stri
     return StatusCode::INVALID_QUERY;
   }
   id = std::stoll(params[0].value.c_str());
+  if (isAuthorized(id)) {
+    PublicKey key = PublicKey::fromJson(json);
+    storePublicKey(id, key);
+  } else {
+    ERR("Source peer with id [%lli] is not authorized", id);
+    return StatusCode::UNAUTHORIZED;
+  }
+  return StatusCode::SUCCESS;
 }
 
 /* Utility */
@@ -703,6 +730,10 @@ StatusCode ServerApiImpl::sendPrivateConfirm(const std::string& path, bool i_rej
   id = std::stoll(params[0].value.c_str());
   ID_t dest_id = std::stoll(params[1].value.c_str());
   bool accept = i_reject ? false : (std::stoi(params[2].value.c_str()) != 0);
+  if (!isAuthorized(id)) {
+    ERR("Source peer with id [%lli] is not authorized", id);
+    return StatusCode::UNAUTHORIZED;
+  }
   if (id == dest_id) {
     ERR("Same id in query params: src_id [%lli], dest_id [%lli]", id, dest_id);
     return StatusCode::INVALID_QUERY;
@@ -720,11 +751,15 @@ StatusCode ServerApiImpl::sendPrivateConfirm(const std::string& path, bool i_rej
     send(dest_peer_it->second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
     oss.str("");
     json.str("");
-    return StatusCode::SUCCESS;
   } else {
     ERR("Destination peer hasn't logged in, dest_id [%lli]", dest_id);
     return StatusCode::NO_SUCH_PEER;
   }
+  return StatusCode::SUCCESS;
+}
+
+void ServerApiImpl::storePublicKey(ID_t id, const PublicKey& key) {
+  // TODO
 }
 
 #endif  // SECURE
