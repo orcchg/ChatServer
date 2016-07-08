@@ -60,6 +60,7 @@ protected:
   ClientApi* m_api_impl;
 #if SECURE
   secure::ICryptor* m_cryptor;
+  std::pair<secure::Key, secure::Key> m_key_pair;
 #endif  // SECURE
 
   bool readConfiguration(const std::string& config_file);
@@ -90,6 +91,10 @@ protected:
   void startChat();
 
   void receiverThread();
+
+#if SECURE
+  void generateKeyPair();
+#endif  // SECURE
 };
 
 struct ClientException {};

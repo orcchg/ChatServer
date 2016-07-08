@@ -538,10 +538,33 @@ void Client::startChat() {
         continue;
       case util::Command::MENU:
         printf("\t\e[5;00;37m.m - list commands\e[m\n");
-        printf("\t\e[5;00;37m.d <id>  - send message directly to peer with <id>\e[m\n");
+        printf("\t\e[5;00;37m.d <id> - send message directly to peer with <id>\e[m\n");
         printf("\t\e[5;00;37m.s <channel> - switch to another <channel>\e[m\n");
+#if SECURE
+        printf("\t\e[5;00;37m.pr <id> - send request to establish private secure chat with <id>\e[m\n");
+        printf("\t\e[5;00;37m.pc <id> - confirm pending request from <id> for private secure chat\e[m\n");
+        printf("\t\e[5;00;37m.pd <id> - reject pending request from <id> for private secure chat\e[m\n");
+        printf("\t\e[5;00;37m.pk - send public key (generate if not exists)\e[m\n");
+#endif  // SECURE
         printf("\t\e[5;00;37m.q - logout\e[m\n");
         continue;
+#if SECURE
+      case util::Command::PRIVATE_REQUEST:
+        m_api_impl->privateRequest(m_id, value);
+        continue;
+      case util::Command::PRIVATE_CONFIRM:
+        m_api_impl->privateConfirm(m_id, value, true);
+        continue;
+      case util::Command::PRIVATE_ABORT:
+        m_api_impl->privateAbort(m_id, value);
+        continue;
+      case util::Command::PRIVATE_PUBKEY:
+        if (m_key_pair.first == secure::Key::EMPTY) {
+          generateKeyPair();
+        }
+        m_api_impl->privatePubKey(m_id, m_key_pair.first);
+        continue;
+#endif  // SECURE
       case util::Command::UNKNOWN:
       default:
         // ignore invalid commands, it could be just a message
@@ -609,4 +632,14 @@ void Client::receiverThread() {
     }
   }
 }
+
+#if SECURE
+
+void Client::generateKeyPair() {
+  DBG("Generating key pair...");
+  // TODO: generate keys
+}
+
+#endif  // SECURE
+
 

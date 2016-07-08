@@ -190,11 +190,11 @@ void ServerApiImpl::sendPeers(StatusCode status, const std::vector<Peer>& peers,
 
 #if SECURE
 
-void ServerApiImpl::sendPubKey(const PublicKey& key, ID_t dest_id) {
+void ServerApiImpl::sendPubKey(const secure::Key& key, ID_t dest_id) {
   TRC("sendPubKey(dest_id = %lli)", dest_id);
   auto dest_peer_it = m_peers.find(dest_id);
   if (dest_peer_it == m_peers.end()) {
-    ERR("Destination peer with id [%lli] is not authorized!");
+    ERR("Destination peer with id [%lli] is not authorized!", dest_id);
     return;
   }
   std::ostringstream oss, json;
@@ -713,7 +713,7 @@ StatusCode ServerApiImpl::privatePubKey(const std::string& path, const std::stri
   }
   id = std::stoll(params[0].value.c_str());
   if (isAuthorized(id)) {
-    PublicKey key = PublicKey::fromJson(json);
+    secure::Key key = secure::Key::fromJson(json);
     storePublicKey(id, key);
   } else {
     ERR("Source peer with id [%lli] is not authorized", id);
@@ -743,11 +743,11 @@ StatusCode ServerApiImpl::sendPrivateConfirm(const std::string& path, bool i_rej
   dest_id = std::stoll(params[1].value.c_str());
   bool accept = i_reject ? false : (std::stoi(params[2].value.c_str()) != 0);
   if (!isAuthorized(src_id)) {
-    ERR("Source peer with id [%lli] is not authorized", id);
+    ERR("Source peer with id [%lli] is not authorized", src_id);
     return StatusCode::UNAUTHORIZED;
   }
   if (src_id == dest_id) {
-    ERR("Same id in query params: src_id [%lli], dest_id [%lli]", id, dest_id);
+    ERR("Same id in query params: src_id [%lli], dest_id [%lli]", src_id, dest_id);
     return StatusCode::INVALID_QUERY;
   }
   auto dest_peer_it = m_peers.find(dest_id);
@@ -758,10 +758,10 @@ StatusCode ServerApiImpl::sendPrivateConfirm(const std::string& path, bool i_rej
     }
     if (accept) {
       satisfyPendingHandshake(dest_id, src_id);
-      DBG("Handshake between peer [%lli] and peer [%lli] has been established", id, dest_id);
+      DBG("Handshake between peer [%lli] and peer [%lli] has been established", src_id, dest_id);
     } else {
       rejectPendingHandshake(dest_id, src_id);
-      DBG("Peer [%lli] has rejected to establish handshake with peer [%lli]", id, dest_id);
+      DBG("Peer [%lli] has rejected to establish handshake with peer [%lli]", src_id, dest_id);
     }
     std::ostringstream oss, json;
     json << "{\"" D_ITEM_PRIVATE_CONFIRM "\":{\"" D_ITEM_SRC_ID "\":" << src_id
@@ -782,7 +782,7 @@ StatusCode ServerApiImpl::sendPrivateConfirm(const std::string& path, bool i_rej
   return StatusCode::SUCCESS;
 }
 
-void ServerApiImpl::storePublicKey(ID_t id, const PublicKey& key) {
+void ServerApiImpl::storePublicKey(ID_t id, const secure::Key& key) {
   TRC("storePublicKey(%lli)", id);
   KeyDTO key_dto(id, key.getKey());
   m_keys_database->addKey(id, key_dto);

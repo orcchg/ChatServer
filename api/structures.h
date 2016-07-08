@@ -213,11 +213,19 @@ std::ostream& operator << (std::ostream& out, const Token& token);
 // ----------------------------------------------
 #if SECURE
 
-class PublicKey {
+namespace secure {
+
+class Key {
 public:
-  PublicKey(ID_t id, const std::string& key);
+  static Key EMPTY;
+
+  Key();
+  Key(ID_t id, const std::string& key);
+  bool operator == (const Key& rhs) const;
+  bool operator != (const Key& rhs) const;
+
   std::string toJson() const;
-  static PublicKey fromJson(const std::string& json);
+  static Key fromJson(const std::string& json);
 
   inline ID_t getId() const { return m_id; }
   inline const std::string& getKey() const { return m_key; }
@@ -226,6 +234,8 @@ private:
   ID_t m_id;
   std::string m_key;
 };
+
+}
 
 #endif  // SECURE
 

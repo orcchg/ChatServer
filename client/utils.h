@@ -40,7 +40,17 @@ bool checkSystemMessage(const std::string& json, std::string* system);
 bool isEmailValid(const std::string& email);
 
 enum class Command : int {
-  UNKNOWN = -1, DIRECT_MESSAGE = 0, SWITCH_CHANNEL = 1, LOGOUT = 2, MENU = 3
+  UNKNOWN = -1,
+  DIRECT_MESSAGE = 0,
+  SWITCH_CHANNEL = 1,
+  LOGOUT = 2,
+  MENU = 3
+#if SECURE
+  , PRIVATE_REQUEST = 4
+  , PRIVATE_CONFIRM = 5
+  , PRIVATE_ABORT = 6
+  , PRIVATE_PUBKEY = 7
+#endif  // SECURE
 };
 
 Command parseCommand(const std::string& command, ID_t& value);

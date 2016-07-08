@@ -61,7 +61,7 @@ public:
   void sendCheck(bool check, Path action, ID_t id) override;
   void sendPeers(StatusCode status, const std::vector<Peer>& peers, int channel) override;
 #if SECURE
-  void sendPubKey(const PublicKey& key, ID_t dest_id) override;
+  void sendPubKey(const secure::Key& key, ID_t dest_id) override;
 #endif
 
   StatusCode login(const std::string& json, ID_t& id) override;
@@ -108,7 +108,7 @@ private:
   void simpleResponse(const std::vector<ID_t>& ids, int code, const std::string& message) const;
 #if SECURE
   StatusCode sendPrivateConfirm(const std::string& path, bool i_reject, ID_t& src_id, ID_t& dest_id);
-  void storePublicKey(ID_t id, const PublicKey& key);
+  void storePublicKey(ID_t id, const secure::Key& key);
 
   /* Handshake */
   void recordPendingHandshake(ID_t src_id, ID_t dest_id);
