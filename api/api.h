@@ -204,6 +204,7 @@
  *
  *  @params:  src_id   :  INT - source peer's id
  *            dest_id  :  INT - destination peer's id
+ *            accept   :  INT - confirm (~0) or reject (0) private communication
  *
  *  @response_body: --
  *
@@ -227,7 +228,7 @@
  *
  *  @note:  destination peer receives the following payload in json format:
  *
- *          {"private_confirm":{"src_id":INT,"dest_id":INT,"accept":INT}}
+ *          {"private_confirm":{"src_id":INT,"dest_id":INT,"accept":false}}
  */
 
 /**
@@ -374,7 +375,8 @@ enum class StatusCode : int {
   INVALID_QUERY      = 6,
   UNAUTHORIZED       = 7,
   WRONG_CHANNEL      = 8,
-  SAME_CHANNEL       = 9
+  SAME_CHANNEL       = 9,
+  NO_SUCH_PEER       = 10
 };
 
 enum class ChannelMove : int {
@@ -421,6 +423,9 @@ public:
 
 /* Server API */
 // ----------------------------------------------
+/**
+ *  @note: below 'ID_t id' is the id of source peer which has issued a request
+ */
 class ServerApi {
 public:
   virtual ~ServerApi() {}
@@ -433,6 +438,9 @@ public:
   virtual void sendStatus(StatusCode status, Path action, ID_t id) = 0;
   virtual void sendCheck(bool check, Path action, ID_t id) = 0;
   virtual void sendPeers(StatusCode status, const std::vector<Peer>& peers, int channel) = 0;
+#if SECURE
+  virtual void sendPubKey(const std::string& key, ID_t dest_id) = 0;
+#endif
 
   virtual StatusCode login(const std::string& json, ID_t& id) = 0;
   virtual StatusCode registrate(const std::string& json, ID_t& id) = 0;
@@ -443,10 +451,10 @@ public:
   virtual bool checkRegistered(const std::string& path, ID_t& id) = 0;
   virtual StatusCode getAllPeers(const std::string& path, std::vector<Peer>* peers, int& channel) = 0;
 #if SECURE
-  virtual StatusCode privateRequest(int src_id, int dest_id) = 0;  // forward request to dest peer
-  virtual StatusCode privateConfirm(int src_id, int dest_id, bool accept) = 0;  // forward confirm to dest peer
-  virtual StatusCode privateAbort(int src_id, int dest_id) = 0;    // forward abort to dest peer
-  virtual StatusCode privatePubKey(int dest_id, const std::string& key) = 0;  // forward public key to dest peer
+  virtual StatusCode privateRequest(const std::string& path, ID_t& id) = 0;  // forward request to dest peer
+  virtual StatusCode privateConfirm(const std::string& path, ID_t& id) = 0;  // forward confirm to dest peer
+  virtual StatusCode privateAbort(const std::string& path, ID_t& id) = 0;    // forward abort to dest peer
+  virtual StatusCode privatePubKey(const std::string& path, const std::string& json, ID_t& id) = 0;  // store public key at Server side
 #endif  // SECURE
 
   virtual void terminate() = 0;

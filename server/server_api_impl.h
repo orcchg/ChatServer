@@ -57,6 +57,9 @@ public:
   void sendStatus(StatusCode status, Path action, ID_t id) override;
   void sendCheck(bool check, Path action, ID_t id) override;
   void sendPeers(StatusCode status, const std::vector<Peer>& peers, int channel) override;
+#if SECURE
+  void sendPubKey(const std::string& key, ID_t dest_id) override;
+#endif
 
   StatusCode login(const std::string& json, ID_t& id) override;
   StatusCode registrate(const std::string& json, ID_t& id) override;
@@ -67,10 +70,10 @@ public:
   bool checkRegistered(const std::string& path, ID_t& id) override;
   StatusCode getAllPeers(const std::string& path, std::vector<Peer>* peers, int& channel) override;
 #if SECURE
-  StatusCode privateRequest(int src_id, int dest_id) override;
-  StatusCode privateConfirm(int src_id, int dest_id, bool accept) override;
-  StatusCode privateAbort(int src_id, int dest_id) override;
-  StatusCode privatePubKey(int dest_id, const std::string& key) override;
+  StatusCode privateRequest(const std::string& path, ID_t& id) override;
+  StatusCode privateConfirm(const std::string& path, ID_t& id) override;
+  StatusCode privateAbort(const std::string& path, ID_t& id) override;
+  StatusCode privatePubKey(const std::string& path, const std::string& json, ID_t& id) override;
 #endif  // SECURE
 
   void terminate() override;
@@ -92,8 +95,13 @@ private:
   void broadcast(const Message& message);
 
   /* Utility */
-  std::string getSymbolicFromQuery(const std::string& path);
-  PeerDTO getPeerFromDatabase(const std::string& symbolic, ID_t& id);
+  std::string getSymbolicFromQuery(const std::string& path) const;
+  PeerDTO getPeerFromDatabase(const std::string& symbolic, ID_t& id) const;
+  std::ostringstream& prepareSimpleResponse(std::ostringstream& out, int code, const std::string& message) const;
+  void simpleResponse(const std::vector<ID_t>& ids, int code, const std::string& message) const;
+#if SECURE
+  StatusCode sendPrivateConfirm(const std::string& path, bool i_reject, ID_t& id);
+#endif  // SECURE
 };
 
 #endif  // CHAT_SERVER_SERVER_API_IMPL__H__

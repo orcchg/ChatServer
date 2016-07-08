@@ -369,6 +369,52 @@ void Server::handleRequest(int socket, ID_t connection_id) {
           break;
         }
         break;
+#if SECURE
+      case Path::PRIVATE_REQUEST:
+        switch (method) {
+          case Method::POST:
+          {
+            ID_t id = UNKNOWN_ID;
+            auto status = m_api_impl->privateRequest(request.startline.path, id);
+            m_api_impl->sendStatus(status, path, id);
+          }
+          break;
+        }
+        break;
+      case Path::PRIVATE_CONFIRM:
+        switch (method) {
+          case Method::POST:
+          {
+            ID_t id = UNKNOWN_ID;
+            auto status = m_api_impl->privateConfirm(request.startline.path, id);
+            m_api_impl->sendStatus(status, path, id);
+          }
+          break;
+        }
+        break;
+      case Path::PRIVATE_ABORT:
+        switch (method) {
+          case Method::DELETE:
+          {
+            ID_t id = UNKNOWN_ID;
+            auto status = m_api_impl->privateAbort(request.startline.path, id);
+            m_api_impl->sendStatus(status, path, id);
+          }
+          break;
+        }
+        break;
+      case Path::PRIVATE_PUBKEY:
+        switch (method) {
+          case Method::POST:
+          {
+            ID_t id = UNKNOWN_ID;
+            auto status = m_api_impl->privatePubKey(request.startline.path, request.body, id);
+            m_api_impl->sendStatus(status, path, id);
+          }
+          break;
+        }
+        break;
+#endif  // SECURE
     }
   }
 }

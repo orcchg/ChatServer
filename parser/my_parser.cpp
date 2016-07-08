@@ -35,7 +35,7 @@ MyParser::MyParser() {
 MyParser::~MyParser() {
 }
 
-Request MyParser::parseRequest(char* http, int nbytes) {
+Request MyParser::parseRequest(char* http, int nbytes) const {
   const char* CRLF = "\r\n";
   std::istringstream iss(http);
   //MSG("Input: %s", iss.str().c_str());
@@ -76,7 +76,7 @@ Request MyParser::parseRequest(char* http, int nbytes) {
   return request;  
 }
 
-Response MyParser::parseResponse(char* http, int nbytes) {
+Response MyParser::parseResponse(char* http, int nbytes) const {
   const char* CRLF = "\r\n";
   std::istringstream iss(http);
   //MSG("Input: %s", iss.str().c_str());
@@ -117,7 +117,7 @@ Response MyParser::parseResponse(char* http, int nbytes) {
   return response;
 }
 
-std::string MyParser::parsePath(const std::string& path, std::vector<Query>* params) {
+std::string MyParser::parsePath(const std::string& path, std::vector<Query>* params) const {
   int i1 = path.find_first_of("?");
   if (i1 == std::string::npos) {  // no query params
     return path;
@@ -126,7 +126,7 @@ std::string MyParser::parsePath(const std::string& path, std::vector<Query>* par
   return path.substr(0, i1);
 }
 
-void MyParser::parsePayload(const std::string& payload, std::vector<Query>* out) {
+void MyParser::parsePayload(const std::string& payload, std::vector<Query>* out) const {
   int i1 = payload.find_first_of("&");
   if (i1 == std::string::npos) {  // no payload items
     return;

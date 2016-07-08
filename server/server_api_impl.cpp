@@ -179,6 +179,12 @@ void ServerApiImpl::sendPeers(StatusCode status, const std::vector<Peer>& peers,
   send(m_socket, oss.str().c_str(), oss.str().length(), 0);
 }
 
+#if SECURE
+void ServerApiImpl::sendPubKey(const std::string& key, ID_t dest_id) {
+  // TODO:
+}
+#endif
+
 // ----------------------------------------------
 StatusCode ServerApiImpl::login(const std::string& json, ID_t& id) {
   TRC("login(%s)", json.c_str());
@@ -410,9 +416,7 @@ void ServerApiImpl::terminate() {
   TRC("terminate");
   std::ostringstream oss;
   for (auto& it : m_peers) {
-    oss << "HTTP/1.1 " << TERMINATE_CODE << " Terminate\r\n"
-        << STANDARD_HEADERS << "\r\n"
-        << CONTENT_LENGTH_HEADER << 0 << "\r\n\r\n";
+    prepareSimpleResponse(oss, TERMINATE_CODE, "Terminate");
     send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
     oss.str("");
   }
@@ -420,7 +424,7 @@ void ServerApiImpl::terminate() {
 
 /* Utility */
 // ----------------------------------------------
-std::string ServerApiImpl::getSymbolicFromQuery(const std::string& path) {
+std::string ServerApiImpl::getSymbolicFromQuery(const std::string& path) const {
   TRC("getSymbolicFromQuery(%s)", path.c_str());
   std::vector<Query> params;
   m_parser.parsePath(path, &params);
@@ -434,7 +438,7 @@ std::string ServerApiImpl::getSymbolicFromQuery(const std::string& path) {
   return params[0].value;
 }
 
-PeerDTO ServerApiImpl::getPeerFromDatabase(const std::string& symbolic, ID_t& id) {
+PeerDTO ServerApiImpl::getPeerFromDatabase(const std::string& symbolic, ID_t& id) const {
   TRC("getPeerFromDatabase(%s", symbolic.c_str());
   id = UNKNOWN_ID;
   PeerDTO peer = PeerDTO::EMPTY;
@@ -444,6 +448,40 @@ PeerDTO ServerApiImpl::getPeerFromDatabase(const std::string& symbolic, ID_t& id
     peer = m_peers_database->getPeerByLogin(symbolic, &id);
   }
   return peer;
+}
+
+std::ostringstream& ServerApiImpl::prepareSimpleResponse(std::ostringstream& out, int code, const std::string& message) const {
+  TRC("prepareSimpleResponse(%i, %s)", code, message.c_str());
+  out << "HTTP/1.1 " << code << " " << message << "\r\n"
+      << STANDARD_HEADERS << "\r\n"
+      << CONTENT_LENGTH_HEADER << 0 << "\r\n\r\n";
+  return out;
+}
+
+void ServerApiImpl::simpleResponse(const std::vector<ID_t>& ids, int code, const std::string& message) const {
+  TRC("simpleResponse(size = %zu)", ids.size());
+  std::ostringstream oss;
+  if (ids.empty()) {
+    DBG("Broadcasting simple response");
+    for (auto& it : m_peers) {
+      prepareSimpleResponse(oss, code, message);
+      send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
+      oss.str("");
+    }
+  } else {
+    for (auto& it : ids) {
+      auto peer_it = m_peers.find(it);
+      if (peer_it != m_peers.end()) {
+        DBG("Sending simple response to peer with id [%lli]...", peer_it->first);
+        int socket = peer_it->second.getSocket();
+        prepareSimpleResponse(oss, code, message);
+        send(socket, oss.str().c_str(), oss.str().length(), 0);
+        oss.str("");
+      } else {
+        WRN("Peer with id [%lli] not found!", it);  // skip
+      }
+    }
+  }
 }
 
 /* Internals */
@@ -579,10 +617,115 @@ void ServerApiImpl::broadcast(const Message& message) {
 // ----------------------------------------------------------------------------
 #if SECURE
 
-StatusCode ServerApiImpl::privateRequest(int src_id, int dest_id) {}
-StatusCode ServerApiImpl::privateConfirm(int src_id, int dest_id, bool accept) {}
-StatusCode ServerApiImpl::privateAbort(int src_id, int dest_id) {}
-StatusCode ServerApiImpl::privatePubKey(int dest_id, const std::string& key) {}
+/**
+ * These functions simply parses input and forwards some data with same sense to destination.
+ */
+StatusCode ServerApiImpl::privateRequest(const std::string& path, ID_t& id) {
+  TRC("privateRequest(%s)", path.c_str());
+  id = UNKNOWN_ID;
+  std::vector<Query> params;
+  m_parser.parsePath(path, &params);
+  for (auto& query : params) {
+    DBG("Query: %s: %s", query.key.c_str(), query.value.c_str());
+  }
+  if (params.size() < 2 || params[0].key.compare(ITEM_SRC_ID) != 0 ||
+      params[1].key.compare(ITEM_DEST_ID) != 0) {
+    ERR("Private request failed: wrong query params: %s", path.c_str());
+    return StatusCode::INVALID_QUERY;
+  }
+  id = std::stoll(params[0].value.c_str());
+  ID_t dest_id = std::stoll(params[1].value.c_str());
+  if (id == dest_id) {
+    ERR("Same id in query params: src_id [%lli], dest_id [%lli]", id, dest_id);
+    return StatusCode::INVALID_QUERY;
+  }
+  auto dest_peer_it = m_peers.find(dest_id);
+  if (dest_peer_it != m_peers.end()) {
+    std::ostringstream oss, json;
+    json << "{\"" D_ITEM_PRIVATE_REQUEST "\":{\"" D_ITEM_SRC_ID "\":" << id
+         << ",\"" D_ITEM_DEST_ID "\":" << dest_id
+         << "}}";
+    oss << "HTTP/1.1 200 Switched channel\r\n" << STANDARD_HEADERS << "\r\n"
+        << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
+        << json.str() << "\0";
+    send(dest_peer_it->second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
+    oss.str("");
+    json.str("");
+    return StatusCode::SUCCESS;
+  } else {
+    ERR("Destination peer hasn't logged in, dest_id [%lli]", dest_id);
+    return StatusCode::NO_SUCH_PEER;
+  }
+}
+
+StatusCode ServerApiImpl::privateConfirm(const std::string& path, ID_t& id) {
+  TRC("privateConfirm(%s)", path.c_str());
+  return sendPrivateConfirm(path, false, id);
+}
+
+StatusCode ServerApiImpl::privateAbort(const std::string& path, ID_t& id) {
+  TRC("privateAbort(%s)", path.c_str());
+  return sendPrivateConfirm(path, true, id);
+}
+
+// {"private_pubkey":{"key":TEXT}}
+StatusCode ServerApiImpl::privatePubKey(const std::string& path, const std::string& json, ID_t& id) {
+  TRC("privatePubKey(%s)", path.c_str());
+  id = UNKNOWN_ID;
+  std::vector<Query> params;
+  m_parser.parsePath(path, &params);
+  for (auto& query : params) {
+    DBG("Query: %s: %s", query.key.c_str(), query.value.c_str());
+  }
+  if (params.size() < 1 || params[0].key.compare(ITEM_SRC_ID) != 0) {
+    ERR("Private public key failed: wrong query params: %s", path.c_str());
+    return StatusCode::INVALID_QUERY;
+  }
+  id = std::stoll(params[0].value.c_str());
+}
+
+/* Utility */
+// ----------------------------------------------
+StatusCode ServerApiImpl::sendPrivateConfirm(const std::string& path, bool i_reject, ID_t& id) {
+  id = UNKNOWN_ID;
+  std::vector<Query> params;
+  m_parser.parsePath(path, &params);
+  for (auto& query : params) {
+    DBG("Query: %s: %s", query.key.c_str(), query.value.c_str());
+  }
+  int params_count = i_reject ? 2 : 3;
+  if (params.size() < params_count || params[0].key.compare(ITEM_SRC_ID) != 0 ||
+      params[1].key.compare(ITEM_DEST_ID) != 0 ||
+      (!i_reject && params[2].key.compare(ITEM_ACCEPT) != 0)) {
+    ERR("Private confirm failed: wrong query params: %s", path.c_str());
+    return StatusCode::INVALID_QUERY;
+  }
+  id = std::stoll(params[0].value.c_str());
+  ID_t dest_id = std::stoll(params[1].value.c_str());
+  bool accept = i_reject ? false : (std::stoi(params[2].value.c_str()) != 0);
+  if (id == dest_id) {
+    ERR("Same id in query params: src_id [%lli], dest_id [%lli]", id, dest_id);
+    return StatusCode::INVALID_QUERY;
+  }
+  auto dest_peer_it = m_peers.find(dest_id);
+  if (dest_peer_it != m_peers.end()) {
+    std::ostringstream oss, json;
+    json << "{\"" D_ITEM_PRIVATE_CONFIRM "\":{\"" D_ITEM_SRC_ID "\":" << id
+         << ",\"" D_ITEM_DEST_ID "\":" << dest_id
+         << ",\"" D_ITEM_ACCEPT "\":" << (accept ? 1 : 0)
+         << "}}";
+    oss << "HTTP/1.1 200 Switched channel\r\n" << STANDARD_HEADERS << "\r\n"
+        << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
+        << json.str() << "\0";
+    send(dest_peer_it->second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
+    oss.str("");
+    json.str("");
+    return StatusCode::SUCCESS;
+  } else {
+    ERR("Destination peer hasn't logged in, dest_id [%lli]", dest_id);
+    return StatusCode::NO_SUCH_PEER;
+  }
+}
 
 #endif  // SECURE
 

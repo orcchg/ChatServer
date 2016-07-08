@@ -88,12 +88,12 @@ public:
   MyParser();
   virtual ~MyParser();
 
-  Request parseRequest(char* http, int nbytes);
-  Response parseResponse(char* http, int nbytes);
+  Request parseRequest(char* http, int nbytes) const;
+  Response parseResponse(char* http, int nbytes) const;
 
-  std::string parsePath(const std::string& path, std::vector<Query>* params);
+  std::string parsePath(const std::string& path, std::vector<Query>* params) const;
 
-  void parsePayload(const std::string& payload, std::vector<Query>* out);
+  void parsePayload(const std::string& payload, std::vector<Query>* out) const;
 
 protected:
   StartLine parseStartLine(const std::string& start_line) const;
