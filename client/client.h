@@ -67,6 +67,7 @@ protected:
   virtual Response getResponse(int socket, bool* is_closed);
 
   void goToMainMenu();
+  void stopThread();
   virtual void end();
 
   void listAllPeers();
@@ -93,7 +94,7 @@ protected:
   void receiverThread();
 
 #if SECURE
-  void generateKeyPair();
+  void getKeyPair();
 #endif  // SECURE
 };
 

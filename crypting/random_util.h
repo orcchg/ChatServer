@@ -24,11 +24,16 @@
 #if SECURE
 
 #include <string>
+#include "api/structures.h"
 
 namespace secure {
 namespace random {
 
+int setRandomSeed();
+
 std::string generateString(int length);
+void generateKeyPair(ID_t id, const char* input, size_t size);
+std::pair<Key, Key> loadKeyPair(ID_t id, bool* accessible);
 
 }
 }

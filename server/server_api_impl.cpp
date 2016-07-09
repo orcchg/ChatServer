@@ -23,6 +23,7 @@
 #include <utility>
 #include <vector>
 #include "all.h"
+#include "common.h"
 #include "database/peer_table_impl.h"
 #if SECURE
 #include "database/keys_table_impl.h"
@@ -707,13 +708,15 @@ StatusCode ServerApiImpl::privatePubKey(const std::string& path, const std::stri
   for (auto& query : params) {
     DBG("Query: %s: %s", query.key.c_str(), query.value.c_str());
   }
-  if (params.size() < 1 || params[0].key.compare(ITEM_SRC_ID) != 0) {
+  if (params.size() < 1 || params[0].key.compare(ITEM_ID) != 0) {
     ERR("Private public key failed: wrong query params: %s", path.c_str());
     return StatusCode::INVALID_QUERY;
   }
   id = std::stoll(params[0].value.c_str());
   if (isAuthorized(id)) {
-    secure::Key key = secure::Key::fromJson(json);
+    //auto unwrapped_json = common::unwrapJsonObject(ITEM_PRIVATE_PUBKEY, "{\"private_pubkey\":{\"id\":999,\"key\":\"-----BEGIN RSA PUBLIC KEY-----MIIBCgKCAQEAuQFtJ/iEBHixs1unQirtY1qyovhffRh38Z+In2dlbTC7u4hSakCHpqYPbG8O5WpHlF6CQjShbE/FpB6heK59X39bzEvEKtQDDQOfux1EOenVyqATjxPLhs6aaX6quWghpE+YN0HnYro1RtCruSLcTB7UbCZg5oruTvyL7t4Q24uspKNnnbG5/hnHg57ESlO5+VrvcRZWvU3GDkeM9UXYcRSd2+TCG9h2bHkXJbihkRcQhdW0jLHQdxNOTPKHJtILvynmPnxmW1z/M+ROSSjAwW0LtLBqdw4uLiidg+BMFhGbIcVB7RwVE68swal7pR5dV6ayfJkxEWBM4NpQeggeiQIDAQAB-----END RSA PUBLIC KEY-----\"}}");
+    auto unwrapped_json = common::unwrapJsonObject(ITEM_PRIVATE_PUBKEY, json);
+    secure::Key key = secure::Key::fromJson(unwrapped_json);
     storePublicKey(id, key);
   } else {
     ERR("Source peer with id [%lli] is not authorized", id);

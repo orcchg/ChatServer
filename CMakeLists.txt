@@ -58,6 +58,7 @@ endif()
 # -----------------------------------------------------------------------------
 ADD_SUBDIRECTORY( api )
 ADD_SUBDIRECTORY( client )
+ADD_SUBDIRECTORY( common )
 ADD_SUBDIRECTORY( database )
 ADD_SUBDIRECTORY( parser )
 ADD_SUBDIRECTORY( server )

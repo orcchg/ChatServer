@@ -20,17 +20,14 @@
 
 #if SECURE
 
-#include <climits>
 #include <cstring>
-#include <ctime>
 #include "random_util.h"
 #include "sym_key.h"
 
 namespace secure {
 
 SymmetricKey::SymmetricKey() {
-  auto current = time(nullptr);
-  srand(current % INT_MAX + 1);
+  random::setRandomSeed();
   int length = rand() % 71 + 10;
   std::string source = random::generateString(length);
   generate(source);

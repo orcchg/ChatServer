@@ -20,6 +20,7 @@
 
 #include <sstream>
 #include "api.h"
+#include "common.h"
 #include "logger.h"
 #include "rapidjson/document.h"
 #include "structures.h"
@@ -45,7 +46,8 @@ std::string LoginForm::toJson() const {
 
 LoginForm LoginForm::fromJson(const std::string& json) {
   rapidjson::Document document;
-  document.Parse(json.c_str());
+  auto prepared_json = common::preparse(json);
+  document.Parse(prepared_json.c_str());
 
   if (document.IsObject() &&
       document.HasMember(ITEM_LOGIN) && document[ITEM_LOGIN].IsString() &&
@@ -77,7 +79,8 @@ std::string RegistrationForm::toJson() const {
 
 RegistrationForm RegistrationForm::fromJson(const std::string& json) {
   rapidjson::Document document;
-  document.Parse(json.c_str());
+  auto prepared_json = common::preparse(json);
+  document.Parse(prepared_json.c_str());
 
   if (document.IsObject() &&
       document.HasMember(ITEM_LOGIN) && document[ITEM_LOGIN].IsString() &&
@@ -155,7 +158,8 @@ std::string Message::toJson() const {
 
 Message Message::fromJson(const std::string& json) {
   rapidjson::Document document;
-  document.Parse(json.c_str());
+  auto prepared_json = common::preparse(json);
+  document.Parse(prepared_json.c_str());
 
   if (document.IsObject() &&
       document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64() &&
@@ -224,7 +228,8 @@ std::string Peer::toJson() const {
 
 Peer Peer::fromJson(const std::string& json) {
   rapidjson::Document document;
-  document.Parse(json.c_str());
+  auto prepared_json = common::preparse(json);
+  document.Parse(prepared_json.c_str());
 
   if (document.IsObject() &&
       document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64() &&
@@ -305,7 +310,8 @@ std::string Key::toJson() const {
 
 Key Key::fromJson(const std::string& json) {
   rapidjson::Document document;
-  document.Parse(json.c_str());
+  auto prepared_json = common::preparse(json);
+  document.Parse(prepared_json.c_str());
 
   if (document.IsObject() &&
       document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64() &&

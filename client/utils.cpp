@@ -26,6 +26,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include "api/api.h"
+#include "common.h"
 #include "logger.h"
 #include "rapidjson/document.h"
 #include "utils.h"
@@ -66,6 +67,7 @@ std::string enterSymbolic(const char* title, bool hide) {
 }
 
 #if SECURE
+
 std::string enterSymbolic(const char* title, secure::ICryptor* cryptor) {
   return enterSymbolic(title, cryptor, false);
 }
@@ -82,6 +84,7 @@ std::string enterSymbolic(const char* title, secure::ICryptor* cryptor, bool hid
   }
   return cryptor->encrypt(str);
 }
+
 #endif  // SECURE
 
 int selectChannel() {
@@ -93,7 +96,8 @@ int selectChannel() {
 
 bool checkStatus(const std::string& json) {
   rapidjson::Document document;
-  document.Parse(json.c_str());
+  auto prepared_json = common::preparse(json);
+  document.Parse(prepared_json.c_str());
   return document.IsObject() &&
       document.HasMember(ITEM_CODE) && document[ITEM_CODE].IsInt() &&
       document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64();
@@ -101,7 +105,8 @@ bool checkStatus(const std::string& json) {
 
 bool checkSystemMessage(const std::string& json, std::string* system) {
   rapidjson::Document document;
-  document.Parse(json.c_str());
+  auto prepared_json = common::preparse(json);
+  document.Parse(prepared_json.c_str());
   bool result = document.IsObject() &&
       document.HasMember(ITEM_SYSTEM) && document[ITEM_SYSTEM].IsString();
   if (result) {
@@ -131,6 +136,18 @@ Command parseCommand(const std::string& command, ID_t& value) {
       case 's': return Command::SWITCH_CHANNEL;
       case 'q': return Command::LOGOUT;
       case 'm': return Command::MENU;
+#if SECURE
+      case 'p':
+        if (command.length() > 2) {
+          switch (command[2]) {
+            case 'r': return Command::PRIVATE_REQUEST;
+            case 'c': return Command::PRIVATE_CONFIRM;
+            case 'd': return Command::PRIVATE_ABORT;
+            case 'k': return Command::PRIVATE_PUBKEY;
+          }
+        }
+        break;
+#endif  // SECURE
     }
   }
   return Command::UNKNOWN;

@@ -25,12 +25,14 @@
 #include <sstream>
 #include <errno.h>
 #include "client.h"
+#include "common.h"
 #include "logger.h"
 #include "rapidjson/document.h"
 #include "utils.h"
 
 #if SECURE
 #include "crypting/cryptor.h"
+#include "crypting/random_util.h"
 #endif  // SECURE
 
 Client::Client(const std::string& config_file)
@@ -105,9 +107,14 @@ void Client::init() {
 
 /* Release */
 // ----------------------------------------------
+void Client::stopThread() {
+  DBG("Stopping receiver thread if any...");
+  m_is_stopped = true;  // stop background receiver thread if any
+}
+
 void Client::end() {
   DBG("Client closing...");
-  m_is_stopped = true;  // stop background receiver thread if any
+  stopThread();
   close(m_socket);
 }
 
@@ -224,7 +231,8 @@ void Client::receiveAndprocessListAllPeersResponse(bool withChannel) {
   }
 
   rapidjson::Document document;
-  document.Parse(check_response.body.c_str());
+  auto json = common::preparse(check_response.body);
+  document.Parse(json.c_str());
 
   if (document.IsObject() &&
       document.HasMember(ITEM_PEERS) && document[ITEM_PEERS].IsArray() &&
@@ -259,7 +267,8 @@ void Client::checkLoggedIn(const std::string& name) {
   }
 
   rapidjson::Document document;
-  document.Parse(check_response.body.c_str());
+  auto json = common::preparse(check_response.body);
+  document.Parse(json.c_str());
 
   if (document.IsObject() &&
       document.HasMember(ITEM_CHECK) && document[ITEM_CHECK].IsInt() &&
@@ -316,7 +325,8 @@ void Client::tryLogin(LoginForm& form) {
   }
 
   rapidjson::Document document;
-  document.Parse(code_response.body.c_str());
+  auto json = common::preparse(code_response.body);
+  document.Parse(json.c_str());
 
   std::vector<Query> out;
   if (document.IsObject() &&
@@ -372,7 +382,8 @@ void Client::checkRegistered(const std::string& name) {
   }
 
   rapidjson::Document document;
-  document.Parse(check_response.body.c_str());
+  auto json = common::preparse(check_response.body);
+  document.Parse(json.c_str());
 
   if (document.IsObject() &&
       document.HasMember(ITEM_CHECK) && document[ITEM_CHECK].IsInt() &&
@@ -452,7 +463,8 @@ void Client::tryRegister(const RegistrationForm& form) {
   }
 
   rapidjson::Document document;
-  document.Parse(code_response.body.c_str());
+  auto json = common::preparse(code_response.body);
+  document.Parse(json.c_str());
 
   std::vector<Query> out;
   if (document.IsObject() &&
@@ -534,7 +546,7 @@ void Client::startChat() {
         continue;
       case util::Command::LOGOUT:
         m_api_impl->logout(m_id);
-        end();
+        stopThread();
         continue;
       case util::Command::MENU:
         printf("\t\e[5;00;37m.m - list commands\e[m\n");
@@ -560,7 +572,7 @@ void Client::startChat() {
         continue;
       case util::Command::PRIVATE_PUBKEY:
         if (m_key_pair.first == secure::Key::EMPTY) {
-          generateKeyPair();
+          getKeyPair();  // obtain new key pair
         }
         m_api_impl->privatePubKey(m_id, m_key_pair.first);
         continue;
@@ -594,7 +606,7 @@ void Client::receiverThread() {
     Response response = getResponse(m_socket, &m_is_stopped);
     if (response.isEmpty()) {
       DBG("Received empty response. Connection closed");
-      return;
+      break;
     }
 
     {  // system responses
@@ -602,8 +614,8 @@ void Client::receiverThread() {
       if (code == TERMINATE_CODE) {
         INF("Received terminate code from Server");
         printf("\e[5;00;31mSystem: Server shutdown\e[m\n");
-        m_is_stopped = true;
-        return;
+        stopThread();
+        break;
       }
 
       if (util::checkStatus(response.body)) {
@@ -631,13 +643,20 @@ void Client::receiverThread() {
       WRN("Something doesn't like a message has been received. Skip");
     }
   }
+  end();
 }
 
 #if SECURE
 
-void Client::generateKeyPair() {
-  DBG("Generating key pair...");
-  // TODO: generate keys
+void Client::getKeyPair() {
+  bool accessible = false;
+  m_key_pair = secure::random::loadKeyPair(m_id, &accessible);
+  if (!accessible) {
+    const size_t size = 80;
+    std::string input = secure::random::generateString(size);
+    secure::random::generateKeyPair(m_id, input.c_str(), size);
+    m_key_pair = secure::random::loadKeyPair(m_id, &accessible);
+  }
 }
 
 #endif  // SECURE

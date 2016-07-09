@@ -21,14 +21,20 @@
 #ifndef CHAT_SERVER_COMMON__H__
 #define CHAT_SERVER_COMMON__H__
 
-namespace utils {
+#include <string>
+#include <cstdint>
+#include "api/types.h"
 
-uint64_t getCurrentTime() {
-  auto now = std::chrono::system_clock::now();
-  auto duration = now.time_since_epoch();
-  auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-  return millis;
-}
+namespace common {
+
+uint64_t getCurrentTime();
+
+std::string createFilenameWithId(ID_t id, const std::string& filename);
+bool isFileAccessible(const std::string& filename);
+std::string readFileToString(const std::string& filename);
+
+std::string preparse(const std::string& json);
+std::string unwrapJsonObject(const char* field, const std::string& json);
 
 }
 

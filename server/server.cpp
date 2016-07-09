@@ -125,7 +125,7 @@ Server::~Server() {
 }
 
 void Server::run() {
-  m_launch_timestamp = utils::getCurrentTime();  // launch timestamp
+  m_launch_timestamp = common::getCurrentTime();  // launch timestamp
   std::thread t(&Server::runListener, this);
   t.detach();
 
@@ -196,7 +196,7 @@ Connection Server::storeClientInfo(sockaddr_in& peeraddr) {
       << ((ntohl(peeraddr.sin_addr.s_addr) >> 16) & 0xff) << '.'
       << ((ntohl(peeraddr.sin_addr.s_addr) >> 8) & 0xff) << '.'
       << (ntohl(peeraddr.sin_addr.s_addr) & 0xff);
-  uint64_t timestamp = utils::getCurrentTime();
+  uint64_t timestamp = common::getCurrentTime();
   std::string ip_address = oss.str();
   int port = ntohs(peeraddr.sin_port);
   db::Record record(m_next_accepted_connection_id, timestamp, ip_address, port);
@@ -422,7 +422,7 @@ void Server::handleRequest(int socket, ID_t connection_id) {
 void Server::storeRequest(ID_t connection_id, const Request& request) {
   if (m_should_store_requests) {
     std::ostringstream oss;
-    uint64_t timestamp = utils::getCurrentTime();
+    uint64_t timestamp = common::getCurrentTime();
     for (auto& header : request.headers) {
       oss << "[" << header.to_string() << "]";
     }

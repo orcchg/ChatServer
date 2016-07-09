@@ -17,12 +17,9 @@
 #   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 
 SET( SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR} )
+
 SET( SOURCES
-    ${SOURCE_DIR}/peer.cpp
-    ${SOURCE_DIR}/server.cpp
-    ${SOURCE_DIR}/server_api_impl.cpp
-    ${SOURCE_DIR}/server_menu.cpp
+    ${SOURCE_DIR}/common.cpp
 )
-ADD_EXECUTABLE( server ${SOURCES} )
-TARGET_LINK_LIBRARIES( server api common my_parser database ${CRYPTOR} )
+ADD_LIBRARY( common SHARED ${SOURCES} )
 

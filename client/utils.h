@@ -22,9 +22,11 @@
 #define CHAT_SERVER_UTILS__H__
 
 #include <string>
+#include <utility>
 #if SECURE
 #include "api/icryptor.h"
 #endif  // SECURE
+#include "api/structures.h"
 
 namespace util {
 
