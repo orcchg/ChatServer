@@ -556,6 +556,7 @@ void Client::startChat() {
         printf("\t\e[5;00;37m.pr <id> - send request to establish private secure chat with <id>\e[m\n");
         printf("\t\e[5;00;37m.pc <id> - confirm pending request from <id> for private secure chat\e[m\n");
         printf("\t\e[5;00;37m.pd <id> - reject pending request from <id> for private secure chat\e[m\n");
+        printf("\t\e[5;00;37m.px <id> - abort private secure chat with <id>\e[m\n");
         printf("\t\e[5;00;37m.pk - send public key (generate if not exists)\e[m\n");
 #endif  // SECURE
         printf("\t\e[5;00;37m.q - logout\e[m\n");
@@ -566,6 +567,9 @@ void Client::startChat() {
         continue;
       case util::Command::PRIVATE_CONFIRM:
         m_api_impl->privateConfirm(m_id, value, true);
+        continue;
+      case util::Command::PRIVATE_REJECT:
+        m_api_impl->privateConfirm(m_id, value, false);
         continue;
       case util::Command::PRIVATE_ABORT:
         m_api_impl->privateAbort(m_id, value);
@@ -626,6 +630,45 @@ void Client::receiverThread() {
         printf("\e[5;00;32mSystem: %s\e[m\n", system.c_str());
         continue;  // received system message from Server
       }
+#if SECURE
+      util::HandshakeBundle bundle;
+      auto handshake_type = util::checkPrivateHandshake(response.body, &bundle);
+      if (bundle.dest_id == m_id) {
+        std::string acceptance;
+        switch (handshake_type) {
+          case PrivateHandshake::REQUEST:
+            printf("\e[5;01;35mPeer [%lli] has requested for private communication\e[m\n", bundle.src_id);
+            continue;
+          case PrivateHandshake::CONFIRM:
+            if (bundle.accept) {
+              acceptance = "confirmed";
+            } else {
+              acceptance = "rejected";
+            }
+            printf("\e[5;01;35mPeer [%lli] has \e[m\e[5;01;34m%s\e[m\e[5;01;35m your request for private communication\e[m\n", bundle.src_id, acceptance.c_str());
+            continue;
+          case PrivateHandshake::ABORT:
+            printf("\e[5;01;35mPeer [%lli] has aborted private communication with you\e[m\n", bundle.src_id);
+            m_handshakes.erase(bundle.src_id);  // remove previously stored public key
+            continue;
+          case PrivateHandshake::PUBKEY:
+            {
+              auto unwrapped_json = common::unwrapJsonObject(ITEM_PRIVATE_PUBKEY, response.body, common::PreparseLeniency::STRICT);
+              secure::Key key = secure::Key::fromJson(unwrapped_json);
+              printf("\e[5;01;34mReceived public key from peer [%lli]\e[m\n", key.getId());
+              TRC("Public Key: %s", key.getKey().c_str());
+              m_handshakes[key.getId()] = key;  // store public key of another peer
+            }
+            continue;
+          case PrivateHandshake::UNKNOWN:
+          default:
+            // proceed further
+            break;
+        }
+      } else if (handshake_type != PrivateHandshake::UNKNOWN) {
+        WRN("This peer [%lli] has received handshake aimed to other peer [%lli]. This could be a Server's fault!", m_id, bundle.dest_id);
+      }
+#endif  // SECURE
     }
 
     // peers' messages

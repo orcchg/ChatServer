@@ -123,8 +123,23 @@ void ServerApiImpl::sendStatus(StatusCode status, Path action, ID_t id) {
     case StatusCode::INVALID_FORM:
       oss << "400 Invalid form\r\n" << STANDARD_HEADERS << "\r\n";
       break;
+    case StatusCode::INVALID_QUERY:
+      oss << "400 Invalid query\r\n" << STANDARD_HEADERS << "\r\n";
+      break;
     case StatusCode::UNAUTHORIZED:
       oss << "401 Unauthorized\r\n" << STANDARD_HEADERS << "\r\n";
+      break;
+    case StatusCode::WRONG_CHANNEL:
+      oss << "400 Wrong channel\r\n" << STANDARD_HEADERS << "\r\n";
+      break;
+    case StatusCode::SAME_CHANNEL:
+      oss << "400 Same channel\r\n" << STANDARD_HEADERS << "\r\n";
+      break;
+    case StatusCode::NO_SUCH_PEER:
+      oss << "404 No such peer\r\n" << STANDARD_HEADERS << "\r\n";
+      break;
+    case StatusCode::NOT_REQUESTED:
+      oss << "412 Not requested\r\n" << STANDARD_HEADERS << "\r\n";
       break;
     case StatusCode::UNKNOWN:
       oss << "500 Internal server error\r\n" << STANDARD_HEADERS << "\r\n";
@@ -714,8 +729,7 @@ StatusCode ServerApiImpl::privatePubKey(const std::string& path, const std::stri
   }
   id = std::stoll(params[0].value.c_str());
   if (isAuthorized(id)) {
-    //auto unwrapped_json = common::unwrapJsonObject(ITEM_PRIVATE_PUBKEY, "{\"private_pubkey\":{\"id\":999,\"key\":\"-----BEGIN RSA PUBLIC KEY-----MIIBCgKCAQEAuQFtJ/iEBHixs1unQirtY1qyovhffRh38Z+In2dlbTC7u4hSakCHpqYPbG8O5WpHlF6CQjShbE/FpB6heK59X39bzEvEKtQDDQOfux1EOenVyqATjxPLhs6aaX6quWghpE+YN0HnYro1RtCruSLcTB7UbCZg5oruTvyL7t4Q24uspKNnnbG5/hnHg57ESlO5+VrvcRZWvU3GDkeM9UXYcRSd2+TCG9h2bHkXJbihkRcQhdW0jLHQdxNOTPKHJtILvynmPnxmW1z/M+ROSSjAwW0LtLBqdw4uLiidg+BMFhGbIcVB7RwVE68swal7pR5dV6ayfJkxEWBM4NpQeggeiQIDAQAB-----END RSA PUBLIC KEY-----\"}}");
-    auto unwrapped_json = common::unwrapJsonObject(ITEM_PRIVATE_PUBKEY, json);
+    auto unwrapped_json = common::unwrapJsonObject(ITEM_PRIVATE_PUBKEY, json, common::PreparseLeniency::STRICT);
     secure::Key key = secure::Key::fromJson(unwrapped_json);
     storePublicKey(id, key);
   } else {
@@ -767,7 +781,13 @@ StatusCode ServerApiImpl::sendPrivateConfirm(const std::string& path, bool i_rej
       DBG("Peer [%lli] has rejected to establish handshake with peer [%lli]", src_id, dest_id);
     }
     std::ostringstream oss, json;
-    json << "{\"" D_ITEM_PRIVATE_CONFIRM "\":{\"" D_ITEM_SRC_ID "\":" << src_id
+    json << "{\"";
+    if (accept) {
+      json << D_ITEM_PRIVATE_CONFIRM;
+    } else {
+      json << D_ITEM_PRIVATE_ABORT;
+    }
+    json << "\":{\"" D_ITEM_SRC_ID "\":" << src_id
          << ",\"" D_ITEM_DEST_ID "\":" << dest_id
          << ",\"" D_ITEM_ACCEPT "\":" << (accept ? 1 : 0)
          << "}}";

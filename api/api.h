@@ -384,6 +384,16 @@ enum class ChannelMove : int {
   UNKNOWN = -1, ENTER = 0, EXIT = 1
 };
 
+#if SECURE
+enum class PrivateHandshake {
+  UNKNOWN = -1,
+  REQUEST = 0,
+  CONFIRM = 1,
+  ABORT   = 2,
+  PUBKEY  = 3
+};
+#endif  // SECURE
+
 /* API json */
 // ----------------------------------------------
 /**

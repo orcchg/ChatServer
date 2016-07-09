@@ -27,14 +27,21 @@
 
 namespace common {
 
+enum PreparseLeniency {
+  DISABLED = 0,
+  SOFT     = 1,
+  STRICT   = 2
+};
+
 uint64_t getCurrentTime();
 
 std::string createFilenameWithId(ID_t id, const std::string& filename);
 bool isFileAccessible(const std::string& filename);
 std::string readFileToString(const std::string& filename);
 
-std::string preparse(const std::string& json);
-std::string unwrapJsonObject(const char* field, const std::string& json);
+const std::string& preparse(const std::string& json);
+std::string preparse(const std::string& json, PreparseLeniency leniency);
+std::string unwrapJsonObject(const char* field, const std::string& json, PreparseLeniency leniency = PreparseLeniency::DISABLED);
 
 }
 

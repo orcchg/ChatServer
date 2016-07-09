@@ -1,4 +1,4 @@
-/** 
+/**
  *   HTTP Chat server with authentication and multi-channeling.
  *
  *   Copyright (C) 2016  Maxim Alov

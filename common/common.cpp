@@ -1,4 +1,4 @@
-/** 
+/**
  *   HTTP Chat server with authentication and multi-channeling.
  *
  *   Copyright (C) 2016  Maxim Alov
@@ -70,16 +70,29 @@ std::string readFileToString(const std::string& filename) {
   return buffer;
 }
 
-std::string preparse(const std::string& json) {
-  std::string result = json;
-  result.erase(std::remove(result.begin(), result.end(), '\n'), result.end());
-  result.erase(std::remove(result.begin(), result.end(), '\r'), result.end());
+const std::string& preparse(const std::string& json) {
+  return json;
+}
+
+std::string preparse(const std::string& json, PreparseLeniency leniency) {
+  if (leniency == PreparseLeniency::DISABLED) {
+    return json;
+  }
+
+  std::string result = json;  // copy
+  switch (leniency) {
+    case STRICT:
+      result.erase(std::remove(result.begin(), result.end(), '\r'), result.end());
+    case SOFT:
+      result.erase(std::remove(result.begin(), result.end(), '\n'), result.end());
+      break;
+  }
   return result;
 }
 
-std::string unwrapJsonObject(const char* field, const std::string& json) {
+std::string unwrapJsonObject(const char* field, const std::string& json, PreparseLeniency leniency) {
   rapidjson::Document document;
-  auto prepared_json = preparse(json);
+  auto prepared_json = common::preparse(json, leniency);
   document.Parse(prepared_json.c_str());
 
   if (document.IsObject() &&

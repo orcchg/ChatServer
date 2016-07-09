@@ -30,6 +30,14 @@
 
 namespace util {
 
+#if SECURE
+struct HandshakeBundle {
+  ID_t src_id;
+  ID_t dest_id;
+  bool accept;
+};
+#endif  //SECURE
+
 std::string enterSymbolic(const char* title);
 std::string enterSymbolic(const char* title, bool hide);
 #if SECURE
@@ -39,6 +47,9 @@ std::string enterSymbolic(const char* title, secure::ICryptor* cryptor, bool hid
 int selectChannel();
 bool checkStatus(const std::string& json);
 bool checkSystemMessage(const std::string& json, std::string* system);
+#if SECURE
+PrivateHandshake checkPrivateHandshake(const std::string& json, HandshakeBundle* bundle);
+#endif  // SECURE
 bool isEmailValid(const std::string& email);
 
 enum class Command : int {
@@ -50,8 +61,9 @@ enum class Command : int {
 #if SECURE
   , PRIVATE_REQUEST = 4
   , PRIVATE_CONFIRM = 5
-  , PRIVATE_ABORT = 6
-  , PRIVATE_PUBKEY = 7
+  , PRIVATE_REJECT = 6
+  , PRIVATE_ABORT = 7
+  , PRIVATE_PUBKEY = 8
 #endif  // SECURE
 };
 

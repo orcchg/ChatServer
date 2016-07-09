@@ -22,6 +22,7 @@
 #define CHAT_SERVER_CLIENT__H__
 
 #include <string>
+#include <unordered_map>
 #include "all.h"
 #include "api/api.h"
 #include "api/structures.h"
@@ -61,6 +62,7 @@ protected:
 #if SECURE
   secure::ICryptor* m_cryptor;
   std::pair<secure::Key, secure::Key> m_key_pair;
+  std::unordered_map<ID_t, secure::Key> m_handshakes;
 #endif  // SECURE
 
   bool readConfiguration(const std::string& config_file);

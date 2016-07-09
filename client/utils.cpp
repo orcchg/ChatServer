@@ -115,6 +115,54 @@ bool checkSystemMessage(const std::string& json, std::string* system) {
   return result;
 }
 
+#if SECURE
+
+static void fillHandshakeBundle(const rapidjson::Value& object, HandshakeBundle* bundle) {
+  if (bundle == nullptr) {
+    TRC("Bundle not allocated!");
+    return;
+  }
+  if (object.IsObject() &&
+      object.HasMember(ITEM_SRC_ID) && object[ITEM_SRC_ID].IsInt64() &&
+      object.HasMember(ITEM_DEST_ID) && object[ITEM_DEST_ID].IsInt64()) {
+    bundle->src_id = object[ITEM_SRC_ID].GetInt64();
+    bundle->dest_id = object[ITEM_DEST_ID].GetInt64();
+    if (object.HasMember(ITEM_ACCEPT) && object[ITEM_ACCEPT].IsInt()) {
+      bundle->accept = object[ITEM_ACCEPT].GetInt();
+    }
+  } else {
+    TRC("Object is not a handshake structure");
+  }
+}
+
+PrivateHandshake checkPrivateHandshake(const std::string& json, HandshakeBundle* bundle) {
+  rapidjson::Document document;
+  auto prepared_json = common::preparse(json);
+  document.Parse(prepared_json.c_str());
+  if (document.IsObject()) {
+    if (document.HasMember(ITEM_PRIVATE_REQUEST)) {
+      DBG("Handshake: request");
+      fillHandshakeBundle(document[ITEM_PRIVATE_REQUEST], bundle);
+      return PrivateHandshake::REQUEST;
+    } else if (document.HasMember(ITEM_PRIVATE_CONFIRM)) {
+      DBG("Handshake: confirm");
+      fillHandshakeBundle(document[ITEM_PRIVATE_CONFIRM], bundle);
+      return PrivateHandshake::CONFIRM;
+    } else if (document.HasMember(ITEM_PRIVATE_ABORT)) {
+      DBG("Handshake: abort");
+      fillHandshakeBundle(document[ITEM_PRIVATE_ABORT], bundle);
+      return PrivateHandshake::ABORT;
+    } else if (document.HasMember(ITEM_PRIVATE_PUBKEY)) {
+      DBG("Handshake: pubkey");
+      return PrivateHandshake::PUBKEY;
+    }
+  }
+  DBG("Json is not related with private handshake: %s", json.c_str());
+  return PrivateHandshake::UNKNOWN;
+}
+
+#endif  // SECURE
+
 bool isEmailValid(const std::string& email) {
   try {
     auto pattern = std::regex(EMAIL_REGEX_PATTERN);
@@ -142,7 +190,8 @@ Command parseCommand(const std::string& command, ID_t& value) {
           switch (command[2]) {
             case 'r': return Command::PRIVATE_REQUEST;
             case 'c': return Command::PRIVATE_CONFIRM;
-            case 'd': return Command::PRIVATE_ABORT;
+            case 'd': return Command::PRIVATE_REJECT;
+            case 'x': return Command::PRIVATE_ABORT;
             case 'k': return Command::PRIVATE_PUBKEY;
           }
         }

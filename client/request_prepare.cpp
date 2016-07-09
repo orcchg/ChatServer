@@ -139,7 +139,7 @@ std::string privateConfirm_request(const std::string& host, int src_id, int dest
 
 std::string privateAbort_request(const std::string& host, int src_id, int dest_id) {
   std::ostringstream oss;
-  oss << "POST " D_PATH_PRIVATE_ABORT "?" D_ITEM_SRC_ID "=" << src_id
+  oss << "DELETE " D_PATH_PRIVATE_ABORT "?" D_ITEM_SRC_ID "=" << src_id
       << "&" D_ITEM_DEST_ID "=" << dest_id
       << " HTTP/1.1\r\nHost: " << host << "\r\n\r\n";
   MSG("Request: %s", oss.str().c_str());
