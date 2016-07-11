@@ -89,7 +89,7 @@ private:
   IPeerTable* m_peers_database;
 #if SECURE
   IKeysTable* m_keys_database;
-  std::unordered_map<ID_t, std::unordered_map<ID_t, bool>> m_handshakes;
+  std::unordered_map<ID_t, std::unordered_map<ID_t, HandshakeStatus>> m_handshakes;
 #endif  // SECURE
   LoginToPeerDTOMapper m_login_mapper;
   RegistrationToPeerDTOMapper m_register_mapper;
@@ -107,12 +107,13 @@ private:
   std::ostringstream& prepareSimpleResponse(std::ostringstream& out, int code, const std::string& message) const;
   void simpleResponse(const std::vector<ID_t>& ids, int code, const std::string& message) const;
 #if SECURE
-  StatusCode sendPrivateConfirm(const std::string& path, bool i_reject, ID_t& src_id, ID_t& dest_id);
+  StatusCode sendPrivateConfirm(const std::string& path, bool i_abort, ID_t& src_id, ID_t& dest_id);
   void storePublicKey(ID_t id, const secure::Key& key);
 
   /* Handshake */
+  bool createPendingHandshake(ID_t src_id, ID_t dest_id);
   void recordPendingHandshake(ID_t src_id, ID_t dest_id);
-  bool hasPendingHandshake(ID_t src_id, ID_t dest_id);
+  HandshakeStatus getHandshakeStatus(ID_t src_id, ID_t dest_id);
   void satisfyPendingHandshake(ID_t src_id, ID_t dest_id);
   void rejectPendingHandshake(ID_t src_id, ID_t dest_id);
 #endif  // SECURE

@@ -377,7 +377,8 @@ enum class StatusCode : int {
   WRONG_CHANNEL      = 8,
   SAME_CHANNEL       = 9,
   NO_SUCH_PEER       = 10,
-  NOT_REQUESTED      = 11
+  NOT_REQUESTED      = 11,
+  ALREADY_RESPONDED  = 12
 };
 
 enum class ChannelMove : int {
@@ -385,12 +386,18 @@ enum class ChannelMove : int {
 };
 
 #if SECURE
-enum class PrivateHandshake {
+enum class PrivateHandshake : int {
   UNKNOWN = -1,
   REQUEST = 0,
   CONFIRM = 1,
   ABORT   = 2,
   PUBKEY  = 3
+};
+
+enum class HandshakeStatus : int {
+  UNKNOWN    = -1,
+  PENDING    = 0,
+  RESPONDED  = 1
 };
 #endif  // SECURE
 
