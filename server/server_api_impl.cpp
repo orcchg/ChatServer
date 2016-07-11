@@ -782,10 +782,10 @@ StatusCode ServerApiImpl::sendPrivateConfirm(const std::string& path, bool i_rej
     }
     std::ostringstream oss, json;
     json << "{\"";
-    if (accept) {
-      json << D_ITEM_PRIVATE_CONFIRM;
-    } else {
+    if (i_reject) {
       json << D_ITEM_PRIVATE_ABORT;
+    } else {
+      json << D_ITEM_PRIVATE_CONFIRM;
     }
     json << "\":{\"" D_ITEM_SRC_ID "\":" << src_id
          << ",\"" D_ITEM_DEST_ID "\":" << dest_id
