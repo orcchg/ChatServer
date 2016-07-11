@@ -156,6 +156,10 @@ void Server::logIncoming() {
   }
 }
 
+void Server::listPrivateCommunications() {
+  // TODO:
+}
+
 /* Looper */
 // ----------------------------------------------
 void Server::runListener() {

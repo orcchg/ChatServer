@@ -61,6 +61,7 @@ public:
   void run();
   void stop();
   void logIncoming();
+  void listPrivateCommunications();
 
 private:
   ID_t m_next_accepted_connection_id;
