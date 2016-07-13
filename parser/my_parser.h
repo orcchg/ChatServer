@@ -24,6 +24,7 @@
 #include <ostream>
 #include <string>
 #include <vector>
+#include "exception.h"
 
 struct Query {
   std::string key;
@@ -80,8 +81,6 @@ std::ostream& operator << (std::ostream& out, const CodeLine& codeline);
 std::ostream& operator << (std::ostream& out, const Header& header);
 std::ostream& operator << (std::ostream& out, const Request& request);
 std::ostream& operator << (std::ostream& out, const Response& response);
-
-struct ParseException {};
 
 class MyParser {
 public:

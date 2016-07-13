@@ -35,8 +35,6 @@ public:
   virtual std::string decrypt(const std::string& source) = 0;
 };
 
-struct UnsupportedOperationException {};
-
 }
 
 #endif  // SECURE

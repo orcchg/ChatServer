@@ -27,6 +27,7 @@
 #include "api/api.h"
 #include "api/structures.h"
 #include "client_api_impl.h"
+#include "exception.h"
 #include "parser/my_parser.h"
 
 #if SECURE
@@ -99,9 +100,6 @@ protected:
   void getKeyPair();
 #endif  // SECURE
 };
-
-struct ClientException {};
-struct RuntimeException {};
 
 #endif  // CHAT_SERVER_CLIENT__H__
 

@@ -24,8 +24,7 @@
 #include <ostream>
 #include <string>
 #include "api/types.h"
-
-struct ConvertException {};
+#include "exception.h"
 
 /* Internal implementation API */
 // ----------------------------------------------------------------------------

@@ -34,6 +34,8 @@ struct SymmetricKey {
   SymmetricKey();
   SymmetricKey(const std::string& source);
 
+  inline size_t getLength() const { return SHA256_DIGEST_LENGTH; }
+
 private:
   void generate(const std::string& source);
 };

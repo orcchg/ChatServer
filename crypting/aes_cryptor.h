@@ -18,40 +18,41 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
+#ifndef CHAT_SERVER_AES_CRYPTOR__H__
+#define CHAT_SERVER_AES_CRYPTOR__H__
+
 #if SECURE
 
-#include <iomanip>
-#include <sstream>
-#include <cstring>
-#include <openssl/sha.h>
-#include "cryptor.h"
-#include "exception.h"
-#include "logger.h"
+#include <openssl/evp.h>
+#include "api/icryptor.h"
 #include "sym_key.h"
 
 namespace secure {
 
-Cryptor::Cryptor() {
-}
+class AESCryptor : public ICryptor {
+public:
+  AESCryptor();
+  AESCryptor(const SymmetricKey& key);
+  virtual ~AESCryptor();
 
-Cryptor::~Cryptor() {
-}
+  std::string encrypt(const std::string& source) override;
+  std::string decrypt(const std::string& source) override;
 
-std::string Cryptor::encrypt(const std::string& source) {
-  SymmetricKey key(source);
-  std::ostringstream oss;
-  for (int i = 0; i < SHA256_DIGEST_LENGTH; ++i) {
-    oss << std::hex << (int) key.key[i];
-  }
-  return oss.str();
-}
+  inline const SymmetricKey& getKey() const { return m_key; }
+  inline SymmetricKey getKeyCopy() const { return m_key; }
 
-std::string Cryptor::decrypt(const std::string& source) {
-  ERR("Operation not supported!");
-  throw UnsupportedOperationException();
-}
+private:
+  SymmetricKey m_key;
+  std::string m_iv;
+  EVP_CIPHER_CTX* m_context;
+
+  void init();
+  void release();
+};
 
 }
 
 #endif  // SECURE
+
+#endif  // CHAT_SERVER_AES_CRYPTOR__H__
 

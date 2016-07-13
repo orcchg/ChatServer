@@ -19,14 +19,17 @@
  */
 
 #include <sstream>
+#include <cstdlib>
+#include <cstring>
 #include "api.h"
 #include "common.h"
 #include "logger.h"
 #include "rapidjson/document.h"
 #include "structures.h"
+
 #if SECURE
+#include "crypting/aes_cryptor.h"
 #include "crypting/cryptor.h"
-#include "crypting/sym_key.h"
 #include "icryptor.h"
 #endif  // SECURE
 
@@ -259,21 +262,59 @@ Message Message::fromJson(const std::string& json) {
 #if SECURE
 
 // @see http://www.czeskis.com/random/openssl-encrypt-file.html
+// @see https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption
+
 // openssl encrypt with public key
 void Message::encrypt(const secure::Key& public_key) {
   if (public_key != secure::Key::EMPTY) {
-    SymmetricKey sym_key;
-    // TODO: encrypt message with E
-    // TODO: encrypt E with public_key
+    secure::AESCryptor cryptor;  // generate symmetric key on-fly
+    m_message = cryptor.encrypt(m_message);
+    size_t cipher_length = m_message.length();
+
+    // encrypt E with public_key
+    secure::SymmetricKey E = cryptor.getKeyCopy();
+    // TODO: encrypt with pub key
+    size_t E_length = E.getLength();
+
+    // compound message with E
+    // [size E] [ ..E.. ][size msg] [ ..msg.. ]
+    std::string E_length_str = std::to_string(E.getLength());
+    size_t i1 = E_length_str.length();
+    std::string cipher_length_str = std::to_string(cipher_length);
+    size_t i2 = cipher_length_str.length();
+
+    char buffer[2 + i1 + i2 + E_length + cipher_length];
+    int ptr = 0;
+    strncpy(buffer + ptr, E_length_str.c_str(), i1);       ptr += i1;
+    strncpy(buffer + ptr, " ", 1);                         ptr += 1;
+    strncpy(buffer + ptr, (char*) E.key, E_length);        ptr += E_length;
+    strncpy(buffer + ptr, cipher_length_str.c_str(), i2);  ptr += 1;
+    strncpy(buffer + ptr, " ", 1);                         ptr += i2;
+    strncpy(buffer + ptr, m_message.c_str(), cipher_length);
     m_is_encrypted = true;  // set encrypted
   }
 }
 
+// openssl decrypt with private key
 void Message::decrypt(const secure::Key& private_key) {
   if (private_key != secure::Key::EMPTY) {
-    // TODO: find encrypted E
-    // TODO: decrypt E with private key
-    // TODO: decrypt message with E
+    // find encrypted E
+    int ptr = 0;
+    int i1 = m_message.find_first_not_of("0123456789");
+    int E_length = std::stoi(m_message.substr(ptr, i1));
+    std::string cipher_E = m_message.substr(ptr, E_length);         ptr = i1 + 1;
+    int i2 = m_message.find_first_of(' ', ptr);                     ptr += E_length;
+    int cipher_length = std::stoi(m_message.substr(ptr, i2 - ptr));  ptr += i2 - ptr;
+    std::string cipher = m_message.substr(ptr);
+
+    // decrypt E with private key
+    // TODO:
+    secure::SymmetricKey E;  // TODO: decrypt E
+    strncpy((char*) E.key, cipher_E.c_str(), E_length);
+
+    // decrypt message with E
+    secure::AESCryptor cryptor(E);
+    m_message = cryptor.decrypt(cipher);
     m_is_encrypted = false;  // set decrypted
   }
 }

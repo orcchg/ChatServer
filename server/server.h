@@ -26,6 +26,7 @@
 #include "api/api.h"
 #include "database/log_table.h"
 #include "database/system_table.h"
+#include "exception.h"
 #include "parser/my_parser.h"
 
 #if SECURE
@@ -92,8 +93,6 @@ private:
   void handleRequest(int socket, ID_t connection_id);
   void storeRequest(ID_t connection_id, const Request& request);
 };
-
-struct ServerException {};
 
 #endif  // CHAT_SERVER_SERVER__H__
 
