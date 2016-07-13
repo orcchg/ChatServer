@@ -156,9 +156,15 @@ void Server::logIncoming() {
   }
 }
 
-void Server::listPrivateCommunications() {
-  // TODO:
+void Server::listAllPeers() {
+  static_cast<ServerApiImpl*>(m_api_impl)->listAllPeers();
 }
+
+#if SECURE
+void Server::listPrivateCommunications() {
+  static_cast<ServerApiImpl*>(m_api_impl)->listPrivateCommunications();
+}
+#endif  // SECURE
 
 /* Looper */
 // ----------------------------------------------

@@ -44,6 +44,13 @@ public:
   PeerDTO map(const RegistrationForm& form) override;
 };
 
+#if SECURE
+class KeyDTOtoKeyMapper : public Mapper<KeyDTO, secure::Key> {
+public:
+  secure::Key map(const KeyDTO& key) override;
+};
+#endif  // SECURE
+
 /* Server implementation */
 // ----------------------------------------------------------------------------
 class ServerApiImpl : public ServerApi {
@@ -55,6 +62,7 @@ public:
   void logoutPeerAtConnectionReset(int socket) override;
 
   /* API */
+  // --------------------------------------------
   void sendLoginForm() override;
   void sendRegistrationForm() override;
   void sendStatus(StatusCode status, Path action, ID_t id) override;
@@ -81,6 +89,13 @@ public:
 
   void terminate() override;
 
+  /* Internal */
+  // --------------------------------------------
+  void listAllPeers() const;
+#if SECURE
+  void listPrivateCommunications() const;
+#endif  // SECURE
+
 private:
   int m_socket;
   std::string m_payload;  // extra data
@@ -93,6 +108,9 @@ private:
 #endif  // SECURE
   LoginToPeerDTOMapper m_login_mapper;
   RegistrationToPeerDTOMapper m_register_mapper;
+#if SECURE
+  KeyDTOtoKeyMapper m_keys_mapper;
+#endif  // SECURE
 
   StatusCode loginPeer(const LoginForm& form, ID_t& id);
   ID_t registerPeer(const RegistrationForm& form);
@@ -109,13 +127,15 @@ private:
 #if SECURE
   StatusCode sendPrivateConfirm(const std::string& path, bool i_abort, ID_t& src_id, ID_t& dest_id);
   void storePublicKey(ID_t id, const secure::Key& key);
+  void exchangePublicKeys(const secure::Key& src_key, const secure::Key& dest_key);
 
   /* Handshake */
-  bool createPendingHandshake(ID_t src_id, ID_t dest_id);
+  bool createPendingHandshake(ID_t src_id, ID_t dest_id, HandshakeStatus status);
   void recordPendingHandshake(ID_t src_id, ID_t dest_id);
   HandshakeStatus getHandshakeStatus(ID_t src_id, ID_t dest_id);
   void satisfyPendingHandshake(ID_t src_id, ID_t dest_id);
   void rejectPendingHandshake(ID_t src_id, ID_t dest_id);
+  void erasePendingHandshake(ID_t src_id, ID_t dest_id);
 #endif  // SECURE
 };
 

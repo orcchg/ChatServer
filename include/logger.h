@@ -112,6 +112,7 @@
   #define WRN_COLOR "00;33m"
   #define INF_COLOR "00;32m"
   #define DBG_COLOR "00;36m"
+  #define VER_COLOR "00;34m"
   #define TRC_COLOR "00;37m"
   #define MSG_COLOR "00;37m"
   #define SYS_COLOR "01;35m"
@@ -122,6 +123,7 @@
   #define WRN_STRING " WRN in ["
   #define INF_STRING " INF in ["
   #define DBG_STRING " DBG in ["
+  #define VER_STRING " VER in ["
   #define TRC_STRING " TRC in ["
   #define MSG_STRING " MSG in ["
   #define SYS_STRING " SYS in ["
@@ -132,6 +134,7 @@
   #define WRN_SUGGEST COLOR_OPEN WRN_COLOR WRN_STRING __FILE__ COLON LINE PROMPT_SUGGEST
   #define INF_SUGGEST COLOR_OPEN INF_COLOR INF_STRING __FILE__ COLON LINE PROMPT_SUGGEST
   #define DBG_SUGGEST COLOR_OPEN DBG_COLOR DBG_STRING __FILE__ COLON LINE PROMPT_SUGGEST
+  #define VER_SUGGEST COLOR_OPEN VER_COLOR VER_STRING __FILE__ COLON LINE PROMPT_SUGGEST
   #define TRC_SUGGEST COLOR_OPEN TRC_COLOR TRC_STRING __FILE__ COLON LINE PROMPT_SUGGEST
   #define MSG_SUGGEST COLOR_OPEN MSG_COLOR MSG_STRING __FILE__ COLON LINE PROMPT_SUGGEST
   #define SYS_SUGGEST COLOR_OPEN SYS_COLOR SYS_STRING __FILE__ COLON LINE PROMPT_SUGGEST
@@ -144,6 +147,7 @@
   #define WRN(fmt, ...) printf((WRN_SUGGEST #fmt PROMPT_CLOSE), __LINE__, ##__VA_ARGS__); std::cout << std::flush;
   #define INF(fmt, ...) printf((INF_SUGGEST #fmt PROMPT_CLOSE), __LINE__, ##__VA_ARGS__); std::cout << std::flush;
   #define DBG(fmt, ...) printf((DBG_SUGGEST #fmt PROMPT_CLOSE), __LINE__, ##__VA_ARGS__); std::cout << std::flush;
+  #define VER(fmt, ...) printf((VER_SUGGEST #fmt PROMPT_CLOSE), __LINE__, ##__VA_ARGS__); std::cout << std::flush;
   #define TRC(fmt, ...) printf((TRC_SUGGEST #fmt PROMPT_CLOSE), __LINE__, ##__VA_ARGS__); std::cout << std::flush;
   #define MSG(fmt, ...) printf((MSG_SUGGEST #fmt PROMPT_CLOSE), __LINE__, ##__VA_ARGS__); std::cout << std::flush;
   #define SYS(fmt, ...) printf((SYS_SUGGEST #fmt PROMPT_CLOSE), __LINE__, ##__VA_ARGS__); std::cout << std::flush;
@@ -156,6 +160,7 @@
   #define WRN(fmt, ...)
   #define INF(fmt, ...)
   #define DBG(fmt, ...)
+  #define VER(fmt, ...)
   #define TRC(fmt, ...)
   #define MSG(fmt, ...)
   #define SYS(fmt, ...)

@@ -26,7 +26,58 @@
 #include "structures.h"
 #if SECURE
 #include "crypting/cryptor.h"
+#include "crypting/sym_key.h"
 #include "icryptor.h"
+#endif  // SECURE
+
+// ----------------------------------------------
+#if SECURE
+
+namespace secure {
+
+Key Key::EMPTY;
+
+Key::Key()
+  : m_id(UNKNOWN_ID), m_key("") {
+}
+
+Key::Key(ID_t id, const std::string& key)
+  : m_id(id), m_key(key) {
+}
+
+bool Key::operator == (const Key& rhs) const {
+  return (m_id == rhs.m_id && m_key == rhs.m_key);
+}
+
+bool Key::operator != (const Key& rhs) const {
+  return !(*this == rhs);
+}
+
+std::string Key::toJson() const {
+  std::ostringstream oss;
+  oss << "{\"" D_ITEM_ID "\":" << m_id
+      << ",\"" D_ITEM_KEY "\":\"" << m_key
+      << "\"}";
+  return oss.str();
+}
+
+Key Key::fromJson(const std::string& json) {
+  rapidjson::Document document;
+  auto prepared_json = common::preparse(json);
+  document.Parse(prepared_json.c_str());
+
+  if (document.IsObject() &&
+      document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64() &&
+      document.HasMember(ITEM_KEY) && document[ITEM_KEY].IsString()) {
+    return Key(document[ITEM_ID].GetInt64(), document[ITEM_KEY].GetString());
+  } else {
+    ERR("Key parse failed: invalid json: %s", json.c_str());
+    throw ConvertException();
+  }
+}
+
+}
+
 #endif  // SECURE
 
 // ----------------------------------------------
@@ -124,6 +175,16 @@ Message::Builder& Message::Builder::setTimestamp(uint64_t timestamp) {
   return *this;
 }
 
+Message::Builder& Message::Builder::setSize(size_t size) {
+  m_size = size;
+  return *this;
+}
+
+Message::Builder& Message::Builder::setEncrypted(bool is_encrypted) {
+  m_is_encrypted = is_encrypted;
+  return *this;
+}
+
 Message::Builder& Message::Builder::setMessage(const std::string& message) {
   m_message = message;
   return *this;
@@ -140,6 +201,8 @@ Message::Message(const Message::Builder& builder)
   , m_channel(builder.getChannel())
   , m_dest_id(builder.getDestId())
   , m_timestamp(builder.getTimestamp())
+  , m_size(builder.getSize())
+  , m_is_encrypted(builder.isEncrypted())
   , m_message(builder.getMessage()) {
 }
 
@@ -151,6 +214,8 @@ std::string Message::toJson() const {
       << "\",\"" D_ITEM_CHANNEL "\":" << m_channel
       << ",\"" D_ITEM_DEST_ID "\":" << m_dest_id
       << ",\"" D_ITEM_TIMESTAMP "\":" << m_timestamp
+      << ",\"" D_ITEM_SIZE "\":" << m_message.size()
+      << ",\"" D_ITEM_ENCRYPTED "\":" << (m_is_encrypted ? 1 : 0)
       << ",\"" D_ITEM_MESSAGE "\":\"" << m_message
       << "\"}";
   return oss.str();
@@ -168,6 +233,8 @@ Message Message::fromJson(const std::string& json) {
       document.HasMember(ITEM_CHANNEL) && document[ITEM_CHANNEL].IsInt() &&
       document.HasMember(ITEM_DEST_ID) && document[ITEM_DEST_ID].IsInt64() &&
       document.HasMember(ITEM_TIMESTAMP) && document[ITEM_TIMESTAMP].IsInt64() &&
+      document.HasMember(ITEM_SIZE) && document[ITEM_SIZE].IsInt() &&
+      document.HasMember(ITEM_ENCRYPTED) && document[ITEM_ENCRYPTED].IsInt() &&
       document.HasMember(ITEM_MESSAGE) && document[ITEM_MESSAGE].IsString()) {
     ID_t id = document[ITEM_ID].GetInt64();
     std::string login = document[ITEM_LOGIN].GetString();
@@ -175,16 +242,43 @@ Message Message::fromJson(const std::string& json) {
     int channel = document[ITEM_CHANNEL].GetInt();
     ID_t dest_id = document[ITEM_DEST_ID].GetInt64();
     uint64_t timestamp = document[ITEM_TIMESTAMP].GetInt64();
+    size_t size = document[ITEM_SIZE].GetInt();
+    bool is_encrypted = document[ITEM_ENCRYPTED].GetInt() != 0;
     std::string message = document[ITEM_MESSAGE].GetString();
 
     return Message::Builder(id).setLogin(login).setEmail(email).setChannel(channel)
-        .setDestId(dest_id).setTimestamp(timestamp).setMessage(message)
+        .setDestId(dest_id).setTimestamp(timestamp).setSize(size)
+        .setEncrypted(is_encrypted).setMessage(message)
         .build();
   } else {
     ERR("Message parse failed: invalid json: %s", json.c_str());
     throw ConvertException();
   }
 }
+
+#if SECURE
+
+// @see http://www.czeskis.com/random/openssl-encrypt-file.html
+// openssl encrypt with public key
+void Message::encrypt(const secure::Key& public_key) {
+  if (public_key != secure::Key::EMPTY) {
+    SymmetricKey sym_key;
+    // TODO: encrypt message with E
+    // TODO: encrypt E with public_key
+    m_is_encrypted = true;  // set encrypted
+  }
+}
+
+void Message::decrypt(const secure::Key& private_key) {
+  if (private_key != secure::Key::EMPTY) {
+    // TODO: find encrypted E
+    // TODO: decrypt E with private key
+    // TODO: decrypt message with E
+    m_is_encrypted = false;  // set decrypted
+  }
+}
+
+#endif  // SECURE
 
 // ----------------------------------------------
 Peer::Builder::Builder(ID_t id)
@@ -276,54 +370,4 @@ std::ostream& operator << (std::ostream& out, const Token& token) {
   out << token.get();
   return out;
 }
-
-// ----------------------------------------------
-#if SECURE
-
-namespace secure {
-
-Key Key::EMPTY;
-
-Key::Key()
-  : m_id(UNKNOWN_ID), m_key("") {
-}
-
-Key::Key(ID_t id, const std::string& key)
-  : m_id(id), m_key(key) {
-}
-
-bool Key::operator == (const Key& rhs) const {
-  return (m_id == rhs.m_id && m_key == rhs.m_key);
-}
-
-bool Key::operator != (const Key& rhs) const {
-  return !(*this == rhs);
-}
-
-std::string Key::toJson() const {
-  std::ostringstream oss;
-  oss << "{\"" D_ITEM_ID "\":" << m_id
-      << ",\"" D_ITEM_KEY "\":\"" << m_key
-      << "\"}";
-  return oss.str();
-}
-
-Key Key::fromJson(const std::string& json) {
-  rapidjson::Document document;
-  auto prepared_json = common::preparse(json);
-  document.Parse(prepared_json.c_str());
-
-  if (document.IsObject() &&
-      document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64() &&
-      document.HasMember(ITEM_KEY) && document[ITEM_KEY].IsString()) {
-    return Key(document[ITEM_ID].GetInt64(), document[ITEM_KEY].GetString());
-  } else {
-    ERR("Key parse failed: invalid json: %s", json.c_str());
-    throw ConvertException();
-  }
-}
-
-}
-
-#endif  // SECURE
 

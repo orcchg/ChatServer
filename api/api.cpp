@@ -18,6 +18,7 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
+#include <cstdio>
 #include "api.h"
 
 const char* ITEM_LOGIN    = D_ITEM_LOGIN;
@@ -30,6 +31,7 @@ const char* ITEM_DEST_ID   = D_ITEM_DEST_ID;
 const char* ITEM_CHANNEL   = D_ITEM_CHANNEL;
 const char* ITEM_TIMESTAMP = D_ITEM_TIMESTAMP;
 const char* ITEM_SIZE      = D_ITEM_SIZE;
+const char* ITEM_ENCRYPTED = D_ITEM_ENCRYPTED;
 const char* ITEM_MESSAGE   = D_ITEM_MESSAGE;
 
 const char* ITEM_ACCEPT       = D_ITEM_ACCEPT;
@@ -68,4 +70,36 @@ const char* PATH_PRIVATE_ABORT   = D_PATH_PRIVATE_ABORT;
 const char* PATH_PRIVATE_PUBKEY  = D_PATH_PRIVATE_PUBKEY;
 #endif  // SECURE
 
+#if SECURE
+std::string toString(HandshakeStatus status) {
+  switch (status) {
+    case HandshakeStatus::PENDING: return "PENDING";
+    case HandshakeStatus::RESPONDED: return "RESPONDED";
+    case HandshakeStatus::UNKNOWN:
+    default:
+      return "UNKNOWN";
+  }
+}
+
+void print(HandshakeStatus status) {
+  switch (status) {
+    case HandshakeStatus::SENT:
+      printf("\e[5;00;34mSENT\e[m");
+      break;
+    case HandshakeStatus::PENDING:
+      printf("\e[5;00;36mPENDING\e[m");
+      break;
+    case HandshakeStatus::RESPONDED:
+      printf("\e[5;00;32mRESPONDED\e[m");
+      break;
+    case HandshakeStatus::REJECTED:
+      printf("\e[5;00;31mREJECTED\e[m");
+      break;
+    case HandshakeStatus::UNKNOWN:
+    default:
+      printf("\e[5;01;33mUNKNOWN\e[m");
+      break;
+  }
+}
+#endif  // SECURE
 

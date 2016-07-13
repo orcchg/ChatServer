@@ -29,6 +29,41 @@ struct ConvertException {};
 
 /* Internal implementation API */
 // ----------------------------------------------------------------------------
+#if SECURE
+
+namespace secure {
+
+/**
+ * {
+ *   "id":1000,
+ *   "key":"MIIEpgIBAAKCAQEAwV7VBYF221EVcUrfxMtAyqo60VNOnY7WyfyT0DwtHhdH0bj9..."
+ * }
+ */
+class Key {
+public:
+  static Key EMPTY;
+
+  Key();
+  Key(ID_t id, const std::string& key);
+  bool operator == (const Key& rhs) const;
+  bool operator != (const Key& rhs) const;
+
+  std::string toJson() const;
+  static Key fromJson(const std::string& json);
+
+  inline ID_t getId() const { return m_id; }
+  inline const std::string& getKey() const { return m_key; }
+
+private:
+  ID_t m_id;
+  std::string m_key;
+};
+
+}
+
+#endif  // SECURE
+
+// ----------------------------------------------
 /**
  * {
  *   "login":"Maxim",
@@ -91,6 +126,15 @@ protected:
  *   "timestamp":1461516681500,
  *   "message":"Hello, World"
  * }
+ *
+ *  --------------------
+ *  SECURE message format:
+ *
+ *  [size E][E][message]
+ *
+ *  size E  - size of encrypted symmetric key E
+ *       E  - symmetric key E encrypted with some public key
+ *  message - message encrypted with E
  */
 class Message {
 public:
@@ -102,6 +146,8 @@ public:
     Builder& setChannel(int channel);
     Builder& setDestId(ID_t dest_id);
     Builder& setTimestamp(uint64_t timestamp);
+    Builder& setSize(size_t size);
+    Builder& setEncrypted(bool is_encrypted);
     Builder& setMessage(const std::string& message);
     Message build();
 
@@ -111,6 +157,8 @@ public:
     inline int getChannel() const { return m_channel; }
     inline ID_t getDestId() const { return m_dest_id; }
     inline uint64_t getTimestamp() const { return m_timestamp; }
+    inline size_t getSize() const { return m_size; }
+    inline bool isEncrypted() const { return m_is_encrypted; }
     inline const std::string& getMessage() const { return m_message; }
 
   private:
@@ -120,6 +168,8 @@ public:
     int m_channel;
     ID_t m_dest_id;
     uint64_t m_timestamp;
+    size_t m_size;
+    bool m_is_encrypted;  // always false if SECURE is disabled
     std::string m_message; 
   };
 
@@ -133,7 +183,14 @@ public:
   inline int getChannel() const { return m_channel; }
   inline ID_t getDestId() const { return m_dest_id; }
   inline uint64_t getTimestamp() const { return m_timestamp; }
+  inline size_t getSize() const { return m_size; }
+  inline bool isEncrypted() const { return m_is_encrypted; }
   inline const std::string& getMessage() const { return m_message; }
+
+#if SECURE
+  void encrypt(const secure::Key& public_key);
+  void decrypt(const secure::Key& private_key);
+#endif  // SECURE
 
 private:
   ID_t m_id;
@@ -143,6 +200,7 @@ private:
   ID_t m_dest_id;
   uint64_t m_timestamp;
   size_t m_size;
+  bool m_is_encrypted;  // always false if SECURE is disabled
   std::string m_message;
 };
 
@@ -209,35 +267,6 @@ private:
 };
 
 std::ostream& operator << (std::ostream& out, const Token& token);
-
-// ----------------------------------------------
-#if SECURE
-
-namespace secure {
-
-class Key {
-public:
-  static Key EMPTY;
-
-  Key();
-  Key(ID_t id, const std::string& key);
-  bool operator == (const Key& rhs) const;
-  bool operator != (const Key& rhs) const;
-
-  std::string toJson() const;
-  static Key fromJson(const std::string& json);
-
-  inline ID_t getId() const { return m_id; }
-  inline const std::string& getKey() const { return m_key; }
-
-private:
-  ID_t m_id;
-  std::string m_key;
-};
-
-}
-
-#endif  // SECURE
 
 #endif  // CHAT_SERVER_STRUCTURES__H__
 

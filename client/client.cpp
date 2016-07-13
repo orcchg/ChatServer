@@ -530,6 +530,8 @@ void Client::startChat() {
 
   printf("Type \'.m\' to list commands\n\n");
 
+  bool privateSecureChat = false;
+
   std::ostringstream oss;
   std::string buffer;
   std::cin.ignore();
@@ -567,12 +569,18 @@ void Client::startChat() {
         continue;
       case util::Command::PRIVATE_CONFIRM:
         m_api_impl->privateConfirm(m_id, value, true);
+        m_dest_id = value;
+        privateSecureChat = true;
         continue;
       case util::Command::PRIVATE_REJECT:
         m_api_impl->privateConfirm(m_id, value, false);
+        m_dest_id = UNKNOWN_ID;
+        privateSecureChat = false;
         continue;
       case util::Command::PRIVATE_ABORT:
         m_api_impl->privateAbort(m_id, value);
+        m_dest_id = UNKNOWN_ID;
+        privateSecureChat = false;
         continue;
       case util::Command::PRIVATE_PUBKEY:
         if (m_key_pair.first == secure::Key::EMPTY) {
@@ -592,15 +600,29 @@ void Client::startChat() {
       buffer = buffer.substr(0, USER_MESSAGE_MAX_SIZE);
     }
 
-    // sending message
+    // composing message
     uint64_t timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     Message message = Message::Builder(m_id)
         .setLogin(m_name).setEmail(m_email).setChannel(m_channel).setDestId(m_dest_id)
         .setTimestamp(timestamp).setMessage(buffer).build();
+
+#if SECURE
+    if (privateSecureChat) {
+      auto it = m_handshakes.find(m_dest_id);
+      if (it != m_handshakes.end()) {
+        message.encrypt(it->second);
+      } else {
+        WRN("Missing public key for peer [%lli]. Fallback to send not-encrypted message to dedicated peer", m_dest_id);
+        privateSecureChat = false;
+      }
+    }
+#endif  // SECURE
+
+    // sending message
     m_api_impl->sendMessage(message);
 
-    if (m_dest_id != UNKNOWN_ID) {
-      m_dest_id = UNKNOWN_ID;  // drop directed id
+    if (!privateSecureChat && m_dest_id != UNKNOWN_ID) {
+      m_dest_id = UNKNOWN_ID;  // drop dedicated id
     }
   }
 }
@@ -642,10 +664,12 @@ void Client::receiverThread() {
           case PrivateHandshake::CONFIRM:
             if (bundle.accept) {
               acceptance = "confirmed";
+              m_dest_id = bundle.src_id;
             } else {
               acceptance = "rejected";
+              m_dest_id = UNKNOWN_ID;
             }
-            printf("\e[5;01;35mPeer [%lli] has \e[m\e[5;01;34m%s\e[m\e[5;01;35m your request for private communication\e[m\n", bundle.src_id, acceptance.c_str());
+            printf("\e[5;01;35mPeer [%lli] has \e[m\e[5;01;34m%s\e[m\e[5;01;35m private communication with you\e[m\n", bundle.src_id, acceptance.c_str());
             continue;
           case PrivateHandshake::ABORT:
             printf("\e[5;01;35mPeer [%lli] has aborted private communication with you\e[m\n", bundle.src_id);
@@ -674,6 +698,12 @@ void Client::receiverThread() {
     // peers' messages
     try {
       Message message = Message::fromJson(response.body);
+
+#if SECURE
+      if (message.isEncrypted()) {
+        message.decrypt(m_key_pair.second);
+      }
+#endif  // SECURE
 
       std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
       std::time_t end_time = std::chrono::system_clock::to_time_t(end);

@@ -27,6 +27,7 @@ namespace menu {
 
 const char* HELP = "help";
 const char* LOGI = "logi";
+const char* LIST = "list";
 #if SECURE
 const char* PRIV = "priv";
 #endif  // SECURE
@@ -37,8 +38,12 @@ bool evaluate(Server* server, char* command) {
     printHelp();
   } else if (strcmp(LOGI, command) == 0) {
     server->logIncoming();
+  } else if (strcmp(LIST, command) == 0) {
+    server->listAllPeers();
+#if SECURE
   } else if (strcmp(PRIV, command) == 0) {
     server->listPrivateCommunications();
+#endif  // SECURE
   } else if (strcmp(STOP, command) == 0) {
     server->stop();
     return false;
@@ -50,7 +55,8 @@ bool evaluate(Server* server, char* command) {
 
 void printHelp() {
   printf("Commands:\n\t%s - print this help \
-                   \n\t%s - enable / disable incoming requests logging", HELP, LOGI);
+                   \n\t%s - enable / disable incoming requests logging \
+                   \n\t%s - list all logged in peers", HELP, LOGI, LIST);
 #if SECURE
   printf("\n\t%s - show list of private communications", PRIV);
 #endif  // SECURE

@@ -61,7 +61,10 @@ public:
   void run();
   void stop();
   void logIncoming();
+  void listAllPeers();
+#if SECURE
   void listPrivateCommunications();
+#endif  // SECURE
 
 private:
   ID_t m_next_accepted_connection_id;

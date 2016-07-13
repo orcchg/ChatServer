@@ -256,6 +256,7 @@
 #define D_ITEM_CHANNEL    "channel"
 #define D_ITEM_TIMESTAMP  "timestamp"
 #define D_ITEM_SIZE       "size"
+#define D_ITEM_ENCRYPTED  "encrypted"
 #define D_ITEM_MESSAGE    "message"
 
 #define D_ITEM_ACCEPT        "accept"
@@ -304,6 +305,7 @@ extern const char* ITEM_DEST_ID;
 extern const char* ITEM_CHANNEL;
 extern const char* ITEM_TIMESTAMP;
 extern const char* ITEM_SIZE;
+extern const char* ITEM_ENCRYPTED;
 extern const char* ITEM_MESSAGE;
 
 extern const char* ITEM_ACCEPT;
@@ -378,7 +380,11 @@ enum class StatusCode : int {
   SAME_CHANNEL       = 9,
   NO_SUCH_PEER       = 10,
   NOT_REQUESTED      = 11,
-  ALREADY_RESPONDED  = 12
+  ALREADY_REQUESTED  = 12,
+  ALREADY_RESPONDED  = 13,
+  REJECTED           = 14,
+  ANOTHER_ACTION_REQUIRED = 15,
+  PUBLIC_KEY_MISSING = 16
 };
 
 enum class ChannelMove : int {
@@ -395,10 +401,15 @@ enum class PrivateHandshake : int {
 };
 
 enum class HandshakeStatus : int {
-  UNKNOWN    = -1,
-  PENDING    = 0,
-  RESPONDED  = 1
+  UNKNOWN  = -1,
+  SENT = 0,
+  PENDING = 1,
+  RESPONDED = 2,
+  REJECTED = 3
 };
+
+std::string toString(HandshakeStatus status);
+void print(HandshakeStatus status);
 #endif  // SECURE
 
 /* API json */

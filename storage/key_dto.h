@@ -35,6 +35,9 @@ public:
   inline ID_t getId() const { return m_id; }
   inline const std::string& getKey() const { return m_key; }
 
+  inline bool operator == (const KeyDTO& rhs) const { return m_id == rhs.m_id; }
+  inline bool operator != (const KeyDTO& rhs) const { return !(*this == rhs); }
+
 private:
   ID_t m_id;
   std::string m_key;

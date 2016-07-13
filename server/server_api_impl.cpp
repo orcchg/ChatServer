@@ -46,6 +46,10 @@ PeerDTO RegistrationToPeerDTOMapper::map(const RegistrationForm& form) {
   return PeerDTO(form.getLogin(), form.getEmail(), form.getPassword());
 }
 
+secure::Key KeyDTOtoKeyMapper::map(const KeyDTO& key) {
+  return secure::Key(key.getId(), key.getKey());
+}
+
 /* Server implementation */
 // ----------------------------------------------------------------------------
 ServerApiImpl::ServerApiImpl()
@@ -141,8 +145,20 @@ void ServerApiImpl::sendStatus(StatusCode status, Path action, ID_t id) {
     case StatusCode::NOT_REQUESTED:
       oss << "412 Not requested\r\n" << STANDARD_HEADERS << "\r\n";
       break;
+    case StatusCode::ALREADY_REQUESTED:
+      oss  << "200 Already requested\r\n" << STANDARD_HEADERS << "\r\n";
+      break;
     case StatusCode::ALREADY_RESPONDED:
       oss << "200 Already responded\r\n" << STANDARD_HEADERS << "\r\n";
+      break;
+    case StatusCode::REJECTED:
+      oss  << "200 Confirmation rejected\r\n" << STANDARD_HEADERS << "\r\n";
+      break;
+    case StatusCode::ANOTHER_ACTION_REQUIRED:
+      oss << "200 Another action is required\r\n" << STANDARD_HEADERS << "\r\n";
+      break;
+    case StatusCode::PUBLIC_KEY_MISSING:
+      oss << "404 Public key is missing\r\n" << STANDARD_HEADERS << "\r\n";
       break;
     case StatusCode::UNKNOWN:
       oss << "500 Internal server error\r\n" << STANDARD_HEADERS << "\r\n";
@@ -465,6 +481,30 @@ void ServerApiImpl::terminate() {
   }
 }
 
+/* Internal */
+// ----------------------------------------------
+void ServerApiImpl::listAllPeers() const {
+  printf("\e[5;00;33m    ***    Logged in peers    ***\e[m\n");
+  for (auto& it : m_peers) {
+    printf("Peer[%lli]: login = %s, email = %s, channel = %i, socket = %i\n",
+           it.first, it.second.getLogin().c_str(), it.second.getEmail().c_str(), it.second.getChannel(), it.second.getSocket());
+  }
+}
+
+#if SECURE
+void ServerApiImpl::listPrivateCommunications() const {
+  printf("\e[5;00;33m    ***    Handshakes    ***\e[m\n");
+  printf("\e[5;00;35m  source      dest       status\e[m\n");
+  for (auto& it : m_handshakes) {
+    for (auto& dit : it.second) {
+      printf("  %lli        %lli       ", it.first, dit.first);
+      print(dit.second);
+      printf("\n");
+    }
+  }
+}
+#endif  // SECURE
+
 /* Utility */
 // ----------------------------------------------
 std::string ServerApiImpl::getSymbolicFromQuery(const std::string& path) const {
@@ -688,6 +728,24 @@ StatusCode ServerApiImpl::privateRequest(const std::string& path, ID_t& id) {
   }
   auto dest_peer_it = m_peers.find(dest_id);
   if (dest_peer_it != m_peers.end()) {
+    // check outcoming handshake
+    switch (getHandshakeStatus(id, dest_id)) {
+      case HandshakeStatus::SENT:
+        VER("Already sent handshake request from peer [%lli] to peer [%lli]", id, dest_id);
+        return StatusCode::ALREADY_REQUESTED;
+      case HandshakeStatus::PENDING:
+        VER("Handshake request not sent: confirmation or rejection of pending handshake from peer [%lli] is needed to be done by peer [%lli]", dest_id, id);
+        return StatusCode::ANOTHER_ACTION_REQUIRED;
+    }
+    // check incoming handshake
+    switch (getHandshakeStatus(dest_id, id)) {
+      case HandshakeStatus::PENDING:
+        VER("There is already a pending handshake from peer [%lli] to peer [%lli]", id, dest_id);
+        return StatusCode::ALREADY_REQUESTED;
+      case HandshakeStatus::RESPONDED:
+        VER("Handshake has already been established between peers [%lli] and [%lli]", id, dest_id);
+        return StatusCode::ALREADY_RESPONDED;
+    }
     recordPendingHandshake(id, dest_id);  // id --> dest_id
     std::ostringstream oss, json;
     json << "{\"" D_ITEM_PRIVATE_REQUEST "\":{\"" D_ITEM_SRC_ID "\":" << id
@@ -772,24 +830,67 @@ StatusCode ServerApiImpl::sendPrivateConfirm(const std::string& path, bool i_abo
   }
   auto dest_peer_it = m_peers.find(dest_id);
   if (dest_peer_it != m_peers.end()) {
+    // check incoming handshake
     switch (getHandshakeStatus(dest_id, src_id)) {
-      case HandshakeStatus::PENDING:
-        DBG("Found pending handshake from peer [%lli] to peer [%lli]", dest_id, src_id);
-        break;
-      case HandshakeStatus::RESPONDED:
-        INF("Handshake from peer [%lli] to peer [%lli] has already been confirmed", dest_id, src_id);
-        return StatusCode::ALREADY_RESPONDED;
       case HandshakeStatus::UNKNOWN:
-      default:
         ERR("Attempt to confirm secure handshake without any request from another peer");
         return StatusCode::NOT_REQUESTED;
     }
+    // check outcoming handshake
+    switch (getHandshakeStatus(src_id, dest_id)) {
+      case HandshakeStatus::SENT:
+        if (!i_abort) {
+          VER("Peer [%lli] has sent handshake request to peer [%lli], reject / abort is allowed", src_id, dest_id);
+          if (accept) {
+            VER("Confirmation is not allowed if handshake request has been issued by source peer");
+            return StatusCode::ANOTHER_ACTION_REQUIRED;
+          }
+        }
+        break;
+      case HandshakeStatus::PENDING:
+        if (!i_abort) {
+          VER("Found pending handshake from peer [%lli] to peer [%lli]", dest_id, src_id);
+        }
+        break;
+      case HandshakeStatus::RESPONDED:
+        if (!i_abort) {
+          VER("Handshake from peer [%lli] to peer [%lli] has already been confirmed", dest_id, src_id);
+          return StatusCode::ALREADY_RESPONDED;
+        }
+        break;
+      case HandshakeStatus::REJECTED:
+        if (!i_abort) {
+          VER("Handshake from peer [%lli] has already been rejected by peer [%lli]", dest_id, src_id);
+          return StatusCode::REJECTED;
+        }
+        break;
+    }
     if (accept) {
-      satisfyPendingHandshake(dest_id, src_id);
+      KeyDTO src_public_key_dto = m_keys_database->getKey(src_id);
+      if (src_public_key_dto == KeyDTO::EMPTY) {
+        ERR("Public key not found for peer [%lli]!", src_id);
+        return StatusCode::PUBLIC_KEY_MISSING;
+      }
+      KeyDTO dest_public_key_dto = m_keys_database->getKey(dest_id);
+      if (dest_public_key_dto == KeyDTO::EMPTY) {
+        ERR("Public key not found for peer [%lli]!", dest_id);
+        return StatusCode::PUBLIC_KEY_MISSING;
+      }
+      satisfyPendingHandshake(dest_id, src_id);  // src_id has confirmed handshake request from dest_id
+      satisfyPendingHandshake(src_id, dest_id);  // handshake must be confirmed symmetrically
       DBG("Handshake between peer [%lli] and peer [%lli] has been established", src_id, dest_id);
-    } else {
-      rejectPendingHandshake(dest_id, src_id);
+      // public keys exchange
+      auto src_public_key = m_keys_mapper.map(src_public_key_dto);
+      auto dest_public_key = m_keys_mapper.map(dest_public_key_dto);
+      exchangePublicKeys(src_public_key, dest_public_key);
+    } else if (!i_abort) {
+      rejectPendingHandshake(dest_id, src_id);  // src_id has rejected handshake request from dest_id
+      rejectPendingHandshake(src_id, dest_id);  // handshake must be rejected symmetrically
       DBG("Peer [%lli] has rejected to establish handshake with peer [%lli]", src_id, dest_id);
+    } else {
+      erasePendingHandshake(dest_id, src_id);  // src_id has aborted previously established handshake with dest_id
+      erasePendingHandshake(src_id, dest_id);  // handshake must be erased symmetrically
+      DBG("Peer [%lli] has aborted previously established handshake with peer [%lli]", src_id, dest_id);
     }
     std::ostringstream oss, json;
     json << "{\"";
@@ -822,34 +923,42 @@ void ServerApiImpl::storePublicKey(ID_t id, const secure::Key& key) {
   m_keys_database->addKey(id, key_dto);
 }
 
+void ServerApiImpl::exchangePublicKeys(const secure::Key& src_key, const secure::Key& dest_key) {
+  ID_t src_id = src_key.getId();
+  ID_t dest_id = dest_key.getId();
+  TRC("exchangePublicKeys(%lli, %lli)", src_id, dest_id);
+  sendPubKey(src_key, dest_id);
+  sendPubKey(dest_key, src_id);
+}
+
 /* Handshake */
 // ----------------------------------------------
-bool ServerApiImpl::createPendingHandshake(ID_t src_id, ID_t dest_id) {
+bool ServerApiImpl::createPendingHandshake(ID_t src_id, ID_t dest_id, HandshakeStatus status) {
   TRC("createPendingHandshake(%lli, %lli)", src_id, dest_id);
   auto it = m_handshakes.find(src_id);
-  std::pair<ID_t, HandshakeStatus> forward(dest_id, HandshakeStatus::PENDING);  // src_id  -->  dest_id
+  std::pair<ID_t, HandshakeStatus> forward(dest_id, status);  // src_id  -->  dest_id
   if (it == m_handshakes.end()) {
     std::pair<ID_t, std::unordered_map<ID_t, HandshakeStatus>> forward_set(src_id, std::unordered_map<ID_t, HandshakeStatus>());
     forward_set.second.insert(forward);
     m_handshakes.insert(forward_set);
   } else {
-    auto result = it->second.insert(forward);
-    return result.second;
+    it->second[forward.first] = forward.second;  // update value if already exists
+    return false;
   }
   return true;
 }
 
 void ServerApiImpl::recordPendingHandshake(ID_t src_id, ID_t dest_id) {
   TRC("recordPendingHandshake(%lli, %lli)", src_id, dest_id);
-  if (createPendingHandshake(src_id, dest_id)) {
-    DBG("New handshake's recorded as PENDING, from peer [%lli] to peer [%lli]", src_id, dest_id);
+  if (createPendingHandshake(src_id, dest_id, HandshakeStatus::SENT)) {
+    DBG("New handshake's recorded as SENT, from peer [%lli] to peer [%lli]", src_id, dest_id);
   } else {
-    DBG("PENDING handshake already exists from peer [%lli] to peer [%lli]", src_id, dest_id);
+    DBG("Update handshake which already exists, from peer [%lli] to peer [%lli]", src_id, dest_id);
   }
-  if (createPendingHandshake(dest_id, src_id)) {
+  if (createPendingHandshake(dest_id, src_id, HandshakeStatus::PENDING)) {
     DBG("New handshake's recorded as PENDING, from peer [%lli] to peer [%lli]", dest_id, src_id);
   } else {
-    DBG("PENDING handshake already exists from peer [%lli] to peer [%lli]", dest_id, src_id);
+    DBG("Update handshake which already exists, from peer [%lli] to peer [%lli]", dest_id, src_id);
   }
 }
 
@@ -878,6 +987,17 @@ void ServerApiImpl::satisfyPendingHandshake(ID_t src_id, ID_t dest_id) {
 
 void ServerApiImpl::rejectPendingHandshake(ID_t src_id, ID_t dest_id) {
   TRC("rejectPendingHandshake(%lli, %lli)", src_id, dest_id);
+  auto it = m_handshakes.find(src_id);
+  if (it != m_handshakes.end()) {
+    auto dit = it->second.find(dest_id);
+    if (dit != it->second.end()) {
+      dit->second = HandshakeStatus::REJECTED;
+    }
+  }
+}
+
+void ServerApiImpl::erasePendingHandshake(ID_t src_id, ID_t dest_id) {
+  TRC("erasePendingHandshake(%lli, %lli)", src_id, dest_id);
   auto it = m_handshakes.find(src_id);
   if (it != m_handshakes.end()) {
     auto dit = it->second.find(dest_id);
