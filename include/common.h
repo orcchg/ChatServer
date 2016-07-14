@@ -22,6 +22,7 @@
 #define CHAT_SERVER_COMMON__H__
 
 #include <string>
+#include <vector>
 #include <cstdint>
 #include "api/types.h"
 
@@ -42,6 +43,8 @@ std::string readFileToString(const std::string& filename);
 const std::string& preparse(const std::string& json);
 std::string preparse(const std::string& json, PreparseLeniency leniency);
 std::string unwrapJsonObject(const char* field, const std::string& json, PreparseLeniency leniency = PreparseLeniency::DISABLED);
+
+void split(const std::string& input, char delimiter, std::vector<std::string>* output);
 
 }
 

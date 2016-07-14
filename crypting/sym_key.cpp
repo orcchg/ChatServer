@@ -33,6 +33,10 @@ SymmetricKey::SymmetricKey() {
   generate(source);
 }
 
+SymmetricKey::SymmetricKey(const unsigned char i_key[]) {
+  memcpy(key, i_key, SHA256_DIGEST_LENGTH);
+}
+
 SymmetricKey::SymmetricKey(const std::string& source) {
   generate(source);
 }

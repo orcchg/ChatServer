@@ -266,55 +266,71 @@ Message Message::fromJson(const std::string& json) {
 
 // openssl encrypt with public key
 void Message::encrypt(const secure::Key& public_key) {
+  TRC("encrypt(%s)", public_key.getKey().c_str());
   if (public_key != secure::Key::EMPTY) {
     secure::AESCryptor cryptor;  // generate symmetric key on-fly
     m_message = cryptor.encrypt(m_message);
     size_t cipher_length = m_message.length();
+    TTY("Encrypted message[%zu]: %s", cipher_length, m_message.c_str());
 
     // encrypt E with public_key
     secure::SymmetricKey E = cryptor.getKeyCopy();
     // TODO: encrypt with pub key
     size_t E_length = E.getLength();
+    TTY("Encrypted symmetric key[%zu]: %s", E_length, E.key);
 
     // compound message with E
-    // [size E] [ ..E.. ][size msg] [ ..msg.. ]
+    // [size E:size hash:hash:size msg]-----*****-----[ ..E.. ][ ..msg.. ]
+    // TODO: add hash
     std::string E_length_str = std::to_string(E.getLength());
     size_t i1 = E_length_str.length();
     std::string cipher_length_str = std::to_string(cipher_length);
     size_t i2 = cipher_length_str.length();
+    TTY("Lengths str: E[%s], cipher[%s]", E_length_str.c_str(), cipher_length_str.c_str());
 
-    char buffer[2 + i1 + i2 + E_length + cipher_length];
-    int ptr = 0;
-    strncpy(buffer + ptr, E_length_str.c_str(), i1);       ptr += i1;
-    strncpy(buffer + ptr, " ", 1);                         ptr += 1;
-    strncpy(buffer + ptr, (char*) E.key, E_length);        ptr += E_length;
-    strncpy(buffer + ptr, cipher_length_str.c_str(), i2);  ptr += 1;
-    strncpy(buffer + ptr, " ", 1);                         ptr += i2;
-    strncpy(buffer + ptr, m_message.c_str(), cipher_length);
+    char buffer[1 + COMPOUND_MESSAGE_SEPARATOR_LENGTH + i1 + i2 + E_length + cipher_length];
+    size_t ptr = 0;
+    memcpy(buffer + ptr, E_length_str.c_str(), i1);           ptr += i1;
+    memcpy(buffer + ptr, COMPOUND_MESSAGE_DELIMITER_STR, 1);  ptr += 1;
+    memcpy(buffer + ptr, cipher_length_str.c_str(), i2);      ptr += i2;
+    memcpy(buffer + ptr, COMPOUND_MESSAGE_SEPARATOR, COMPOUND_MESSAGE_SEPARATOR_LENGTH);  ptr += COMPOUND_MESSAGE_SEPARATOR_LENGTH;
+    memcpy(buffer + ptr, E.key, E_length);                    ptr += E_length;
+    memcpy(buffer + ptr, m_message.c_str(), cipher_length);   ptr += cipher_length;
+    TTY("Output buffer[%zu]: %s", ptr, buffer);
+
     m_is_encrypted = true;  // set encrypted
   }
 }
 
 // openssl decrypt with private key
 void Message::decrypt(const secure::Key& private_key) {
+  TRC("decrypt(%s)", private_key.getKey().c_str());
   if (private_key != secure::Key::EMPTY) {
     // find encrypted E
-    int ptr = 0;
-    int i1 = m_message.find_first_not_of("0123456789");
-    int E_length = std::stoi(m_message.substr(ptr, i1));
-    std::string cipher_E = m_message.substr(ptr, E_length);         ptr = i1 + 1;
-    int i2 = m_message.find_first_of(' ', ptr);                     ptr += E_length;
-    int cipher_length = std::stoi(m_message.substr(ptr, i2 - ptr));  ptr += i2 - ptr;
-    std::string cipher = m_message.substr(ptr);
+    size_t ptr = 0;
+    size_t i1 = m_message.find(COMPOUND_MESSAGE_SEPARATOR);
+    size_t i2 = i1 + COMPOUND_MESSAGE_SEPARATOR_LENGTH;
+    std::vector<std::string> values;
+    common::split(m_message.substr(0, i1), COMPOUND_MESSAGE_DELIMITER, &values);
+    int E_length = std::stoi(values[0]);
+    int cipher_length = std::stoi(values[1]);
+    // TODO: get hash
+    TTY("Values: E length [%i], cipher length [%i]", E_length, cipher_length);
+
+    std::string cipher_E = m_message.substr(i2, E_length);
+    std::string cipher = m_message.substr(i2 + E_length);
+    TTY("Encrypted E: %s", cipher_E.c_str());
+    TTY("Cipher %s", cipher.c_str());
 
     // decrypt E with private key
     // TODO:
-    secure::SymmetricKey E;  // TODO: decrypt E
-    strncpy((char*) E.key, cipher_E.c_str(), E_length);
+    secure::SymmetricKey E((unsigned char*) cipher_E.c_str());
 
     // decrypt message with E
     secure::AESCryptor cryptor(E);
     m_message = cryptor.decrypt(cipher);
+    TTY("Decrypted message[%zu]: %s", m_message.length(), m_message.c_str());
+
     m_is_encrypted = false;  // set decrypted
   }
 }

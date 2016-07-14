@@ -30,6 +30,11 @@
 // ----------------------------------------------------------------------------
 #if SECURE
 
+#define COMPOUND_MESSAGE_DELIMITER ':'
+#define COMPOUND_MESSAGE_DELIMITER_STR ":"
+#define COMPOUND_MESSAGE_SEPARATOR "-----*****-----"
+#define COMPOUND_MESSAGE_SEPARATOR_LENGTH 15
+
 namespace secure {
 
 /**
@@ -129,11 +134,14 @@ protected:
  *  --------------------
  *  SECURE message format:
  *
- *  [size E][E][message]
+ *  [meta]-----*****-----[E][message]
  *
- *  size E  - size of encrypted symmetric key E
- *       E  - symmetric key E encrypted with some public key
- *  message - message encrypted with E
+ *     meta - colon separated: size of encrypted symmetric key E,
+ *            size of hash, size of encrypted message, hash value;
+ *
+ *       E  - symmetric key E encrypted with some public key;
+ *
+ *  message - message encrypted with E.
  */
 class Message {
 public:

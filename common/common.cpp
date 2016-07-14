@@ -111,5 +111,14 @@ std::string unwrapJsonObject(const char* field, const std::string& json, Prepars
   return json;
 }
 
+void split(const std::string& input, char delimiter, std::vector<std::string>* output) {
+  std::stringstream ss(input);
+  std::string item;
+  while (std::getline(ss, item, delimiter)) {
+    output->push_back(item);
+    TRC("Split token: %s", item.c_str());
+  }
+}
+
 }
 

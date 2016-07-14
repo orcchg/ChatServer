@@ -55,6 +55,7 @@ protected:
 
   bool m_is_connected;
   bool m_is_stopped;
+  bool m_private_secure_chat;
   int m_socket;  // for insecure connections only
   std::string m_ip_address;
   std::string m_port;

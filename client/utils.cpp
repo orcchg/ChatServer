@@ -135,6 +135,19 @@ static void fillHandshakeBundle(const rapidjson::Value& object, HandshakeBundle*
   }
 }
 
+static void fillHandshakeBundleOnlyId(const rapidjson::Value& object, HandshakeBundle* bundle) {
+  if (bundle == nullptr) {
+    TRC("Bundle not allocated!");
+    return;
+  }
+  if (object.IsObject() &&
+      object.HasMember(ITEM_ID) && object[ITEM_ID].IsInt64()) {
+      bundle->dest_id = object[ITEM_ID].GetInt64();
+  } else {
+    TRC("Object is not a handshake structure");
+  }
+}
+
 PrivateHandshake checkPrivateHandshake(const std::string& json, HandshakeBundle* bundle) {
   rapidjson::Document document;
   auto prepared_json = common::preparse(json);
@@ -154,10 +167,11 @@ PrivateHandshake checkPrivateHandshake(const std::string& json, HandshakeBundle*
       return PrivateHandshake::ABORT;
     } else if (document.HasMember(ITEM_PRIVATE_PUBKEY)) {
       DBG("Handshake: pubkey");
+      fillHandshakeBundleOnlyId(document[ITEM_PRIVATE_PUBKEY], bundle);
       return PrivateHandshake::PUBKEY;
     }
   }
-  DBG("Json is not related with private handshake: %s", json.c_str());
+  DBG("Json is not related to private handshake: %s", json.c_str());
   return PrivateHandshake::UNKNOWN;
 }
 

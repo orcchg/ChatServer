@@ -37,7 +37,7 @@
 
 Client::Client(const std::string& config_file)
   : m_id(UNKNOWN_ID), m_name(""), m_email(""), m_auth_token(""), m_channel(0), m_dest_id(UNKNOWN_ID)
-  , m_is_connected(false), m_is_stopped(false)
+  , m_is_connected(false), m_is_stopped(false), m_private_secure_chat(false)
   , m_socket(-1), m_ip_address(""), m_port("http") {
   if (!readConfiguration(config_file)) {
     throw ClientException();
@@ -530,8 +530,6 @@ void Client::startChat() {
 
   printf("Type \'.m\' to list commands\n\n");
 
-  bool privateSecureChat = false;
-
   std::ostringstream oss;
   std::string buffer;
   std::cin.ignore();
@@ -570,17 +568,17 @@ void Client::startChat() {
       case util::Command::PRIVATE_CONFIRM:
         m_api_impl->privateConfirm(m_id, value, true);
         m_dest_id = value;
-        privateSecureChat = true;
+        m_private_secure_chat = true;
         continue;
       case util::Command::PRIVATE_REJECT:
         m_api_impl->privateConfirm(m_id, value, false);
         m_dest_id = UNKNOWN_ID;
-        privateSecureChat = false;
+        m_private_secure_chat = false;
         continue;
       case util::Command::PRIVATE_ABORT:
         m_api_impl->privateAbort(m_id, value);
         m_dest_id = UNKNOWN_ID;
-        privateSecureChat = false;
+        m_private_secure_chat = false;
         continue;
       case util::Command::PRIVATE_PUBKEY:
         if (m_key_pair.first == secure::Key::EMPTY) {
@@ -607,13 +605,13 @@ void Client::startChat() {
         .setTimestamp(timestamp).setMessage(buffer).build();
 
 #if SECURE
-    if (privateSecureChat) {
+    if (m_private_secure_chat) {
       auto it = m_handshakes.find(m_dest_id);
       if (it != m_handshakes.end()) {
         message.encrypt(it->second);
       } else {
         WRN("Missing public key for peer [%lli]. Fallback to send not-encrypted message to dedicated peer", m_dest_id);
-        privateSecureChat = false;
+        m_private_secure_chat = false;
       }
     }
 #endif  // SECURE
@@ -621,7 +619,7 @@ void Client::startChat() {
     // sending message
     m_api_impl->sendMessage(message);
 
-    if (!privateSecureChat && m_dest_id != UNKNOWN_ID) {
+    if (!m_private_secure_chat && m_dest_id != UNKNOWN_ID) {
       m_dest_id = UNKNOWN_ID;  // drop dedicated id
     }
   }
@@ -665,15 +663,18 @@ void Client::receiverThread() {
             if (bundle.accept) {
               acceptance = "confirmed";
               m_dest_id = bundle.src_id;
+              m_private_secure_chat = true;
             } else {
               acceptance = "rejected";
               m_dest_id = UNKNOWN_ID;
+              m_private_secure_chat = false;
             }
             printf("\e[5;01;35mPeer [%lli] has \e[m\e[5;01;34m%s\e[m\e[5;01;35m private communication with you\e[m\n", bundle.src_id, acceptance.c_str());
             continue;
           case PrivateHandshake::ABORT:
             printf("\e[5;01;35mPeer [%lli] has aborted private communication with you\e[m\n", bundle.src_id);
             m_handshakes.erase(bundle.src_id);  // remove previously stored public key
+            m_private_secure_chat = false;
             continue;
           case PrivateHandshake::PUBKEY:
             {
