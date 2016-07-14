@@ -51,7 +51,7 @@ KeysTable::~KeysTable() {
 // ----------------------------------------------
 void KeysTable::addKey(ID_t src_id, const KeyDTO& key) {
   INF("enter KeysTable::addKey().");
-  std::string insert_statement = "INSERT INTO '";
+  std::string insert_statement = "INSERT OR REPLACE INTO '";
   insert_statement += this->m_table_name;
   insert_statement += "' VALUES(?1, ?2, ?3);";
   this->__prepare_statement__(insert_statement);
