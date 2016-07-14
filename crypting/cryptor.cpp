@@ -24,6 +24,7 @@
 #include <sstream>
 #include <cstring>
 #include <openssl/sha.h>
+#include "common.h"
 #include "cryptor.h"
 #include "exception.h"
 #include "logger.h"
@@ -39,11 +40,7 @@ Cryptor::~Cryptor() {
 
 std::string Cryptor::encrypt(const std::string& source) {
   SymmetricKey key(source);
-  std::ostringstream oss;
-  for (int i = 0; i < SHA256_DIGEST_LENGTH; ++i) {
-    oss << std::hex << (int) key.key[i];
-  }
-  return oss.str();
+  return common::bin2hex(key.key, SHA256_DIGEST_LENGTH);
 }
 
 std::string Cryptor::decrypt(const std::string& source) {

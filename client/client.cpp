@@ -611,6 +611,7 @@ void Client::startChat() {
         message.encrypt(it->second);
       } else {
         WRN("Missing public key for peer [%lli]. Fallback to send not-encrypted message to dedicated peer", m_dest_id);
+        m_api_impl->privateAbort(m_id, m_dest_id);  // abort handshake if keys are missing
         m_private_secure_chat = false;
       }
     }
@@ -653,7 +654,7 @@ void Client::receiverThread() {
 #if SECURE
       util::HandshakeBundle bundle;
       auto handshake_type = util::checkPrivateHandshake(response.body, &bundle);
-      if (bundle.dest_id == m_id) {
+      if (bundle.dest_id == m_id || handshake_type == PrivateHandshake::PUBKEY) {
         std::string acceptance;
         switch (handshake_type) {
           case PrivateHandshake::REQUEST:

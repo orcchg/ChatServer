@@ -270,14 +270,18 @@ void Message::encrypt(const secure::Key& public_key) {
   if (public_key != secure::Key::EMPTY) {
     secure::AESCryptor cryptor;  // generate symmetric key on-fly
     m_message = cryptor.encrypt(m_message);
-    size_t cipher_length = m_message.length();
+    size_t cipher_length = cryptor.getRawLength();
     TTY("Encrypted message[%zu]: %s", cipher_length, m_message.c_str());
 
     // encrypt E with public_key
     secure::SymmetricKey E = cryptor.getKeyCopy();
     // TODO: encrypt with pub key
     size_t E_length = E.getLength();
-    TTY("Encrypted symmetric key[%zu]: %s", E_length, E.key);
+    std::ostringstream E_key_hex;
+    for (size_t i = 0; i < E_length; ++i) {
+      E_key_hex << std::hex << (int) E.key[i];
+    }
+    TTY("Encrypted symmetric key[%zu]: %s", E_length, E_key_hex.str().c_str());
 
     // compound message with E
     // [size E:size hash:hash:size msg]-----*****-----[ ..E.. ][ ..msg.. ]
@@ -295,7 +299,7 @@ void Message::encrypt(const secure::Key& public_key) {
     memcpy(buffer + ptr, cipher_length_str.c_str(), i2);      ptr += i2;
     memcpy(buffer + ptr, COMPOUND_MESSAGE_SEPARATOR, COMPOUND_MESSAGE_SEPARATOR_LENGTH);  ptr += COMPOUND_MESSAGE_SEPARATOR_LENGTH;
     memcpy(buffer + ptr, E.key, E_length);                    ptr += E_length;
-    memcpy(buffer + ptr, m_message.c_str(), cipher_length);   ptr += cipher_length;
+    memcpy(buffer + ptr, cryptor.getRaw(), cipher_length);    ptr += cipher_length;
     TTY("Output buffer[%zu]: %s", ptr, buffer);
 
     m_is_encrypted = true;  // set encrypted

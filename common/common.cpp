@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <exception>
 #include <fstream>
 #include <sstream>
 #include <sys/stat.h>
@@ -117,6 +118,41 @@ void split(const std::string& input, char delimiter, std::vector<std::string>* o
   while (std::getline(ss, item, delimiter)) {
     output->push_back(item);
     TRC("Split token: %s", item.c_str());
+  }
+}
+
+// ----------------------------------------------------------------------------
+static int char2int(char input) {
+  if(input >= '0' && input <= '9') {
+    return input - '0';
+  }
+  if(input >= 'A' && input <= 'F') {
+    return input - 'A' + 10;
+  }
+  if(input >= 'a' && input <= 'f') {
+    return input - 'a' + 10;
+  }
+  throw std::invalid_argument("Invalid input string");
+}
+
+std::string bin2hex(unsigned char* src, size_t size) {
+  std::ostringstream oss;
+  for (size_t i = 0; i < size; ++i) {
+    oss << std::hex << (int) src[i];
+  }
+  return oss.str();
+}
+
+// This function assumes src to be a zero terminated sanitized string with
+// an even number of [0-9a-f] characters, and target to be sufficiently large
+void hex2bin(const std::string& source, unsigned char* target, size_t& target_length) {
+  if (source.length() < 2) {
+    throw std::invalid_argument("Input string must have even number of [0-9a-f] characters");
+  }
+  target_length = 0;
+  for (size_t i = 0; i < source.length(); i += 2) {
+    *(target++) = char2int(source[i]) * 16 + char2int(source[i + 1]);
+    ++target_length;
   }
 }
 

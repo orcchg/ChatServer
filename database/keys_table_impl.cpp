@@ -53,22 +53,23 @@ void KeysTable::addKey(ID_t src_id, const KeyDTO& key) {
   INF("enter KeysTable::addKey().");
   std::string insert_statement = "INSERT OR REPLACE INTO '";
   insert_statement += this->m_table_name;
-  insert_statement += "' VALUES(?1, ?2, ?3);";
+  insert_statement += "' ('" D_COLUMN_NAME_SOURCE_ID "', '" D_COLUMN_NAME_KEY "')";
+  insert_statement += " VALUES(?1, ?2);";  // "' VALUES(?1, ?2, ?3);";
   this->__prepare_statement__(insert_statement);
 
   bool accumulate = true;
   ID_t id = this->m_next_id++;
-  accumulate = accumulate && (sqlite3_bind_int64(this->m_db_statement, 1, id) == SQLITE_OK);
+  /*accumulate = accumulate && (sqlite3_bind_int64(this->m_db_statement, 1, id) == SQLITE_OK);
   DBG("ID [%lli] has been stored in table ["%s"], SQLite database ["%s"].",
-      id, this->m_table_name.c_str(), this->m_db_name.c_str());
+      id, this->m_table_name.c_str(), this->m_db_name.c_str());*/
 
-  accumulate = accumulate && (sqlite3_bind_int64(this->m_db_statement, 2, src_id) == SQLITE_OK);
+  accumulate = accumulate && (sqlite3_bind_int64(this->m_db_statement, 1/*2*/, src_id) == SQLITE_OK);
   DBG("SourceID [%lli] has been stored in table ["%s"], SQLite database ["%s"].",
       src_id, this->m_table_name.c_str(), this->m_db_name.c_str());
 
   WrappedString i_key = WrappedString(key.getKey());
   int key_n_bytes = i_key.n_bytes();
-  accumulate = accumulate && (sqlite3_bind_text(this->m_db_statement, 3, i_key.c_str(), key_n_bytes, SQLITE_TRANSIENT) == SQLITE_OK);
+  accumulate = accumulate && (sqlite3_bind_text(this->m_db_statement, 2/*3*/, i_key.c_str(), key_n_bytes, SQLITE_TRANSIENT) == SQLITE_OK);
   DBG("Key ["%s"] has been stored in table ["%s"], SQLite database ["%s"].",
       i_key.c_str(), this->m_table_name.c_str(), this->m_db_name.c_str());
 
@@ -159,8 +160,8 @@ void KeysTable::__create_table__() {
   DBG("enter KeysTable::__create_table__().");
   std::string statement = "CREATE TABLE IF NOT EXISTS ";
   statement += this->m_table_name;
-  statement += "('ID' INTEGER PRIMARY KEY UNIQUE DEFAULT " STR_UNKNOWN_ID ", "
-      "'" D_COLUMN_NAME_SOURCE_ID "' INTEGER DEFAULT " STR_UNKNOWN_ID ", "
+  statement += "('ID' INTEGER PRIMARY KEY AUTOINCREMENT DEFAULT " STR_UNKNOWN_ID ", "
+      "'" D_COLUMN_NAME_SOURCE_ID "' INTEGER UNIQUE DEFAULT " STR_UNKNOWN_ID ", "
       "'" D_COLUMN_NAME_KEY "' TEXT, "
       "FOREIGN KEY(" D_COLUMN_NAME_SOURCE_ID ") REFERENCES " D_PEERS_TABLE_NAME "(ID));";
   this->__prepare_statement__(statement);

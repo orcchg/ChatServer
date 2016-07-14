@@ -41,10 +41,15 @@ public:
   inline const SymmetricKey& getKey() const { return m_key; }
   inline SymmetricKey getKeyCopy() const { return m_key; }
 
+  inline unsigned char* getRaw() const { return m_raw; }
+  inline size_t getRawLength() const { return m_raw_length; }
+
 private:
   SymmetricKey m_key;
   std::string m_iv;
   EVP_CIPHER_CTX* m_context;
+  unsigned char* m_raw;
+  size_t m_raw_length;
 
   void init();
   void release();
