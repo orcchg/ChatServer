@@ -236,13 +236,11 @@
  *
  *  Send public key to store remotely on Server-side.
  *
- *  @params:  src_id   :  INT - source peer's id
+ *  @params:  id   :  INT - source peer's id
  *
  *  @request_body:  {"private_pubkey":{"id":INT,"key":TEXT}}
  *
  *  @response_body:  {"code":INT,"action":INT,"id":INT,"token":TEXT,"payload":TEXT}
- *
- *  @note:  @id in @request_body is the source peer's id.
  */
 
 /**
@@ -382,6 +380,7 @@ enum class Path : int {
   , PRIVATE_CONFIRM   = 9
   , PRIVATE_ABORT     = 10
   , PRIVATE_PUBKEY    = 11
+  , PRIVATE_PUBKEY_EXCHANGE = 12
 #endif  // SECURE
 };
 
@@ -503,7 +502,8 @@ public:
   virtual StatusCode privateRequest(const std::string& path, ID_t& id) = 0;  // forward request to dest peer
   virtual StatusCode privateConfirm(const std::string& path, ID_t& id) = 0;  // forward confirm to dest peer
   virtual StatusCode privateAbort(const std::string& path, ID_t& id) = 0;    // forward abort to dest peer
-  virtual StatusCode privatePubKey(const std::string& path, const std::string& json, ID_t& src_id) = 0;  // store public key at Server side
+  virtual StatusCode privatePubKey(const std::string& path, const std::string& json, ID_t& id) = 0;  // store public key at Server side
+  virtual StatusCode privatePubKeysExchange(const std::string& path, ID_t& id) = 0;  // exchange public keys between peers
 #endif  // SECURE
 
   virtual void terminate() = 0;

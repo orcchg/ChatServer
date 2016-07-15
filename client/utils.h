@@ -64,6 +64,7 @@ enum class Command : int {
   , PRIVATE_REJECT = 6
   , PRIVATE_ABORT = 7
   , PRIVATE_PUBKEY = 8
+  , PRIVATE_PUBKEY_EXCHANGE = 9
 #endif  // SECURE
 };
 

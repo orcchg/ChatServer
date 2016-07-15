@@ -206,6 +206,7 @@ Command parseCommand(const std::string& command, ID_t& value) {
             case 'c': return Command::PRIVATE_CONFIRM;
             case 'd': return Command::PRIVATE_REJECT;
             case 'x': return Command::PRIVATE_ABORT;
+            case 'e': return Command::PRIVATE_PUBKEY_EXCHANGE;
             case 'k': return Command::PRIVATE_PUBKEY;
           }
         }

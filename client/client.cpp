@@ -557,7 +557,8 @@ void Client::startChat() {
         printf("\t\e[5;00;37m.pc <id> - confirm pending request from <id> for private secure chat\e[m\n");
         printf("\t\e[5;00;37m.pd <id> - reject pending request from <id> for private secure chat\e[m\n");
         printf("\t\e[5;00;37m.px <id> - abort private secure chat with <id>\e[m\n");
-        printf("\t\e[5;00;37m.pk - send public key (generate if not exists)\e[m\n");
+        printf("\t\e[5;00;37m.pe <id> - send public key to <id>\e[m\n");
+        printf("\t\e[5;00;37m.pk - store public key remotely (generate if not exists)\e[m\n");
 #endif  // SECURE
         printf("\t\e[5;00;37m.q - logout\e[m\n");
         continue;
@@ -579,6 +580,9 @@ void Client::startChat() {
         m_api_impl->privateAbort(m_id, value);
         m_dest_id = UNKNOWN_ID;
         m_private_secure_chat = false;
+        continue;
+      case util::Command::PRIVATE_PUBKEY_EXCHANGE:
+        m_api_impl->privatePubKeysExchange(m_id, value);
         continue;
       case util::Command::PRIVATE_PUBKEY:
         if (m_key_pair.first == secure::Key::EMPTY) {

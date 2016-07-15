@@ -107,6 +107,7 @@ Server::Server(int port_number)
   m_paths[PATH_PRIVATE_CONFIRM] = Path::PRIVATE_CONFIRM;
   m_paths[PATH_PRIVATE_ABORT]   = Path::PRIVATE_ABORT;
   m_paths[PATH_PRIVATE_PUBKEY]  = Path::PRIVATE_PUBKEY;
+  m_paths[PATH_PRIVATE_PUBKEY_EXCHANGE] = Path::PRIVATE_PUBKEY_EXCHANGE;
 #endif  // SECURE
 
   m_api_impl = new ServerApiImpl();
@@ -419,6 +420,17 @@ void Server::handleRequest(int socket, ID_t connection_id) {
           {
             ID_t id = UNKNOWN_ID;
             auto status = m_api_impl->privatePubKey(request.startline.path, request.body, id);
+            m_api_impl->sendStatus(status, path, id);
+          }
+          break;
+        }
+        break;
+      case Path::PRIVATE_PUBKEY_EXCHANGE:
+        switch (method) {
+          case Method::POST:
+          {
+            ID_t id = UNKNOWN_ID;
+            auto status = m_api_impl->privatePubKeysExchange(request.startline.path, id);
             m_api_impl->sendStatus(status, path, id);
           }
           break;

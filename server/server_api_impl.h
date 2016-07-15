@@ -84,7 +84,8 @@ public:
   StatusCode privateRequest(const std::string& path, ID_t& id) override;
   StatusCode privateConfirm(const std::string& path, ID_t& id) override;
   StatusCode privateAbort(const std::string& path, ID_t& id) override;
-  StatusCode privatePubKey(const std::string& path, const std::string& json, ID_t& src_id) override;
+  StatusCode privatePubKey(const std::string& path, const std::string& json, ID_t& id) override;
+  StatusCode privatePubKeysExchange(const std::string& path, ID_t& id) override;
 #endif  // SECURE
 
   void terminate() override;

@@ -776,28 +776,65 @@ StatusCode ServerApiImpl::privateAbort(const std::string& path, ID_t& id) {
   return sendPrivateConfirm(path, true, id, dest_id);
 }
 
-StatusCode ServerApiImpl::privatePubKey(const std::string& path, const std::string& json, ID_t& src_id) {
+StatusCode ServerApiImpl::privatePubKey(const std::string& path, const std::string& json, ID_t& id) {
   TRC("privatePubKey(%s)", path.c_str());
-  src_id = UNKNOWN_ID;
+  id = UNKNOWN_ID;
   std::vector<Query> params;
   m_parser.parsePath(path, &params);
   for (auto& query : params) {
     DBG("Query: %s: %s", query.key.c_str(), query.value.c_str());
   }
-  if (params.size() < 1 || params[0].key.compare(ITEM_SRC_ID) != 0) {
+  if (params.size() < 1 || params[0].key.compare(ITEM_ID) != 0) {
     ERR("Private public key failed: wrong query params: %s", path.c_str());
     return StatusCode::INVALID_QUERY;
   }
-  src_id = std::stoll(params[0].value.c_str());
-  if (isAuthorized(src_id)) {
+  id = std::stoll(params[0].value.c_str());
+  if (isAuthorized(id)) {
     auto unwrapped_json = common::unwrapJsonObject(ITEM_PRIVATE_PUBKEY, json, common::PreparseLeniency::STRICT);
     secure::Key key = secure::Key::fromJson(unwrapped_json);
-    storePublicKey(src_id, key);
+    storePublicKey(id, key);
   } else {
-    ERR("Source peer with id [%lli] is not authorized", src_id);
+    ERR("Source peer with id [%lli] is not authorized", id);
     return StatusCode::UNAUTHORIZED;
   }
   return StatusCode::SUCCESS;
+}
+
+StatusCode ServerApiImpl::privatePubKeysExchange(const std::string& path, ID_t& id) {
+  TRC("privatePubKeysExchange(%s)", path.c_str());
+  id = UNKNOWN_ID;
+  std::vector<Query> params;
+  m_parser.parsePath(path, &params);
+  for (auto& query : params) {
+    DBG("Query: %s: %s", query.key.c_str(), query.value.c_str());
+  }
+  if (params.size() < 2 || params[0].key.compare(ITEM_SRC_ID) != 0 ||
+      params[1].key.compare(ITEM_DEST_ID) != 0) {
+    ERR("Private public keys exchange failed: wrong query params: %s", path.c_str());
+    return StatusCode::INVALID_QUERY;
+  }
+  ID_t src_id = std::stoll(params[0].value.c_str());
+  ID_t dest_id = std::stoll(params[1].value.c_str());
+  id = src_id;
+  if (!isAuthorized(id)) {
+    ERR("Source peer with id [%lli] is not authorized", id);
+    return StatusCode::UNAUTHORIZED;
+  }
+  if (id == dest_id) {
+    ERR("Same id in query params: src_id [%lli], dest_id [%lli]", id, dest_id);
+    return StatusCode::INVALID_QUERY;
+  }
+  if (!isAuthorized(dest_id)) {
+    ERR("Destination peer hasn't logged in, dest_id [%lli]", dest_id);
+    return StatusCode::NO_SUCH_PEER;
+  }
+  KeyDTO src_public_key_dto = m_keys_database->getKey(src_id);
+  if (src_public_key_dto == KeyDTO::EMPTY) {
+    ERR("Public key not found for peer [%lli]!", src_id);
+    return StatusCode::PUBLIC_KEY_MISSING;
+  }
+  auto src_public_key = m_keys_mapper.map(src_public_key_dto);
+  sendPubKey(src_public_key, dest_id);
 }
 
 /* Utility */
@@ -866,23 +903,9 @@ StatusCode ServerApiImpl::sendPrivateConfirm(const std::string& path, bool i_abo
         break;
     }
     if (accept) {
-      KeyDTO src_public_key_dto = m_keys_database->getKey(src_id);
-      if (src_public_key_dto == KeyDTO::EMPTY) {
-        ERR("Public key not found for peer [%lli]!", src_id);
-        return StatusCode::PUBLIC_KEY_MISSING;
-      }
-      KeyDTO dest_public_key_dto = m_keys_database->getKey(dest_id);
-      if (dest_public_key_dto == KeyDTO::EMPTY) {
-        ERR("Public key not found for peer [%lli]!", dest_id);
-        return StatusCode::PUBLIC_KEY_MISSING;
-      }
       satisfyPendingHandshake(dest_id, src_id);  // src_id has confirmed handshake request from dest_id
       satisfyPendingHandshake(src_id, dest_id);  // handshake must be confirmed symmetrically
       DBG("Handshake between peer [%lli] and peer [%lli] has been established", src_id, dest_id);
-      // public keys exchange
-      auto src_public_key = m_keys_mapper.map(src_public_key_dto);
-      auto dest_public_key = m_keys_mapper.map(dest_public_key_dto);
-      exchangePublicKeys(src_public_key, dest_public_key);
     } else if (!i_abort) {
       rejectPendingHandshake(dest_id, src_id);  // src_id has rejected handshake request from dest_id
       rejectPendingHandshake(src_id, dest_id);  // handshake must be rejected symmetrically
