@@ -776,25 +776,25 @@ StatusCode ServerApiImpl::privateAbort(const std::string& path, ID_t& id) {
   return sendPrivateConfirm(path, true, id, dest_id);
 }
 
-StatusCode ServerApiImpl::privatePubKey(const std::string& path, const std::string& json, ID_t& id) {
+StatusCode ServerApiImpl::privatePubKey(const std::string& path, const std::string& json, ID_t& src_id) {
   TRC("privatePubKey(%s)", path.c_str());
-  id = UNKNOWN_ID;
+  src_id = UNKNOWN_ID;
   std::vector<Query> params;
   m_parser.parsePath(path, &params);
   for (auto& query : params) {
     DBG("Query: %s: %s", query.key.c_str(), query.value.c_str());
   }
-  if (params.size() < 1 || params[0].key.compare(ITEM_ID) != 0) {
+  if (params.size() < 1 || params[0].key.compare(ITEM_SRC_ID) != 0) {
     ERR("Private public key failed: wrong query params: %s", path.c_str());
     return StatusCode::INVALID_QUERY;
   }
-  id = std::stoll(params[0].value.c_str());
-  if (isAuthorized(id)) {
+  src_id = std::stoll(params[0].value.c_str());
+  if (isAuthorized(src_id)) {
     auto unwrapped_json = common::unwrapJsonObject(ITEM_PRIVATE_PUBKEY, json, common::PreparseLeniency::STRICT);
     secure::Key key = secure::Key::fromJson(unwrapped_json);
-    storePublicKey(id, key);
+    storePublicKey(src_id, key);
   } else {
-    ERR("Source peer with id [%lli] is not authorized", id);
+    ERR("Source peer with id [%lli] is not authorized", src_id);
     return StatusCode::UNAUTHORIZED;
   }
   return StatusCode::SUCCESS;

@@ -146,11 +146,20 @@ std::string privateAbort_request(const std::string& host, int src_id, int dest_i
   return oss.str();
 }
 
-std::string privatePubKey_request(const std::string& host, int id, const secure::Key& key) {
+std::string privatePubKey_request(const std::string& host, int src_id, const secure::Key& key) {
   std::ostringstream oss;
-  oss << "POST " D_PATH_PRIVATE_PUBKEY "?" D_ITEM_ID "=" << id
+  oss << "POST " D_PATH_PRIVATE_PUBKEY "?" D_ITEM_SRC_ID "=" << src_id
       << " HTTP/1.1\r\nHost: " << host << "\r\n\r\n"
       << "{\"" D_ITEM_PRIVATE_PUBKEY "\":" << key.toJson() << "}";
+  MSG("Request: %s", oss.str().c_str());
+  return oss.str();
+}
+
+std::string privatePubKeysExchange_request(const std::string& host, int src_id, int dest_id) {
+  std::ostringstream oss;
+  oss << "POST " D_PATH_PRIVATE_PUBKEY_EXCHANGE "?" D_ITEM_SRC_ID "=" << src_id
+      << "&" D_ITEM_DEST_ID "=" << dest_id
+      << " HTTP/1.1\r\nHost: " << host << "\r\n\r\n";
   MSG("Request: %s", oss.str().c_str());
   return oss.str();
 }

@@ -49,7 +49,8 @@ public:
   void privateRequest(int src_id, int dest_id) override;
   void privateConfirm(int src_id, int dest_id, bool accept) override;
   void privateAbort(int src_id, int dest_id) override;
-  void privatePubKey(int id, const secure::Key& key) override;
+  void privatePubKey(int src_id, const secure::Key& key) override;
+  void privatePubKeysExchange(int src_id, int dest_id) override;
 #endif  // SECURE
 
 private:

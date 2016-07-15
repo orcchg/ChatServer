@@ -114,5 +114,10 @@ void ClientApiImpl::privatePubKey(int id, const secure::Key& key) {
   send(m_socket, request.c_str(), request.length(), 0);
 }
 
+void ClientApiImpl::privatePubKeysExchange(int src_id, int dest_id) {
+  std::string request = util::privatePubKeysExchange_request(m_host, src_id, dest_id);
+  send(m_socket, request.c_str(), request.length(), 0);
+}
+
 #endif  // SECURE
 

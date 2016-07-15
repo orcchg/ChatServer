@@ -113,5 +113,10 @@ void SecureClientApiImpl::privatePubKey(int id, const secure::Key& key) {
   BIO_write(m_bio, request.c_str(), request.length());
 }
 
+void SecureClientApiImpl::privatePubKeysExchange(int src_id, int dest_id) {
+  std::string request = util::privatePubKeysExchange_request(m_host, src_id, dest_id);
+  BIO_write(m_bio, request.c_str(), request.length());
+}
+
 #endif  // SECURE
 

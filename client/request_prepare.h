@@ -42,7 +42,8 @@ std::string getAllPeers_request(const std::string& host, int channel);
 std::string privateRequest_request(const std::string& host, int src_id, int dest_id);
 std::string privateConfirm_request(const std::string& host, int src_id, int dest_id, bool accept);
 std::string privateAbort_request(const std::string& host, int src_id, int dest_id);
-std::string privatePubKey_request(const std::string& host, int id, const secure::Key& key);
+std::string privatePubKey_request(const std::string& host, int src_id, const secure::Key& key);
+std::string privatePubKeysExchange_request(const std::string& host, int src_id, int dest_id);
 #endif  // SECURE
 
 }

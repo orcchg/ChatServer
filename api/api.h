@@ -190,7 +190,7 @@
  *  @params:  src_id   :  INT - source peer's id
  *            dest_id  :  INT - destination peer's id
  *
- *  @response_body: --
+ *  @response_body:  {"code":INT,"action":INT,"id":INT,"token":TEXT,"payload":TEXT}
  *
  *  @note:  destination peer receives the following payload in json format:
  *
@@ -206,7 +206,7 @@
  *            dest_id  :  INT - destination peer's id
  *            accept   :  INT - confirm (~0) or reject (0) private communication
  *
- *  @response_body: --
+ *  @response_body:  {"code":INT,"action":INT,"id":INT,"token":TEXT,"payload":TEXT}
  *
  *  @note:  destination peer receives the following payload in json format:
  *
@@ -224,7 +224,7 @@
  *  @params:  src_id   :  INT - source peer's id
  *            dest_id  :  INT - destination peer's id
  *
- *  @response_body: --
+ *  @response_body:  {"code":INT,"action":INT,"id":INT,"token":TEXT,"payload":TEXT}
  *
  *  @note:  destination peer receives the following payload in json format:
  *
@@ -234,13 +234,28 @@
 /**
  *  POST /private_pubkey
  *
- *  Send public key for key exchanging between communicating peers.
+ *  Send public key to store remotely on Server-side.
  *
- *  @params:  id   :  INT - source peer's id
+ *  @params:  src_id   :  INT - source peer's id
  *
  *  @request_body:  {"private_pubkey":{"id":INT,"key":TEXT}}
  *
- *  @response_body: --
+ *  @response_body:  {"code":INT,"action":INT,"id":INT,"token":TEXT,"payload":TEXT}
+ *
+ *  @note:  @id in @request_body is the source peer's id.
+ */
+
+/**
+ *  POST /private_pubkey_exchange
+ *
+ *  Send request to exchange public keys between securely communicating peers.
+ *
+ *  @params:  src_id   :  INT - source peer's id
+ *            dest_id  :  INT - destination peer's id
+ *
+ *  @response_body:  {"code":INT,"action":INT,"id":INT,"token":TEXT,"payload":TEXT}
+ *
+ *  @note:  public keys must exist on Server-side for each peer.
  */
 
 // ----------------------------------------------------------------------------
@@ -277,6 +292,7 @@
 #define D_ITEM_PRIVATE_CONFIRM "private_confirm"
 #define D_ITEM_PRIVATE_ABORT   "private_abort"
 #define D_ITEM_PRIVATE_PUBKEY  "private_pubkey"
+#define D_ITEM_PRIVATE_PUBKEY_EXCHANGE "private_pubkey_exchange"
 #endif  // SECURE
 
 #define D_PATH_LOGIN           "/login"
@@ -293,6 +309,7 @@
 #define D_PATH_PRIVATE_CONFIRM  "/private_confirm"
 #define D_PATH_PRIVATE_ABORT    "/private_abort"
 #define D_PATH_PRIVATE_PUBKEY   "/private_pubkey"
+#define D_PATH_PRIVATE_PUBKEY_EXCHANGE "/private_pubkey_exchange"
 #endif  // SECURE
 
 extern const char* ITEM_LOGIN;
@@ -326,6 +343,7 @@ extern const char* ITEM_PRIVATE_REQUEST;
 extern const char* ITEM_PRIVATE_CONFIRM;
 extern const char* ITEM_PRIVATE_ABORT;
 extern const char* ITEM_PRIVATE_PUBKEY;
+extern const char* ITEM_PRIVATE_PUBKEY_EXCHANGE;
 #endif  // SECURE
 
 extern const char* PATH_LOGIN;
@@ -342,6 +360,7 @@ extern const char* PATH_PRIVATE_REQUEST;
 extern const char* PATH_PRIVATE_CONFIRM;
 extern const char* PATH_PRIVATE_ABORT;
 extern const char* PATH_PRIVATE_PUBKEY;
+extern const char* PATH_PRIVATE_PUBKEY_EXCHANGE;
 #endif  // SECURE
 
 enum class Method : int {
@@ -447,6 +466,7 @@ public:
   virtual void privateConfirm(int src_id, int dest_id, bool accept) = 0;  // send confirm to Server from src peer
   virtual void privateAbort(int src_id, int dest_id) = 0;    // send abort to Server from src peer
   virtual void privatePubKey(int src_id, const secure::Key& key) = 0;  // send public key to Server from src peer
+  virtual void privatePubKeysExchange(int src_id, int dest_id) = 0;  // send request to exchange public keys with dest peer
 #endif  // SECURE
 };
 
@@ -483,7 +503,7 @@ public:
   virtual StatusCode privateRequest(const std::string& path, ID_t& id) = 0;  // forward request to dest peer
   virtual StatusCode privateConfirm(const std::string& path, ID_t& id) = 0;  // forward confirm to dest peer
   virtual StatusCode privateAbort(const std::string& path, ID_t& id) = 0;    // forward abort to dest peer
-  virtual StatusCode privatePubKey(const std::string& path, const std::string& json, ID_t& id) = 0;  // store public key at Server side
+  virtual StatusCode privatePubKey(const std::string& path, const std::string& json, ID_t& src_id) = 0;  // store public key at Server side
 #endif  // SECURE
 
   virtual void terminate() = 0;
