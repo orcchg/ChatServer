@@ -137,6 +137,7 @@ private:
   void satisfyPendingHandshake(ID_t src_id, ID_t dest_id);
   void rejectPendingHandshake(ID_t src_id, ID_t dest_id);
   void erasePendingHandshake(ID_t src_id, ID_t dest_id);
+  void eraseAllPendingHandshakes(ID_t id);  // example: at logout
 #endif  // SECURE
 };
 

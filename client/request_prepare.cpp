@@ -148,7 +148,7 @@ std::string privateAbort_request(const std::string& host, int src_id, int dest_i
 
 std::string privatePubKey_request(const std::string& host, int src_id, const secure::Key& key) {
   std::ostringstream oss;
-  oss << "POST " D_PATH_PRIVATE_PUBKEY "?" D_ITEM_SRC_ID "=" << src_id
+  oss << "POST " D_PATH_PRIVATE_PUBKEY "?" D_ITEM_ID "=" << src_id
       << " HTTP/1.1\r\nHost: " << host << "\r\n\r\n"
       << "{\"" D_ITEM_PRIVATE_PUBKEY "\":" << key.toJson() << "}";
   MSG("Request: %s", oss.str().c_str());

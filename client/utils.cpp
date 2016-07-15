@@ -103,7 +103,9 @@ bool checkStatus(const std::string& json) {
       document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64();
 }
 
-bool checkSystemMessage(const std::string& json, std::string* system) {
+bool checkSystemMessage(const std::string& json, std::string* system, Path& action, ID_t id) {
+  action = Path::UNKNOWN;
+  id = UNKNOWN_ID;
   rapidjson::Document document;
   auto prepared_json = common::preparse(json);
   document.Parse(prepared_json.c_str());
@@ -111,6 +113,11 @@ bool checkSystemMessage(const std::string& json, std::string* system) {
       document.HasMember(ITEM_SYSTEM) && document[ITEM_SYSTEM].IsString();
   if (result) {
     *system = document[ITEM_SYSTEM].GetString();
+    if (document.HasMember(ITEM_ACTION) && document[ITEM_ACTION].IsInt() &&
+        document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64()) {
+      action = static_cast<Path>(document[ITEM_ACTION].GetInt());
+      id = document[ITEM_ID].GetInt64();
+    }
   }
   return result;
 }

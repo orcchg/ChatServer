@@ -319,6 +319,9 @@ StatusCode ServerApiImpl::logout(const std::string& path, ID_t& id) {
     return StatusCode::UNAUTHORIZED;
   }
   m_peers.erase(id);
+#if SECURE
+  eraseAllPendingHandshakes(id);
+#endif  // SECURE
 
   // notify other peers
   std::ostringstream oss, json;
@@ -1028,6 +1031,16 @@ void ServerApiImpl::erasePendingHandshake(ID_t src_id, ID_t dest_id) {
       it->second.erase(dit);
     }
   }
+}
+
+void ServerApiImpl::eraseAllPendingHandshakes(ID_t id) {
+  TRC("eraseAllPendingHandshakes(%lli)", id);
+  int total = 0;
+  total = m_handshakes.erase(id);
+  for (auto& item : m_handshakes) {
+    total += item.second.erase(id);
+  }
+  DBG("Erased %i handshakes", total);
 }
 
 #endif  // SECURE

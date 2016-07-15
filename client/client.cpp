@@ -650,10 +650,24 @@ void Client::receiverThread() {
       if (util::checkStatus(response.body)) {
         continue;  // received status from Server
       }
-      std::string system;
-      if (util::checkSystemMessage(response.body, &system)) {
-        printf("\e[5;00;32mSystem: %s\e[m\n", system.c_str());
-        continue;  // received system message from Server
+      {
+        std::string system;
+        Path action;
+        ID_t id;
+        if (util::checkSystemMessage(response.body, &system, action, id)) {
+          printf("\e[5;00;32mSystem: %s\e[m\n", system.c_str());
+          switch (action) {
+            case Path::LOGOUT:
+              if (m_private_secure_chat && m_dest_id == id) {
+#if SECURE
+                printf("\e[5;00;34mSystem: peer [%lli] has logged out, private communication has aborted\e[m\n", id);
+#endif  // SECURE
+                m_private_secure_chat = false;
+              }
+              break;
+          }
+          continue;  // received system message from Server
+        }
       }
 #if SECURE
       util::HandshakeBundle bundle;
