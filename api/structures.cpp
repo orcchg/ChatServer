@@ -269,38 +269,33 @@ void Message::encrypt(const secure::Key& public_key) {
   TRC("encrypt(%s)", public_key.getKey().c_str());
   if (public_key != secure::Key::EMPTY) {
     secure::AESCryptor cryptor;  // generate symmetric key on-fly
-    m_message = cryptor.encrypt(m_message);
-    size_t cipher_length = cryptor.getRawLength();
-    TTY("Encrypted message[%zu]: %s", cipher_length, m_message.c_str());
+    std::string cipher = cryptor.encrypt(m_message);
+    size_t cipher_raw_length = cryptor.getRawLength();
+    size_t cipher_hex_length = cipher.length();
+    TTY("Encrypted message[%zu]: %s", cipher_raw_length, cipher.c_str());
 
     // encrypt E with public_key
     secure::SymmetricKey E = cryptor.getKeyCopy();
     // TODO: encrypt with pub key
-    size_t E_length = E.getLength();
-    std::ostringstream E_key_hex;
-    for (size_t i = 0; i < E_length; ++i) {
-      E_key_hex << std::hex << (int) E.key[i];
-    }
-    TTY("Encrypted symmetric key[%zu]: %s", E_length, E_key_hex.str().c_str());
+    size_t E_raw_length = E.getLength();
+    std::string E_hex = common::bin2hex(E.key, E_raw_length);
+    size_t E_hex_length = E_hex.length();
+    TTY("Encrypted symmetric key[%zu]: %s", E_raw_length, E_hex.c_str());
 
     // compound message with E
-    // [size E:size hash:hash:size msg]-----*****-----[ ..E.. ][ ..msg.. ]
+    // [hex size E:raw size E:size hash:hash:hex size msg:raw size msg]-----*****-----[ ..E.. ][ ..msg.. ]
     // TODO: add hash
-    std::string E_length_str = std::to_string(E.getLength());
-    size_t i1 = E_length_str.length();
-    std::string cipher_length_str = std::to_string(cipher_length);
-    size_t i2 = cipher_length_str.length();
-    TTY("Lengths str: E[%s], cipher[%s]", E_length_str.c_str(), cipher_length_str.c_str());
+    std::string cipher_raw_length_str = std::to_string(cipher_raw_length);
+    std::string cipher_hex_length_str = std::to_string(cipher_hex_length);
+    std::string E_raw_length_str = std::to_string(E_raw_length);
+    std::string E_hex_length_str = std::to_string(E_hex_length);
 
-    char buffer[1 + COMPOUND_MESSAGE_SEPARATOR_LENGTH + i1 + i2 + E_length + cipher_length];
-    size_t ptr = 0;
-    memcpy(buffer + ptr, E_length_str.c_str(), i1);           ptr += i1;
-    memcpy(buffer + ptr, COMPOUND_MESSAGE_DELIMITER_STR, 1);  ptr += 1;
-    memcpy(buffer + ptr, cipher_length_str.c_str(), i2);      ptr += i2;
-    memcpy(buffer + ptr, COMPOUND_MESSAGE_SEPARATOR, COMPOUND_MESSAGE_SEPARATOR_LENGTH);  ptr += COMPOUND_MESSAGE_SEPARATOR_LENGTH;
-    memcpy(buffer + ptr, E.key, E_length);                    ptr += E_length;
-    memcpy(buffer + ptr, cryptor.getRaw(), cipher_length);    ptr += cipher_length;
-    TTY("Output buffer[%zu]: %s", ptr, buffer);
+    std::ostringstream oss;
+    oss << E_hex_length << COMPOUND_MESSAGE_DELIMITER << E_raw_length << COMPOUND_MESSAGE_DELIMITER
+        << cipher_hex_length << COMPOUND_MESSAGE_DELIMITER << cipher_raw_length << COMPOUND_MESSAGE_SEPARATOR
+        << E_hex << cipher;
+    m_message = oss.str();
+    TTY("Output buffer[%zu]: %s", m_message.length(), m_message.c_str());
 
     m_is_encrypted = true;  // set encrypted
   }
@@ -310,30 +305,43 @@ void Message::encrypt(const secure::Key& public_key) {
 void Message::decrypt(const secure::Key& private_key) {
   TRC("decrypt(%s)", private_key.getKey().c_str());
   if (private_key != secure::Key::EMPTY) {
-    // find encrypted E
     size_t ptr = 0;
     size_t i1 = m_message.find(COMPOUND_MESSAGE_SEPARATOR);
     size_t i2 = i1 + COMPOUND_MESSAGE_SEPARATOR_LENGTH;
     std::vector<std::string> values;
     common::split(m_message.substr(0, i1), COMPOUND_MESSAGE_DELIMITER, &values);
-    int E_length = std::stoi(values[0]);
-    int cipher_length = std::stoi(values[1]);
+    int E_hex_length = std::stoi(values[0]);
+    int E_raw_length = std::stoi(values[1]);
+    int cipher_hex_length = std::stoi(values[2]);
+    int cipher_raw_length = std::stoi(values[3]);
     // TODO: get hash
-    TTY("Values: E length [%i], cipher length [%i]", E_length, cipher_length);
+    TTY("Values: E length [%i:%i], cipher length [%i:%i]", E_hex_length, E_raw_length, cipher_hex_length, cipher_raw_length);
 
-    std::string cipher_E = m_message.substr(i2, E_length);
-    std::string cipher = m_message.substr(i2 + E_length);
-    TTY("Encrypted E: %s", cipher_E.c_str());
-    TTY("Cipher %s", cipher.c_str());
+    std::string cipher_hex_E = m_message.substr(i2, E_hex_length);  // encrypted E
+    std::string cipher_hex_M = m_message.substr(i2 + E_hex_length);  // encrypted message
+    TTY("Encrypted E: %s", cipher_hex_E.c_str());
+    TTY("Cipher %s", cipher_hex_M.c_str());
+
+    size_t o_E_raw_length = 0;
+    unsigned char* cipher_raw_E = new unsigned char[E_raw_length];
+    //unsigned char* cipher_raw_M = new unsigned char[cipher_raw_length];
+    common::hex2bin(cipher_hex_E, cipher_raw_E, o_E_raw_length);
+    //common::hex2bin(cipher_hex_M, cipher_raw_M, cipher_raw_length);
+    if (o_E_raw_length != E_raw_length) {
+      ERR("Encrypted E: raw length [%i] from bundle differs from actual length [%zu]", E_raw_length, o_E_raw_length);
+    }
 
     // decrypt E with private key
     // TODO:
-    secure::SymmetricKey E((unsigned char*) cipher_E.c_str());
+    secure::SymmetricKey E(cipher_raw_E);
 
     // decrypt message with E
     secure::AESCryptor cryptor(E);
-    m_message = cryptor.decrypt(cipher);
+    m_message = cryptor.decrypt(cipher_hex_M);
     TTY("Decrypted message[%zu]: %s", m_message.length(), m_message.c_str());
+
+    delete [] cipher_raw_E;  cipher_raw_E = nullptr;
+    //delete [] cipher_raw_M;  cipher_raw_M = nullptr;
 
     m_is_encrypted = false;  // set decrypted
   }
