@@ -193,9 +193,10 @@ Response Client::getResponse(int socket, bool* is_closed) {
   if (read_bytes <= 0) {
     if (read_bytes == -1) {
       ERR("getResponse() error: %s", strerror(errno));
+    } else if (read_bytes == 0) {
+      printf("\e[5;00;31mSystem: Server shutdown\e[m\n");
     }
     DBG("Connection closed");
-    printf("\e[5;00;31mSystem: Server shutdown\e[m\n");
     *is_closed = true;
     return Response::EMPTY;
   }
