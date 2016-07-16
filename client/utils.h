@@ -46,7 +46,7 @@ std::string enterSymbolic(const char* title, secure::ICryptor* cryptor, bool hid
 #endif  // SECURE
 int selectChannel();
 bool checkStatus(const std::string& json);
-bool checkSystemMessage(const std::string& json, std::string* system, Path& action, ID_t id);
+bool checkSystemMessage(const std::string& json, std::string* system, Path& action, ID_t& id);
 #if SECURE
 PrivateHandshake checkPrivateHandshake(const std::string& json, HandshakeBundle* bundle);
 #endif  // SECURE

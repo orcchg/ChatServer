@@ -652,17 +652,21 @@ void Client::receiverThread() {
       }
       {
         std::string system;
-        Path action;
-        ID_t id;
+        Path action = Path::UNKNOWN;
+        ID_t id = UNKNOWN_ID;
         if (util::checkSystemMessage(response.body, &system, action, id)) {
           printf("\e[5;00;32mSystem: %s\e[m\n", system.c_str());
           switch (action) {
             case Path::LOGOUT:
-              if (m_private_secure_chat && m_dest_id == id) {
+              DBG("Peer [%lli] has just logged out", id);
+              if (m_dest_id == id) {
+                m_dest_id = UNKNOWN_ID;
+                if (m_private_secure_chat) {
 #if SECURE
-                printf("\e[5;00;34mSystem: peer [%lli] has logged out, private communication has aborted\e[m\n", id);
+                  printf("\e[5;00;34mSystem: peer [%lli] has logged out, private communication has aborted\e[m\n", id);
 #endif  // SECURE
-                m_private_secure_chat = false;
+                  m_private_secure_chat = false;
+                }
               }
               break;
           }
