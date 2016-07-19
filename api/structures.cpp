@@ -325,7 +325,7 @@ void Message::decrypt(const secure::Key& private_key) {
     size_t o_E_raw_length = 0;
     unsigned char* cipher_raw_E = new unsigned char[E_raw_length];
     //unsigned char* cipher_raw_M = new unsigned char[cipher_raw_length];
-    common::hex2bin(cipher_hex_E, cipher_raw_E, o_E_raw_length);
+    //TODO: common::hex2bin(cipher_hex_E, cipher_raw_E, o_E_raw_length);
     //common::hex2bin(cipher_hex_M, cipher_raw_M, cipher_raw_length);
     if (o_E_raw_length != E_raw_length) {
       ERR("Encrypted E: raw length [%i] from bundle differs from actual length [%zu]", E_raw_length, o_E_raw_length);

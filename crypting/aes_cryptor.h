@@ -32,6 +32,7 @@ namespace secure {
 class AESCryptor : public ICryptor {
 public:
   AESCryptor();
+  AESCryptor(unsigned char* raw);
   AESCryptor(const SymmetricKey& key);
   virtual ~AESCryptor();
 
