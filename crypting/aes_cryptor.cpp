@@ -141,6 +141,9 @@ void AESCryptor::init() {
     ERR("Failed to initialize context!");
     throw ConstructionException();
   }
+
+  std::string key_hex = common::bin2hex(m_key.key, m_key.getLength());
+  TTY("Key[%zu]: %s", m_key.getLength(), key_hex.c_str());
 }
 
 void AESCryptor::release() {

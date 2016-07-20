@@ -123,22 +123,28 @@ void split(const std::string& input, char delimiter, std::vector<std::string>* o
 
 // ----------------------------------------------------------------------------
 static int char2int(char input) {
-  if(input >= '0' && input <= '9') {
+  if (input >= '0' && input <= '9') {
     return input - '0';
   }
-  if(input >= 'A' && input <= 'F') {
+  if (input >= 'A' && input <= 'F') {
     return input - 'A' + 10;
   }
-  if(input >= 'a' && input <= 'f') {
+  if (input >= 'a' && input <= 'f') {
     return input - 'a' + 10;
   }
+  ERR("Invalid char: %c", input);
   throw std::invalid_argument("Invalid input string");
 }
 
 std::string bin2hex(unsigned char* src, size_t size) {
   std::ostringstream oss;
   for (size_t i = 0; i < size; ++i) {
-    oss << std::hex << (int) src[i];
+    int value = static_cast<int>(src[i]);
+    if (value != 0) {
+      oss << std::hex << value;
+    } else {
+      oss << "00";
+    }
   }
   return oss.str();
 }
@@ -149,10 +155,8 @@ void hex2bin(const std::string& source, unsigned char* target, size_t& target_le
   if (source.length() < 2) {
     throw std::invalid_argument("Input string must have even number of [0-9a-f] characters");
   }
-  target_length = 0;
-  for (size_t i = 0; i < source.length(); i += 2) {
+  for (size_t i = 0, target_length = 0; i < source.length(); i += 2, ++target_length) {
     *(target++) = char2int(source[i]) * 16 + char2int(source[i + 1]);
-    ++target_length;
   }
 }
 
