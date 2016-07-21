@@ -16,5 +16,13 @@
 #   along with this program; if not, write to the Free Software Foundation,
 #   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 
+SET( TARGET "test_all" )
+SET( SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR} )
+SET( SOURCES
+    ${SOURCE_DIR}/testall.cpp
+)
+ADD_EXECUTABLE( ${TARGET} ${SOURCES} )
+TARGET_LINK_LIBRARIES( ${TARGET} ${OPENSSL_LIBS} api common "${CRYPTOR}_test" database gtest my_parser sqlite )
+
 ADD_SUBDIRECTORY( crypting )
 
