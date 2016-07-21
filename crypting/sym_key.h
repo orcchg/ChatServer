@@ -26,16 +26,18 @@
 #include <string>
 #include <openssl/sha.h>
 
+#define KEY_LENGTH SHA256_DIGEST_LENGTH
+
 namespace secure {
 
 struct SymmetricKey {
-  unsigned char key[SHA256_DIGEST_LENGTH];
+  unsigned char key[KEY_LENGTH];
 
   SymmetricKey();
   SymmetricKey(unsigned char* i_key);
   SymmetricKey(const std::string& source);
 
-  inline size_t getLength() const { return SHA256_DIGEST_LENGTH; }
+  inline size_t getLength() const { return KEY_LENGTH; }
 
 private:
   void generate(const std::string& source);

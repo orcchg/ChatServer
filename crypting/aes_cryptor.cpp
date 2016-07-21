@@ -38,23 +38,36 @@
 
 namespace secure {
 
-AESCryptor::AESCryptor(unsigned char* raw, unsigned char* iv)
-  : m_key(raw)
-  , m_iv(new unsigned char[SHA256_DIGEST_LENGTH >> 1]) {
-  memcpy(m_iv, iv, SHA256_DIGEST_LENGTH >> 1);
+AESCryptor::AESCryptor()
+  : m_key()
+  , m_iv(new unsigned char[IV_LENGTH]) {
+  std::string random = secure::random::generateString(IV_LENGTH);
+  memcpy(m_iv, random.c_str(), IV_LENGTH);
   init();
 }
 
-AESCryptor::AESCryptor(const SymmetricKey& key)
+AESCryptor::AESCryptor(unsigned char* raw, unsigned char* iv)
+  : m_key(raw)
+  , m_iv(new unsigned char[IV_LENGTH]) {
+  memcpy(m_iv, iv, IV_LENGTH);
+  init();
+}
+
+AESCryptor::AESCryptor(const SymmetricKey& key, unsigned char* iv)
   : m_key(key)
-  , m_iv(new unsigned char[SHA256_DIGEST_LENGTH >> 1]) {
-  std::string random = secure::random::generateString(SHA256_DIGEST_LENGTH >> 1);
-  memcpy(m_iv, random.c_str(), SHA256_DIGEST_LENGTH >> 1);
+  , m_iv(new unsigned char[IV_LENGTH]) {
+  memcpy(m_iv, iv, IV_LENGTH);
   init();
 }
 
 AESCryptor::~AESCryptor() {
   release();
+}
+
+unsigned char* AESCryptor::getIVCopy() const {
+  unsigned char* iv = new unsigned char[IV_LENGTH];
+  memcpy(iv, m_iv, IV_LENGTH);
+  return iv;
 }
 
 std::string AESCryptor::encrypt(const std::string& source) {

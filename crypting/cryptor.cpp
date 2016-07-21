@@ -40,7 +40,7 @@ Cryptor::~Cryptor() {
 
 std::string Cryptor::encrypt(const std::string& source) {
   SymmetricKey key(source);
-  return common::bin2hex(key.key, SHA256_DIGEST_LENGTH);
+  return common::bin2hex(key.key, key.getLength());
 }
 
 std::string Cryptor::decrypt(const std::string& source) {

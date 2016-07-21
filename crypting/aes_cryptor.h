@@ -27,12 +27,15 @@
 #include "api/icryptor.h"
 #include "sym_key.h"
 
+#define IV_LENGTH SHA256_DIGEST_LENGTH >> 1
+
 namespace secure {
 
 class AESCryptor : public ICryptor {
 public:
+  AESCryptor();  // generate key and IV
   AESCryptor(unsigned char* raw, unsigned char* iv);
-  AESCryptor(const SymmetricKey& key = SymmetricKey());
+  AESCryptor(const SymmetricKey& key, unsigned char* iv);  // use previously generated IV
   virtual ~AESCryptor();
 
   std::string encrypt(const std::string& source) override;
@@ -40,9 +43,11 @@ public:
 
   inline const SymmetricKey& getKey() const { return m_key; }
   inline SymmetricKey getKeyCopy() const { return m_key; }
+  unsigned char* getIVCopy() const;
 
   inline unsigned char* getRaw() const { return m_raw; }
   inline size_t getRawLength() const { return m_raw_length; }
+  inline size_t getIVLength() const { return IV_LENGTH; }
 
 private:
   SymmetricKey m_key;

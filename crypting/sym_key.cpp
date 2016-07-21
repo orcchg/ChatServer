@@ -34,7 +34,7 @@ SymmetricKey::SymmetricKey() {
 }
 
 SymmetricKey::SymmetricKey(unsigned char* i_key) {
-  memcpy(key, i_key, SHA256_DIGEST_LENGTH);
+  memcpy(key, i_key, KEY_LENGTH);
 }
 
 SymmetricKey::SymmetricKey(const std::string& source) {
