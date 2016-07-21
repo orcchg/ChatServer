@@ -67,7 +67,7 @@ std::string AESCryptor::encrypt(const std::string& source) {
   m_iv = "01234567890123456";
 
   int result = 1;
-  int length = 0, cipher_length;
+  int length = 0, cipher_length = 0;
   result = EVP_EncryptInit_ex(m_context, EVP_aes_256_cbc(), nullptr, /*m_key.*/key, (unsigned char*) m_iv.c_str());
   if (result != 1) { goto E_ERROR; }
   result = EVP_EncryptUpdate(m_context, m_raw, &length, (unsigned char*) source.c_str(), source.length());
@@ -103,7 +103,7 @@ std::string AESCryptor::decrypt(const std::string& source) {
   m_iv = "01234567890123456";
 
   int result = 1;
-  int length = 0, plain_length;
+  int length = 0, plain_length = 0;
   result = EVP_DecryptInit_ex(m_context, EVP_aes_256_cbc(), nullptr, /*m_key.*/key, (unsigned char*) m_iv.c_str());
   if (result != 1) { goto D_ERROR; }
   result = EVP_DecryptUpdate(m_context, plain, &length, (unsigned char*) cipher, cipher_length);
