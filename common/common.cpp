@@ -154,10 +154,10 @@ void hex2bin(const std::string& source, unsigned char* target, size_t& target_le
   if (source.length() < 2) {
     throw std::invalid_argument("Input string must have even number of [0-9a-f] characters");
   }
-  for (size_t i = 0, target_length = 0; i < source.length(); i += 2, ++target_length) {
-    *(target++) = char2int(source[i]) * 16 + char2int(source[i + 1]);
+  target_length = 0;
+  for (size_t i = 0; i < source.length(); i += 2, ++target_length) {
+     *(target++) = char2int(source[i]) * 16 + char2int(source[i + 1]);
   }
-  *target = '\0';
 }
 
 }
