@@ -140,11 +140,7 @@ std::string bin2hex(unsigned char* src, size_t size) {
   std::ostringstream oss;
   for (size_t i = 0; i < size; ++i) {
     int value = static_cast<int>(src[i]);
-    if (value != 0) {
-      oss << std::hex << value;
-    } else {
-      oss << "00";
-    }
+    oss << std::hex << value;
   }
   return oss.str();
 }
@@ -158,6 +154,7 @@ void hex2bin(const std::string& source, unsigned char* target, size_t& target_le
   for (size_t i = 0, target_length = 0; i < source.length(); i += 2, ++target_length) {
     *(target++) = char2int(source[i]) * 16 + char2int(source[i + 1]);
   }
+  *target = '\0';
 }
 
 }
