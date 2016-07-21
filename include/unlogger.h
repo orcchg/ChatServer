@@ -18,11 +18,14 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#if SECURE
-
-#include "crypting/aes_cryptor.h"
-#include "common.h"
-#include "logger.h"
-
-#endif  // SECURE
+#undef CRT
+#undef ERR
+#undef WRN
+#undef INF
+#undef DBG
+#undef VER
+#undef TRC
+#undef MSG
+#undef SYS
+#undef TTY
 

@@ -16,10 +16,10 @@
 #   along with this program; if not, write to the Free Software Foundation,
 #   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 
-SET( TARGET "${CRYPTOR}_test" )
+SET( TARGET aes_cryptor_test )
 SET( SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR} )
 SET( SOURCES
-    ${SOURCE_DIR}/aes_cryptor.cpp
+    ${SOURCE_DIR}/aes_cryptor_test.cpp
 )
 ADD_LIBRARY( ${TARGET} STATIC ${SOURCES} )
 TARGET_LINK_LIBRARIES( ${TARGET} ${OPENSSL_LIBS} common gtest )

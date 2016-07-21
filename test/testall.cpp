@@ -18,7 +18,10 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
+#if SECURE
+#include "crypting/aes_cryptor_test.cpp"
+#endif  // SECURE
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
