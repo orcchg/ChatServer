@@ -140,6 +140,9 @@ std::string bin2hex(unsigned char* src, size_t size) {
   std::ostringstream oss;
   for (size_t i = 0; i < size; ++i) {
     int value = static_cast<int>(src[i]);
+    if (value < 16) {
+      oss << '0';
+    }
     oss << std::hex << value;
   }
   return oss.str();
