@@ -266,7 +266,7 @@ Message Message::fromJson(const std::string& json) {
 
 // openssl encrypt with public key
 void Message::encrypt(const secure::Key& public_key) {
-  TRC("encrypt(%s)", public_key.getKey().c_str());
+  TRC("encrypt(%zu)", public_key.getKey().length());
   if (public_key != secure::Key::EMPTY) {
     secure::AESCryptor cryptor;  // generate symmetric key on-fly
     std::string cipher = cryptor.encrypt(m_message);
@@ -303,7 +303,7 @@ void Message::encrypt(const secure::Key& public_key) {
 
 // openssl decrypt with private key
 void Message::decrypt(const secure::Key& private_key) {
-  TRC("decrypt(%s)", private_key.getKey().c_str());
+  TRC("decrypt(%zu)", private_key.getKey().length());
   if (private_key != secure::Key::EMPTY) {
     size_t ptr = 0;
     size_t i1 = m_message.find(COMPOUND_MESSAGE_SEPARATOR);
