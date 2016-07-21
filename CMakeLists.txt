@@ -55,6 +55,10 @@ else()
     ADD_DEFINITIONS( -DSECURE=0 )
 endif()
 
+if( TEST )
+    MESSAGE( STATUS "Build with tests" )
+endif()
+
 # -----------------------------------------------------------------------------
 ADD_SUBDIRECTORY( api )
 ADD_SUBDIRECTORY( client )
@@ -63,4 +67,8 @@ ADD_SUBDIRECTORY( database )
 ADD_SUBDIRECTORY( parser )
 ADD_SUBDIRECTORY( server )
 ADD_SUBDIRECTORY( sqlite )
+if ( TEST )
+ADD_SUBDIRECTORY( googletest )
+ADD_SUBDIRECTORY( test )
+endif()
 
