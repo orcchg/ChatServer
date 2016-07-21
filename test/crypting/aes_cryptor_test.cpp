@@ -40,18 +40,18 @@ protected:
   secure::AESCryptor m_cryptor;
 };
 
-AESCryptorTest::AESCryptorTest() {
+AESCryptorTest::AESCryptorTest()
+  : m_cryptor((unsigned char*) "01234567890123456789012345678901",
+              (unsigned char*) "01234567890123456") {
 }
 
 AESCryptorTest::~AESCryptorTest() {
 }
 
 void AESCryptorTest::SetUp() {
-
 }
 
 void AESCryptorTest::TearDown() {
-
 }
 
 /* Tests */
@@ -68,6 +68,18 @@ TEST_F(AESCryptorTest, GetCipher2) {
   std::string hex_cipher = "b4b3c20dbdc5727876708b4c7533cd9c";
   std::string output = m_cryptor.encrypt(input);
   EXPECT_STREQ(hex_cipher.c_str(), output.c_str());
+}
+
+TEST_F(AESCryptorTest, DecryptCipher1) {
+  std::string hex_cipher = "55cc8e112f7fd1889f5ef9d92a8f1ce2";
+  std::string output = m_cryptor.decrypt(hex_cipher);
+  EXPECT_STREQ("hello", output.c_str());
+}
+
+TEST_F(AESCryptorTest, DecryptCipher2) {
+  std::string hex_cipher = "b4b3c20dbdc5727876708b4c7533cd9c";
+  std::string output = m_cryptor.decrypt(hex_cipher);
+  EXPECT_STREQ("world", output.c_str());
 }
 
 }

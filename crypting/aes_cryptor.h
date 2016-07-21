@@ -31,9 +31,8 @@ namespace secure {
 
 class AESCryptor : public ICryptor {
 public:
-  AESCryptor();
-  AESCryptor(unsigned char* raw);
-  AESCryptor(const SymmetricKey& key);
+  AESCryptor(unsigned char* raw, unsigned char* iv);
+  AESCryptor(const SymmetricKey& key = SymmetricKey());
   virtual ~AESCryptor();
 
   std::string encrypt(const std::string& source) override;
@@ -47,8 +46,7 @@ public:
 
 private:
   SymmetricKey m_key;
-  std::string m_iv;
-  EVP_CIPHER_CTX* m_context;
+  unsigned char* m_iv;
   unsigned char* m_raw;
   size_t m_raw_length;
 

@@ -32,7 +32,7 @@ struct SymmetricKey {
   unsigned char key[SHA256_DIGEST_LENGTH];
 
   SymmetricKey();
-  SymmetricKey(const unsigned char i_key[]);
+  SymmetricKey(unsigned char* i_key);
   SymmetricKey(const std::string& source);
 
   inline size_t getLength() const { return SHA256_DIGEST_LENGTH; }
