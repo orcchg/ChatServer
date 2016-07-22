@@ -37,9 +37,6 @@
 #define KEY_SIZE_BITS 2048
 #define KEY_PUBLIC_EXPONENT 65537
 
-#define PUBLIC_KEY_FILE "public.pem"
-#define PRIVATE_KEY_FILE "private.pem"
-
 namespace secure {
 namespace random {
 

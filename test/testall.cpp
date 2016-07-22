@@ -21,6 +21,7 @@
 #include <gtest/gtest.h>
 #if SECURE
 #include "crypting/aes_cryptor_test.cpp"
+#include "crypting/rsa_cryptor_test.cpp"
 #endif  // SECURE
 
 int main(int argc, char **argv) {

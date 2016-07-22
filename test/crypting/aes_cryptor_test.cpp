@@ -29,57 +29,59 @@ namespace test {
 
 /* Fixture */
 // ----------------------------------------------------------------------------
-class AESCryptorTest : public ::testing::Test {
+/* Fixed key and IV */
+// ----------------------------------------------
+class AESCryptorFixedTest : public ::testing::Test {
 protected:
-  AESCryptorTest();
-  virtual ~AESCryptorTest();
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  AESCryptorFixedTest();
 
 protected:
   secure::AESCryptor m_cryptor;
 };
 
-AESCryptorTest::AESCryptorTest()
+AESCryptorFixedTest::AESCryptorFixedTest()
   : m_cryptor((unsigned char*) "01234567890123456789012345678901",
               (unsigned char*) "01234567890123456") {
 }
 
-AESCryptorTest::~AESCryptorTest() {
-}
-
-void AESCryptorTest::SetUp() {
-}
-
-void AESCryptorTest::TearDown() {
-}
-
 /* Tests */
 // ----------------------------------------------------------------------------
-TEST_F(AESCryptorTest, GetCipher1) {
+/* Fixed key and IV */
+// ----------------------------------------------
+TEST_F(AESCryptorFixedTest, GetCipher1) {
   std::string input = "hello";
   std::string hex_cipher = "55cc8e112f7fd1889f5ef9d92a8f1ce2";
   std::string output = m_cryptor.encrypt(input);
   EXPECT_STREQ(hex_cipher.c_str(), output.c_str());
 }
 
-TEST_F(AESCryptorTest, GetCipher2) {
+TEST_F(AESCryptorFixedTest, GetCipher2) {
   std::string input = "world";
   std::string hex_cipher = "b4b3c20dbdc5727876708b4c7533cd9c";
   std::string output = m_cryptor.encrypt(input);
   EXPECT_STREQ(hex_cipher.c_str(), output.c_str());
 }
 
-TEST_F(AESCryptorTest, DecryptCipher1) {
+TEST_F(AESCryptorFixedTest, DecryptCipher1) {
   std::string hex_cipher = "55cc8e112f7fd1889f5ef9d92a8f1ce2";
   std::string output = m_cryptor.decrypt(hex_cipher);
   EXPECT_STREQ("hello", output.c_str());
 }
 
-TEST_F(AESCryptorTest, DecryptCipher2) {
+TEST_F(AESCryptorFixedTest, DecryptCipher2) {
   std::string hex_cipher = "b4b3c20dbdc5727876708b4c7533cd9c";
   std::string output = m_cryptor.decrypt(hex_cipher);
   EXPECT_STREQ("world", output.c_str());
+}
+
+/* Random key and IV */
+// ----------------------------------------------
+TEST(AESCryptorTest, Complete) {
+  secure::AESCryptor cryptor;  // generate key and IV
+  std::string input = "hello";
+  std::string cipher_hex = cryptor.encrypt(input);
+  std::string output = cryptor.decrypt(cipher_hex);
+  EXPECT_STREQ(input.c_str(), output.c_str());
 }
 
 }

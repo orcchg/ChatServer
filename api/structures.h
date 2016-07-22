@@ -30,11 +30,6 @@
 // ----------------------------------------------------------------------------
 #if SECURE
 
-#define COMPOUND_MESSAGE_DELIMITER ':'
-#define COMPOUND_MESSAGE_DELIMITER_STR ":"
-#define COMPOUND_MESSAGE_SEPARATOR "-----*****-----"
-#define COMPOUND_MESSAGE_SEPARATOR_LENGTH 15
-
 namespace secure {
 
 /**

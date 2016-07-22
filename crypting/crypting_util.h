@@ -18,30 +18,27 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#ifndef CHAT_SERVER_RANDOM_UTIL__H__
-#define CHAT_SERVER_RANDOM_UTIL__H__
-
-#if SECURE
-
-#define PUBLIC_KEY_FILE "public.pem"
-#define PRIVATE_KEY_FILE "private.pem"
+#ifndef CHAT_SERVER_CRYPTING_UTIL__H__
+#define CHAT_SERVER_CRYPTING_UTIL__H__
 
 #include <string>
 #include "api/structures.h"
 
+#if SECURE
+
+#define COMPOUND_MESSAGE_DELIMITER ':'
+#define COMPOUND_MESSAGE_DELIMITER_STR ":"
+#define COMPOUND_MESSAGE_SEPARATOR "-----*****-----"
+#define COMPOUND_MESSAGE_SEPARATOR_LENGTH 15
+
 namespace secure {
-namespace random {
 
-int setRandomSeed();
+std::string encryptAndPack(const secure::Key& public_key, const std::string& plain, bool& encrypted);
+std::string unpackAndDecrypt(const secure::Key& private_key, const std::string& chunk, bool& decrypted);
 
-std::string generateString(int length);
-void generateKeyPair(ID_t id, const char* input, size_t size);
-std::pair<Key, Key> loadKeyPair(ID_t id, bool* accessible);
-
-}
 }
 
 #endif  // SECURE
 
-#endif  // CHAT_SERVER_RANDOM_UTIL__H__
+#endif  // CHAT_SERVER_CRYPTING_UTIL__H__
 

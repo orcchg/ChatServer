@@ -44,6 +44,7 @@ public:
   inline const SymmetricKey& getKey() const { return m_key; }
   inline SymmetricKey getKeyCopy() const { return m_key; }
   unsigned char* getIVCopy() const;
+  void getIVCopy(unsigned char* output) const;
 
   inline unsigned char* getRaw() const { return m_raw; }
   inline size_t getRawLength() const { return m_raw_length; }

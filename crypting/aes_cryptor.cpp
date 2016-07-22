@@ -70,6 +70,10 @@ unsigned char* AESCryptor::getIVCopy() const {
   return iv;
 }
 
+void AESCryptor::getIVCopy(unsigned char* output) const {
+  memcpy(output, m_iv, IV_LENGTH);
+}
+
 std::string AESCryptor::encrypt(const std::string& source) {
   TRC("encrypt(%s)", source.c_str());
   auto size = source.length() * 2;  // large enough
