@@ -29,10 +29,6 @@
 #include "crypting/aes_cryptor.h"
 #include "crypting/cryptor.h"
 
-// @see http://www.czeskis.com/random/openssl-encrypt-file.html
-// @see https://wiki.openssl.org/index.php/EVP_Asymmetric_Encryption_and_Decryption_of_an_Envelope
-// @see https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption
-
 namespace secure {
 
 std::string encryptAndPack(const secure::Key& public_key, const std::string& plain, bool& encrypted) {

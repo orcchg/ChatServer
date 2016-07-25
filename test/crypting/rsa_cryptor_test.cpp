@@ -25,6 +25,7 @@
 #include <cstdio>
 #include "common.h"
 #include "crypting/random_util.h"
+#include "crypting/rsa_cryptor.h"
 #include "logger.h"
 
 namespace test {
@@ -53,7 +54,7 @@ void RSACryptorTest::SetUp() {
 }
 
 void RSACryptorTest::TearDown() {
-  auto public_key_filename = common::createFilenameWithId(s_id, PUBLIC_KEY_FILE);
+  auto public_key_filename  = common::createFilenameWithId(s_id, PUBLIC_KEY_FILE);
   auto private_key_filename = common::createFilenameWithId(s_id, PRIVATE_KEY_FILE);
   if (remove(public_key_filename.c_str()) != 0) {
     ERR("Failed to delete file: %s", public_key_filename.c_str());
@@ -65,6 +66,17 @@ void RSACryptorTest::TearDown() {
 
 /* Tests */
 // ----------------------------------------------------------------------------
+TEST(RSACryptingFixedKeys, Complete) {
+  secure::RSACryptor cryptor;
+  cryptor.setPublicKey("../test/crypting/public.pem");
+  cryptor.setPrivateKey("../test/crypting/private.pem");
+
+  std::string input = "hello";
+  std::string cipher = cryptor.encrypt(input);
+  std::string output = cryptor.decrypt(cipher);
+  EXPECT_STREQ(input.c_str(), output.c_str());
+}
+
 TEST_F(RSACryptorTest, Complete) {
 
 }

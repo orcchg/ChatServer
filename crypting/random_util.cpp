@@ -59,6 +59,8 @@ std::string generateString(int length) {
   return result;
 }
 
+// @see http://stackoverflow.com/questions/12647220/reading-and-writing-rsa-keys-to-a-pem-file-in-c
+
 void generateKeyPair(ID_t id, const char* input, size_t size) {
   DBG("Generating key pair...  Input pattern: [%.*s]", (int) size, input);
   RAND_seed(input, size);

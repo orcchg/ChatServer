@@ -20,12 +20,9 @@
 
 #if SECURE
 
-#include <iomanip>
-#include <sstream>
 #include <cstring>
 #include <openssl/conf.h>
 #include <openssl/err.h>
-#include "api/icryptor.h"
 #include "aes_cryptor.h"
 #include "common.h"
 #include "logger.h"
@@ -33,7 +30,6 @@
 
 #define ERROR_BUFFER_SIZE 256
 
-// @see http://www.czeskis.com/random/openssl-encrypt-file.html
 // @see https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption
 
 namespace secure {
