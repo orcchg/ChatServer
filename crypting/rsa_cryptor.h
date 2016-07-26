@@ -24,9 +24,12 @@
 #if SECURE
 
 #include <string>
+#include <openssl/evp.h>
 #include <openssl/pem.h>
-#include <openssl/rsa.h>
 #include "api/icryptor.h"
+
+// @see https://shanetully.com/2012/06/openssl-rsa-aes-and-c/
+// @see https://shanetully.com/2012/04/simple-public-key-encryption-with-rsa-and-openssl/
 
 namespace secure {
 
@@ -44,6 +47,8 @@ public:
 private:
   std::string m_public_key_filename;
   std::string m_private_key_filename;
+
+  bool init();
 };
 
 }

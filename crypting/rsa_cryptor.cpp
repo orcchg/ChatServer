@@ -32,6 +32,7 @@
 namespace secure {
 
 RSACryptor::RSACryptor() {
+  init();
 }
 
 RSACryptor::~RSACryptor() {
@@ -48,13 +49,9 @@ std::string RSACryptor::encrypt(const std::string& source) {
     fclose(public_key_file);
     if (rsa != nullptr) {
       auto size = source.length() * 2;  // large enough
-      //size_t plain_length = 0;
-      //unsigned char* plain = new unsigned char[size];
       unsigned char* cipher = new unsigned char[size];
-      //common::hex2bin(source, plain, plain_length);
       int cipher_length = RSA_public_encrypt(source.length(), (unsigned char*) source.c_str(), cipher, rsa, RSA_PKCS1_PADDING);
       std::string encrypted = common::bin2hex(cipher, cipher_length);
-      //delete [] plain;   plain  = nullptr;
       delete [] cipher;  cipher = nullptr;
       RSA_free(rsa);
       TTY("RSA encrypted: %s", encrypted.c_str());
@@ -95,6 +92,12 @@ std::string RSACryptor::decrypt(const std::string& source) {
   }
   WRN("Private key wasn't provided, source hasn't been decrypted");
   return source;  // not decrypted
+}
+
+/* Private */
+// ----------------------------------------------------------------------------
+bool RSACryptor::init() {
+  return true;
 }
 
 }

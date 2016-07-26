@@ -27,7 +27,7 @@ INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR} )  # for config.h
 INCLUDE_DIRECTORIES( ${PROJECT_SOURCE_DIR} include )
 
 if( CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX )
-    SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread" )
+    SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -ggdb3 -O0 -pthread" )
 endif()
 
 if( DEBUG )
@@ -48,6 +48,7 @@ if( SECURE )
     SET( CRYPTOR cryptor )
     ADD_DEFINITIONS( -DSECURE=1 )
     ADD_SUBDIRECTORY( crypting )
+    ADD_SUBDIRECTORY( CryptoSmall )
 else()
     MESSAGE( STATUS "Security disabled" )
     SET( OPENSSL_LIBS )
@@ -57,6 +58,8 @@ endif()
 
 if( TEST )
     MESSAGE( STATUS "Build with tests" )
+    ADD_SUBDIRECTORY( googletest )
+    ADD_SUBDIRECTORY( test )
 endif()
 
 # -----------------------------------------------------------------------------
@@ -67,8 +70,4 @@ ADD_SUBDIRECTORY( database )
 ADD_SUBDIRECTORY( parser )
 ADD_SUBDIRECTORY( server )
 ADD_SUBDIRECTORY( sqlite )
-if ( TEST )
-ADD_SUBDIRECTORY( googletest )
-ADD_SUBDIRECTORY( test )
-endif()
 
