@@ -32,14 +32,15 @@
 namespace secure {
 
 RSACryptor::RSACryptor() {
-  init();
 }
 
 RSACryptor::~RSACryptor() {
 }
 
-std::string RSACryptor::encrypt(const std::string& source) {
+std::string RSACryptor::encrypt(const std::string& source, const Key& public_key) {
   TRC("encrypt(%s)", source.c_str());
+  /*if (public_key != Key::EMPTY) {
+
   FILE* public_key_file = fopen(m_public_key_filename.c_str(), "rt");
   if (public_key_file != nullptr) {
     BIO* bio = BIO_new_file(m_public_key_filename.c_str(), "r");
@@ -57,15 +58,15 @@ std::string RSACryptor::encrypt(const std::string& source) {
       TTY("RSA encrypted: %s", encrypted.c_str());
       return encrypted;
     }
-  } else {
-    ERR("Unable to open file [%s] to get key", m_public_key_filename.c_str());
-  }
+  }*/
   WRN("Public key wasn't provided, source hasn't been encrypted");
   return source;  // not encrypted
 }
 
-std::string RSACryptor::decrypt(const std::string& source) {
+std::string RSACryptor::decrypt(const std::string& source, const Key& private_key) {
   TRC("decrypt(%s)", source.c_str());
+  /*if (private_key != Key::EMPTY) {
+
   FILE* private_key_file = fopen(m_private_key_filename.c_str(), "rt");
   if (private_key_file != nullptr) {
     BIO* bio = BIO_new_file(m_private_key_filename.c_str(), "r");
@@ -87,18 +88,13 @@ std::string RSACryptor::decrypt(const std::string& source) {
       TTY("RSA decrypted: %s", decrypted.c_str());
       return decrypted;
     }
-  } else {
-    ERR("Unable to open file [%s] to get key", m_private_key_filename.c_str());
-  }
+  }*/
   WRN("Private key wasn't provided, source hasn't been decrypted");
   return source;  // not decrypted
 }
 
 /* Private */
 // ----------------------------------------------------------------------------
-bool RSACryptor::init() {
-  return true;
-}
 
 }
 

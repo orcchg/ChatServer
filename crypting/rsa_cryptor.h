@@ -27,28 +27,23 @@
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 #include "api/icryptor.h"
+#include "CryptoSmall/Crypto.h"
 
 // @see https://shanetully.com/2012/06/openssl-rsa-aes-and-c/
 // @see https://shanetully.com/2012/04/simple-public-key-encryption-with-rsa-and-openssl/
 
 namespace secure {
 
-class RSACryptor : public ICryptor {
+class RSACryptor : public IAsymmetricCryptor {
 public:
   RSACryptor();
   virtual ~RSACryptor();
 
-  std::string encrypt(const std::string& source) override;
-  std::string decrypt(const std::string& source) override;
-
-  inline void setPublicKey(const std::string& public_key_filename) { m_public_key_filename = public_key_filename; }
-  inline void setPrivateKey(const std::string& private_key_filename) { m_private_key_filename = private_key_filename; }
+  std::string encrypt(const std::string& source, const Key& public_key) override;
+  std::string decrypt(const std::string& source, const Key& private_key) override;
 
 private:
-  std::string m_public_key_filename;
-  std::string m_private_key_filename;
-
-  bool init();
+  //Crypto m_crypto;
 };
 
 }

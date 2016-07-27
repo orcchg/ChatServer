@@ -24,6 +24,7 @@
 #if SECURE
 
 #include <string>
+#include "structures.h"
 
 namespace secure {
 
@@ -33,6 +34,14 @@ public:
 
   virtual std::string encrypt(const std::string& source) = 0;
   virtual std::string decrypt(const std::string& source) = 0;
+};
+
+class IAsymmetricCryptor {
+public:
+  virtual ~IAsymmetricCryptor() {}
+
+  virtual std::string encrypt(const std::string& source, const Key& public_key) = 0;
+  virtual std::string decrypt(const std::string& source, const Key& private_key) = 0;
 };
 
 }
