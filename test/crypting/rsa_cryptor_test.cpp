@@ -66,15 +66,51 @@ void RSACryptorTest::TearDown() {
 
 /* Tests */
 // ----------------------------------------------------------------------------
-TEST(RSACryptingFixedKeys, Complete) {
-  secure::RSACryptor cryptor;
-  cryptor.setPublicKey("../test/crypting/public.pem");
-  cryptor.setPrivateKey("../test/crypting/private.pem");
+// @see https://shanetully.com/2012/04/simple-public-key-encryption-with-rsa-and-openssl/
+TEST(RSACryptingDirect, Complete) {
+  // 255 chars + '\0', in practise must be not greater than (214 + '\0') due to padding
+  const char* msg256 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna. Maecenas quis mi est blandit";
 
-  std::string input = "hello";
-  std::string cipher = cryptor.encrypt(input);
-  std::string output = cryptor.decrypt(cipher);
-  EXPECT_STREQ(input.c_str(), output.c_str());
+  // encrypt
+  RSA* keypair = RSA_generate_key(2048, 65537 /* exponent */, nullptr, nullptr);
+  char* encrypt = (char*) malloc(RSA_size(keypair));
+  int encrypt_len = RSA_public_encrypt(strlen(msg256) + 1, (unsigned char*) msg256, (unsigned char*) encrypt, keypair, RSA_PKCS1_OAEP_PADDING);
+  if (encrypt_len == -1 || encrypt_len != 256) {
+    char* error = (char*) malloc(130);
+    ERR_load_crypto_strings();
+    ERR_error_string(ERR_get_error(), error);
+    ERR("Error encrypting message: %s\n", error);
+    free(error);
+    EXPECT_TRUE(false);
+  }
+
+  // decrypt
+  char* decrypt = (char*) malloc(RSA_size(keypair));
+  int decrypt_len = RSA_private_decrypt(encrypt_len, (unsigned char*) encrypt, (unsigned char*) decrypt, keypair, RSA_PKCS1_OAEP_PADDING);
+  if (decrypt_len == -1) {
+    char* error = (char*) malloc(130);
+    ERR_load_crypto_strings();
+    ERR_error_string(ERR_get_error(), error);
+    ERR("Error decrypting message: %s\n", error);
+    free(error);
+    EXPECT_TRUE(false);
+  }
+
+  EXPECT_STREQ(msg256, decrypt);
+
+  free(encrypt);
+  free(decrypt); 
+}
+
+TEST(RSACryptingFixedKeys, Complete) {
+  //secure::RSACryptor cryptor;
+  //cryptor.setPublicKey("../test/crypting/public.pem");
+  //cryptor.setPrivateKey("../test/crypting/private.pem");
+
+  //std::string input = "hello";
+  //std::string cipher = cryptor.encrypt(input);
+  //std::string output = cryptor.decrypt(cipher);
+  //EXPECT_STREQ(input.c_str(), output.c_str());
 }
 
 TEST_F(RSACryptorTest, Complete) {
