@@ -89,7 +89,8 @@ TEST(AESCryptorTest, Complete) {
 }
 
 TEST(AESCryptor, RawComplete) {
-  const char* msg256 = "hello";//"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna. Maecenas quis mi est blandit";
+  // message of any length is possible for AES
+  const char* msg256 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna. Maecenas quis mi est blandit";
   int msg256_len = strlen(msg256);
 
   // ============================================
@@ -134,6 +135,7 @@ TEST(AESCryptor, RawComplete) {
   EVP_EncryptFinal_ex(aes_enc_ctx, cipher + cipher_len, (int*) &block_len);
   cipher_len += block_len;
   EVP_CIPHER_CTX_free(aes_enc_ctx);
+  INF("AES Cipher length: %i", cipher_len);
   TTY("AES Cipher[%i]: %.*s", cipher_len, cipher_len, cipher);
 
   // ============================================
@@ -152,8 +154,9 @@ TEST(AESCryptor, RawComplete) {
   EVP_DecryptFinal_ex(aes_dec_ctx, plain + plain_len, (int*) &block_len_x);
   plain_len += block_len_x;
   EVP_CIPHER_CTX_free(aes_dec_ctx);
+  INF("AES Plain length: %i", plain_len);
   TTY("AES Plain[%i]: %.*s", plain_len, plain_len, plain);
-  strncpy((char*) plain, (const char*) plain, plain_len);
+  plain[plain_len] = '\0';
   EXPECT_STREQ(msg256, (const char*) plain);
 
   // ============================================

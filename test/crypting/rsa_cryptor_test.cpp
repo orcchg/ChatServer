@@ -197,8 +197,9 @@ TEST(RSACrypting, FileFixedKeys) {
 }
 
 // @see https://shanetully.com/2012/06/openssl-rsa-aes-and-c/
-TEST(RSACrypting, DISABLED_Envelope) {
-  const char* msg256 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna. Maecenas quis mi est blandit";
+TEST(RSACrypting, Envelope) {
+  // message of any length is possible for EVP
+  const char* msg256 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna est. Maecenas quis mi at est blandit tempor. Nullam ut quam porttitor, convallis nisl vitae, pulvinar quam. In hac habitasse platea dictumst. Aenean vehicula mauris odio, eu mattis augue tristique in. Morbi nec magna sit amet elit tempor sagittis. Suspendisse id tempor velit. Suspendisse nec velit orci. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus commodo ullamcorper convallis. Nunc congue lobortis dictum.";
   int msg256_len = strlen(msg256);
 
   // ============================================
@@ -217,92 +218,54 @@ TEST(RSACrypting, DISABLED_Envelope) {
 
   // ============================================
   /*
-   * AES: generate key
+   * RSA: encrypt with public key
    */
-  unsigned char* aesKey  = new unsigned char[AES_KEYLEN / 8];
-  unsigned char* aesIV   = new unsigned char[AES_KEYLEN / 8];
-  unsigned char* aesPass = new unsigned char[AES_KEYLEN / 8];
-  unsigned char* aesSalt = new unsigned char[8];
-
-  memset(aesKey, 0, AES_KEYLEN / 8);
-  memset(aesIV, 0, AES_KEYLEN / 8);
-  memset(aesPass, 0, AES_KEYLEN / 8);
-  memset(aesSalt, 0, 8);
-
-  RAND_bytes(aesPass, AES_KEYLEN / 8);
-  RAND_bytes(aesSalt, 8);
-  EVP_BytesToKey(EVP_aes_256_cbc(), EVP_sha256(), aesSalt, aesPass, AES_KEYLEN / 8, AES_ROUNDS, aesKey, aesIV);
-
-  delete [] aesPass;  aesPass = nullptr;
-  delete [] aesSalt;  aesSalt = nullptr;
-
-  std::string aesKey_hex = common::bin2hex(aesKey, AES_KEYLEN / 8);
-  std::string aesIV_hex  = common::bin2hex(aesIV,  AES_KEYLEN / 8);
-  TTY("AES KEY: %s", aesKey_hex.c_str());
-  TTY("AES IV:  %s", aesIV_hex.c_str());
-
-  // ============================================
-  /*
-   * AES: encrypt
-   */
-  unsigned char* cipher = new unsigned char[msg256_len + AES_BLOCK_SIZE];
-  memset(cipher, 0, msg256_len + AES_BLOCK_SIZE);
+  int pubkey_len = EVP_PKEY_size(keypair);
+  unsigned char* ek = new unsigned char[pubkey_len];
+  unsigned char* iv = new unsigned char[EVP_MAX_IV_LENGTH];
+  unsigned char* cipher = new unsigned char[msg256_len + EVP_MAX_IV_LENGTH];
+  int ek_len = 0, iv_len = EVP_MAX_IV_LENGTH;
   int block_len = 0;
   int cipher_len = 0;
 
-  EVP_CIPHER_CTX* aes_enc_ctx = EVP_CIPHER_CTX_new();
-  EVP_EncryptInit_ex(aes_enc_ctx, EVP_aes_256_cbc(), nullptr, aesKey, aesIV);
-  EVP_EncryptUpdate(aes_enc_ctx, cipher, (int*) &block_len, (unsigned char*) msg256, msg256_len);
-  cipher_len += block_len;
-  EVP_EncryptFinal_ex(aes_enc_ctx, cipher + cipher_len, (int*) &block_len);
-  cipher_len += block_len;
-  EVP_CIPHER_CTX_free(aes_enc_ctx);
-  TTY("AES Cipher[%i]: %.*s", cipher_len, cipher_len, cipher);
-
-  // ============================================
-  /*
-   * AES: decrypt
-   */
-  unsigned char* plain = new unsigned char[cipher_len];
-  memset(plain, 0, cipher_len);
-  int block_len_x = 0;
-  int plain_len = 0;
-
-  EVP_CIPHER_CTX* aes_dec_ctx = EVP_CIPHER_CTX_new();
-  EVP_DecryptInit_ex(aes_dec_ctx, EVP_aes_256_cbc(), nullptr, aesKey, aesIV);
-  EVP_DecryptUpdate(aes_dec_ctx, plain, (int*) &block_len_x, cipher, cipher_len);
-  plain_len += block_len_x;
-  EVP_DecryptFinal_ex(aes_dec_ctx, plain + plain_len, (int*) &block_len_x);
-  plain_len += block_len_x;
-  EVP_CIPHER_CTX_free(aes_dec_ctx);
-  TTY("AES Plain[%i]: %.*s", plain_len, plain_len, plain);
-  strncpy((char*) plain, (const char*) plain, plain_len);
-  EXPECT_STREQ(msg256, (const char*) plain);
-
-  // ============================================
-  /*
-   * RSA: encrypt with public key
-   */
   EVP_CIPHER_CTX* rsa_enc_ctx = EVP_CIPHER_CTX_new();
-
+  EVP_SealInit(rsa_enc_ctx, EVP_aes_256_cbc(), &ek, (int*) &ek_len, iv, &keypair, 1);
+  EVP_SealUpdate(rsa_enc_ctx, cipher, (int*) &block_len, (unsigned char*) msg256, msg256_len);
+  cipher_len += block_len;
+  EVP_SealFinal(rsa_enc_ctx, cipher + cipher_len, (int*) &block_len);
+  cipher_len += block_len;
   EVP_CIPHER_CTX_free(rsa_enc_ctx);
+  INF("RSA Cipher length: %i", cipher_len);
+  TTY("RSA Cipher[%i]: %.*s", cipher_len, cipher_len, cipher);
 
   // ============================================
   /*
    * RSA: decrypt with private key
    */
-  EVP_CIPHER_CTX* rsa_dec_ctx = EVP_CIPHER_CTX_new();
+  unsigned char* plain = new unsigned char[cipher_len + iv_len];
+  int block_len_x = 0;
+  int plain_len = 0;
 
+  EVP_CIPHER_CTX* rsa_dec_ctx = EVP_CIPHER_CTX_new();
+  EVP_OpenInit(rsa_dec_ctx, EVP_aes_256_cbc(), ek, ek_len, iv, keypair);
+  EVP_OpenUpdate(rsa_dec_ctx, plain, (int*) &block_len_x, cipher, cipher_len);
+  plain_len += block_len_x;
+  EVP_OpenFinal(rsa_dec_ctx, plain + plain_len, (int*) &block_len_x);
+  plain_len += block_len_x;
   EVP_CIPHER_CTX_free(rsa_dec_ctx);
+  INF("RSA Plain length: %i", plain_len);
+  TTY("RSA Plain[%i]: %.*s", plain_len, plain_len, plain);
+  plain[plain_len] = '\0';
+  EXPECT_STREQ(msg256, (const char*) plain);
 
   // ============================================
   /*
    * free
    */
-  delete [] cipher;   cipher  = nullptr;
-  delete [] plain;    plain   = nullptr;
-  delete [] aesKey;   aesKey  = nullptr;
-  delete [] aesIV;    aesIV   = nullptr;
+  delete [] ek;  ek = nullptr;
+  delete [] iv;  iv = nullptr;
+  delete [] cipher;  cipher = nullptr;
+  delete [] plain;  plain = nullptr;
 
   EVP_PKEY_free(keypair);
 }
