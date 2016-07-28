@@ -46,9 +46,11 @@ PeerDTO RegistrationToPeerDTOMapper::map(const RegistrationForm& form) {
   return PeerDTO(form.getLogin(), form.getEmail(), form.getPassword());
 }
 
+#if SECURE
 secure::Key KeyDTOtoKeyMapper::map(const KeyDTO& key) {
   return secure::Key(key.getId(), key.getKey());
 }
+#endif  // SECURE
 
 /* Server implementation */
 // ----------------------------------------------------------------------------
