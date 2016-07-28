@@ -24,10 +24,8 @@
 #if SECURE
 
 #include <string>
-#include <openssl/evp.h>
-#include <openssl/pem.h>
 #include "api/icryptor.h"
-#include "CryptoSmall/Crypto.h"
+#include "includes.h"
 
 // @see https://shanetully.com/2012/06/openssl-rsa-aes-and-c/
 // @see https://shanetully.com/2012/04/simple-public-key-encryption-with-rsa-and-openssl/

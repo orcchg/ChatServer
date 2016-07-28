@@ -18,32 +18,34 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#ifndef CHAT_SERVER_SYM_KEY__H__
-#define CHAT_SERVER_SYM_KEY__H__
+#ifndef CHAT_SERVER_INCLUDES__H__
+#define CHAT_SERVER_INCLUDES__H__
 
 #if SECURE
 
-#include <string>
-#include "includes.h"
+#include <openssl/aes.h>
+#include <openssl/conf.h>
+#include <openssl/err.h>
+#include <openssl/evp.h>
+#include <openssl/pem.h>
+#include <openssl/rand.h>
+#include <openssl/rsa.h>
+#include <openssl/sha.h>
 
-namespace secure {
+// symmetric key in bytes
+#define KEY_LENGTH SHA256_DIGEST_LENGTH
+#define IV_LENGTH SHA256_DIGEST_LENGTH >> 1
 
-struct SymmetricKey {
-  unsigned char key[KEY_LENGTH];
+// key lengths in bits
+#define RSA_KEYLEN 2048
+#define AES_KEYLEN 256
+#define AES_ROUNDS 6
 
-  SymmetricKey();
-  SymmetricKey(unsigned char* i_key);
-  SymmetricKey(const std::string& source);
-
-  inline size_t getLength() const { return KEY_LENGTH; }
-
-private:
-  void generate(const std::string& source);
-};
-
-}
+#define ERROR_BUFFER_SIZE 256
+#define KEY_SIZE_BITS RSA_KEYLEN
+#define KEY_PUBLIC_EXPONENT 65537
 
 #endif  // SECURE
 
-#endif  // CHAT_SERVER_SYM_KEY__H__
+#endif  // CHAT_SERVER_INCLUDES__H__
 

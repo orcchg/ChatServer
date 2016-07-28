@@ -23,11 +23,9 @@
 
 #if SECURE
 
-#include <openssl/evp.h>
 #include "api/icryptor.h"
+#include "includes.h"
 #include "sym_key.h"
-
-#define IV_LENGTH SHA256_DIGEST_LENGTH >> 1
 
 namespace secure {
 

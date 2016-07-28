@@ -25,17 +25,9 @@
 #include <cstring>
 #include <ctime>
 #include "common.h"
+#include "includes.h"
 #include "logger.h"
 #include "random_util.h"
-
-#include <openssl/err.h>
-#include <openssl/pem.h>
-#include <openssl/rsa.h>
-#include <openssl/rand.h>
-
-#define ERROR_BUFFER_SIZE 256
-#define KEY_SIZE_BITS 2048
-#define KEY_PUBLIC_EXPONENT 65537
 
 namespace secure {
 namespace random {

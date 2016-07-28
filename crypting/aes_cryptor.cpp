@@ -21,8 +21,6 @@
 #if SECURE
 
 #include <cstring>
-#include <openssl/conf.h>
-#include <openssl/err.h>
 #include "aes_cryptor.h"
 #include "common.h"
 #include "logger.h"
