@@ -93,6 +93,15 @@ static bool Decrypt(RSA* keypair, char* encrypt, int encrypt_len, char** decrypt
   return true;
 }
 
+static void readKeysFromPEM(const char* pubfiles, const char* prifiles, RSA** rsa) {
+  FILE* pubfile = fopen(pubfiles, "rt");
+  FILE* prifile = fopen(prifiles, "rt");
+  PEM_read_RSAPublicKey(pubfile, rsa, nullptr, nullptr);
+  PEM_read_RSAPrivateKey(prifile, rsa, nullptr, nullptr);
+  fclose(pubfile);
+  fclose(prifile);
+}
+
 TEST(RSACrypting, Direct) {
   // 255 chars + '\0', in practise must be not greater than (214 + '\0') due to padding
   const char* msg256 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna. Maecenas quis mi est blandit";
@@ -128,10 +137,7 @@ TEST(RSACrypting, File) {
   BIO* pub = BIO_new(BIO_s_mem());
 
   RSA* rsa = RSA_new();
-  FILE* prifile = fopen("id_900_private.pem", "rt");
-  FILE* pubfile = fopen("id_900_public.pem", "rt");
-  PEM_read_RSAPrivateKey(prifile, &rsa, nullptr, nullptr);
-  PEM_read_RSAPublicKey(pubfile, &rsa, nullptr, nullptr);
+  readKeysFromPEM("id_900_public.pem", "id_900_private.pem", &rsa);
 
   // encrypt
   char* encrypt = (char*) malloc(RSA_size(rsa));
@@ -155,6 +161,38 @@ TEST(RSACrypting, File) {
 
   remove("id_900_private.pem");
   remove("id_900_public.pem");
+}
+
+TEST(RSACrypting, FileFixedKeys) {
+  // 255 chars + '\0', in practise must be not greater than (214 + '\0') due to padding
+  const char* msg256 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna. Maecenas quis mi est blandit";
+
+  // read keys from PEM files
+  BIO* pri = BIO_new(BIO_s_mem());
+  BIO* pub = BIO_new(BIO_s_mem());
+
+  RSA* rsa = RSA_new();
+  readKeysFromPEM("../test/crypting/public.pem", "../test/crypting/private.pem", &rsa);
+
+  // encrypt
+  char* encrypt = (char*) malloc(RSA_size(rsa));
+  int encrypt_len = 0;
+  EXPECT_TRUE(Encrypt(rsa, msg256, &encrypt, encrypt_len));
+  TTY("encrypted message: %.*s", encrypt_len, encrypt);
+
+  // decrypt
+  char* decrypt = (char*) malloc(RSA_size(rsa));
+  int decrypt_len = 0;
+  EXPECT_TRUE(Decrypt(rsa, encrypt, encrypt_len, &decrypt, decrypt_len));
+  TTY("decrypted message: %.*s", decrypt_len, decrypt);
+
+  EXPECT_STREQ(msg256, decrypt);
+
+  BIO_free_all(pub);
+  BIO_free_all(pri);
+  RSA_free(rsa);
+  free(encrypt);
+  free(decrypt);
 }
 
 TEST(RSACryptingFixedKeys, Complete) {

@@ -49,11 +49,11 @@ static const char alphanum[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijkl
 
 std::string generateString(int length) {
   setRandomSeed();
-  char* s = new char[length];
+  char* s = new char[length + 1];
   for (int i = 0; i < length; ++i) {
     s[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
   }
-  s[length] = 0;
+  s[length] = '\0';
   std::string result = std::string(s);
   delete [] s;
   return result;

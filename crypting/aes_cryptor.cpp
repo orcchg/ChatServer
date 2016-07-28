@@ -36,7 +36,9 @@ namespace secure {
 
 AESCryptor::AESCryptor()
   : m_key()
-  , m_iv(new unsigned char[IV_LENGTH]) {
+  , m_iv(new unsigned char[IV_LENGTH])
+  , m_raw(nullptr)
+  , m_raw_length(0) {
   std::string random = secure::random::generateString(IV_LENGTH);
   memcpy(m_iv, random.c_str(), IV_LENGTH);
   init();
@@ -44,14 +46,18 @@ AESCryptor::AESCryptor()
 
 AESCryptor::AESCryptor(unsigned char* raw, unsigned char* iv)
   : m_key(raw)
-  , m_iv(new unsigned char[IV_LENGTH]) {
+  , m_iv(new unsigned char[IV_LENGTH])
+  , m_raw(nullptr)
+  , m_raw_length(0) {
   memcpy(m_iv, iv, IV_LENGTH);
   init();
 }
 
 AESCryptor::AESCryptor(const SymmetricKey& key, unsigned char* iv)
   : m_key(key)
-  , m_iv(new unsigned char[IV_LENGTH]) {
+  , m_iv(new unsigned char[IV_LENGTH])
+  , m_raw(nullptr)
+  , m_raw_length(0) {
   memcpy(m_iv, iv, IV_LENGTH);
   init();
 }
@@ -155,8 +161,6 @@ void AESCryptor::init() {
   ERR_load_crypto_strings();
   OpenSSL_add_all_algorithms();
   OPENSSL_config(nullptr);
-  m_raw = nullptr;
-  m_raw_length = 0;
 
   std::string key_hex = common::bin2hex(m_key.key, m_key.getLength());
   TTY("Key[%zu]: %s", m_key.getLength(), key_hex.c_str());
