@@ -270,14 +270,14 @@ TEST(RSACrypting, Envelope) {
   EVP_PKEY_free(keypair);
 }
 
-  //secure::RSACryptor cryptor;
-  //cryptor.setPublicKey("../test/crypting/public.pem");
-  //cryptor.setPrivateKey("../test/crypting/private.pem");
+TEST_F(RSACryptorTest, Complete) {
+  std::string input = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna est. Maecenas quis mi at est blandit tempor. Nullam ut quam porttitor, convallis nisl vitae, pulvinar quam. In hac habitasse platea dictumst. Aenean vehicula mauris odio, eu mattis augue tristique in. Morbi nec magna sit amet elit tempor sagittis. Suspendisse id tempor velit. Suspendisse nec velit orci. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus commodo ullamcorper convallis. Nunc congue lobortis dictum.";
 
-  //std::string input = "hello";
-  //std::string cipher = cryptor.encrypt(input);
-  //std::string output = cryptor.decrypt(cipher);
-  //EXPECT_STREQ(input.c_str(), output.c_str());
+  secure::RSACryptor cryptor;
+  std::string cipher = cryptor.encrypt(input, m_key_pair.first);
+  std::string output = cryptor.decrypt(cipher, m_key_pair.second);
+  EXPECT_STREQ(input.c_str(), output.c_str());
+}
 
 }
 

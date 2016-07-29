@@ -39,56 +39,18 @@ RSACryptor::~RSACryptor() {
 
 std::string RSACryptor::encrypt(const std::string& source, const Key& public_key) {
   TRC("encrypt(%s)", source.c_str());
-  /*if (public_key != Key::EMPTY) {
-
-  FILE* public_key_file = fopen(m_public_key_filename.c_str(), "rt");
-  if (public_key_file != nullptr) {
-    BIO* bio = BIO_new_file(m_public_key_filename.c_str(), "r");
-    RSA* rsa = PEM_read_bio_RSAPublicKey(bio, nullptr, nullptr, nullptr);
-    //RSA* rsa = RSA_new();
-    //rsa = PEM_read_RSA_PUBKEY(public_key_file, nullptr, nullptr, nullptr);
-    fclose(public_key_file);
-    if (rsa != nullptr) {
-      auto size = source.length() * 2;  // large enough
-      unsigned char* cipher = new unsigned char[size];
-      int cipher_length = RSA_public_encrypt(source.length(), (unsigned char*) source.c_str(), cipher, rsa, RSA_PKCS1_PADDING);
-      std::string encrypted = common::bin2hex(cipher, cipher_length);
-      delete [] cipher;  cipher = nullptr;
-      RSA_free(rsa);
-      TTY("RSA encrypted: %s", encrypted.c_str());
-      return encrypted;
-    }
-  }*/
+  if (public_key != Key::EMPTY) {
+    //
+  }
   WRN("Public key wasn't provided, source hasn't been encrypted");
   return source;  // not encrypted
 }
 
 std::string RSACryptor::decrypt(const std::string& source, const Key& private_key) {
   TRC("decrypt(%s)", source.c_str());
-  /*if (private_key != Key::EMPTY) {
-
-  FILE* private_key_file = fopen(m_private_key_filename.c_str(), "rt");
-  if (private_key_file != nullptr) {
-    BIO* bio = BIO_new_file(m_private_key_filename.c_str(), "r");
-    RSA* rsa = PEM_read_bio_RSAPrivateKey(bio, nullptr, nullptr, nullptr);
-    //RSA* rsa = RSA_new();
-    //rsa = PEM_read_RSAPrivateKey(private_key_file, nullptr, nullptr, nullptr);
-    fclose(private_key_file);
-    if (rsa != nullptr) {
-      auto size = source.length() * 2;  // large enough
-      size_t cipher_length = 0;
-      unsigned char* plain = new unsigned char[size];
-      unsigned char* cipher = new unsigned char[size];
-      common::hex2bin(source, cipher, cipher_length);
-      int plain_length = RSA_private_decrypt(cipher_length, cipher, plain, rsa, RSA_PKCS1_PADDING);
-      std::string decrypted((const char*) plain);
-      delete [] cipher;  cipher = nullptr;
-      delete [] plain;   plain  = nullptr;
-      RSA_free(rsa);
-      TTY("RSA decrypted: %s", decrypted.c_str());
-      return decrypted;
-    }
-  }*/
+  if (private_key != Key::EMPTY) {
+    //
+  }
   WRN("Private key wasn't provided, source hasn't been decrypted");
   return source;  // not decrypted
 }

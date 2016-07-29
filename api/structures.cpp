@@ -69,7 +69,9 @@ Key Key::fromJson(const std::string& json) {
   if (document.IsObject() &&
       document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64() &&
       document.HasMember(ITEM_KEY) && document[ITEM_KEY].IsString()) {
-    return Key(document[ITEM_ID].GetInt64(), document[ITEM_KEY].GetString());
+    ID_t id = document[ITEM_ID].GetInt64();
+    std::string key = document[ITEM_KEY].GetString();
+    return Key(id, key);
   } else {
     ERR("Key parse failed: invalid json: %s", json.c_str());
     throw ConvertException();

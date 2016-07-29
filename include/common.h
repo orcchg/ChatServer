@@ -42,6 +42,7 @@ std::string readFileToString(const std::string& filename);
 
 const std::string& preparse(const std::string& json);
 std::string preparse(const std::string& json, PreparseLeniency leniency);
+std::string restoreStrippedInMemoryPEM(const std::string& pem);
 std::string unwrapJsonObject(const char* field, const std::string& json, PreparseLeniency leniency = PreparseLeniency::DISABLED);
 
 void split(const std::string& input, char delimiter, std::vector<std::string>* output);

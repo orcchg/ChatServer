@@ -91,6 +91,38 @@ std::string preparse(const std::string& json, PreparseLeniency leniency) {
   return result;
 }
 
+std::string restoreStrippedInMemoryPEM(const std::string& pem) {
+  char* buffer = new char[pem.length() + 80];
+  memset(buffer, 0, pem.length() + 80);
+
+  size_t i1 = pem.find("RSA", 5);
+  if (i1 == std::string::npos) {
+    ERR("Input string not in PEM format!");
+    return pem;
+  }
+  size_t i2 = pem.find("KEY", i1 + 3) + 8;
+  strncpy(buffer, pem.substr(0, i2).c_str(), i2);
+  buffer[i2] = '\n';
+  ++i2;
+
+  size_t k = 1;
+  size_t i3 = pem.find("END", i2) - 5;
+  while (i2 + 64 < i3) {
+    strncpy(buffer + i2, pem.substr(i2 - k, 64).c_str(), 64);
+    i2 += 64;
+    buffer[i2] = '\n';
+    ++i2;
+    ++k;
+  }
+  std::string tail = pem.substr(i3);
+  strncpy(buffer + i2, tail.c_str(), tail.length());
+  DBG("%s", buffer);
+
+  std::string answer(buffer);
+  delete [] buffer;  buffer = nullptr;
+  return answer;
+}
+
 std::string unwrapJsonObject(const char* field, const std::string& json, PreparseLeniency leniency) {
   rapidjson::Document document;
   auto prepared_json = common::preparse(json, leniency);

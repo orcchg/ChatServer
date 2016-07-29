@@ -16,13 +16,15 @@
 #   along with this program; if not, write to the Free Software Foundation,
 #   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 
+ADD_SUBDIRECTORY( common )
 ADD_SUBDIRECTORY( crypting )
 
 SET( TARGET test_all )
+SET( TESTS common_test cryptor_test )
 SET( SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR} )
 SET( SOURCES
     ${SOURCE_DIR}/testall.cpp
 )
 ADD_EXECUTABLE( ${TARGET} ${SOURCES} )
-TARGET_LINK_LIBRARIES( ${TARGET} ${OPENSSL_LIBS} ${CRYPTOR} api common database gtest my_parser sqlite aes_cryptor_test )
+TARGET_LINK_LIBRARIES( ${TARGET} ${OPENSSL_LIBS} ${CRYPTOR} api common database gtest my_parser sqlite ${TESTS} )
 
