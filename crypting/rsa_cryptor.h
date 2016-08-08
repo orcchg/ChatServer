@@ -41,7 +41,6 @@ public:
   std::string decrypt(const std::string& source, const Key& private_key) override;
 
 private:
-  //Crypto m_crypto;
 };
 
 }
