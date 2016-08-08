@@ -44,7 +44,7 @@ protected:
   std::pair<secure::Key, secure::Key> m_key_pair;
 };
 
-ID_t RSACryptorTest::s_id = 1000;
+ID_t RSACryptorTest::s_id = 900;
 
 void RSACryptorTest::SetUp() {
   bool accessible = false;
@@ -270,7 +270,35 @@ TEST(RSACrypting, Envelope) {
   EVP_PKEY_free(keypair);
 }
 
-TEST_F(RSACryptorTest, Complete) {
+TEST(RSACrypting, InMemoryComplete) {
+  std::string public_pem = "-----BEGIN RSA PUBLIC KEY-----\nMIIBCgKCAQEA5wz5fNXVx5FMs74hJPdHrZ1NnvD8o2I5EsHwY2Tmd4FqbkfiASav\njS5pglWYu10x0GHkJj1jHxU3yGqrnHchMW0zd0FmolVoc6Grutzryt0ekteCwsB4\neP23dfZhWRvUTCi0Mr94ui+8ejmTMT/db3Yg54fXK6ctPd5DnzojKm/h4n+z5r7x\nyRMQbQb8EUpn7cBqRGzD+kGadtEuiFwRQFyMOOWyhtQ0PpsyNNJTCNJsc8w3+gOG\ni11mfOYRZjaHINkUI4yJUincacUJOLQQK2jQH4mBH0P5Wq6b/mGcxz17yZDvnwZZ\nF3k82XDYsMYLEglKIzl1QXKua/dtEm0D+QIDAQAB\n-----END RSA PUBLIC KEY-----";
+
+  std::string private_pem = "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAx92l9nphMp3WWHxmn8CVoN5Z8osCbkVwFKtSHq8Wo4QiP2zR\ns0lH5ghDhid/ZqZBXFPM8ZxIXUWloQzD1AnI6Q60jHLAT1tWForKtIdUdzY+H1TM\n967HIAQXQCW+tatrRD2ZzeqQDHhed0NkQj0/LCgVVzaHEwazRGO+kHskAwFNcJvu\nyniikepTsnrH1CwxrFVGtzMiYMHV8obFUc2P8WszDAbjlv/1CcN7YpvyRAjq3LLe\nPiGwzlXNkJP5+mOk3R5RnZDlxglS/5oNbFhD1Fu/dWX+nv0V+Cp9S6f1H22xMoy2\nI1+iK7X2JiCFNxtp8VgO1tMFPvLkq9xq5dOscwIDAQABAoIBAQCuEl60gDvdcNi5\nsodTBdGMDXx7oRSZ5AJNDjV0ofvuqGuHoAg3xVBIidP9qLLuPUjZ1+a8W+guzDUI\nQmzgZTFFwlf/pwXVV/Bvq6wGdYNcXLLYaOwnoGKvgMCbTwR9h3HiOmCVloClS8TC\nzMAqbNtzYunLTqNwL7q8ir7zaTyhG9uWHD01E5hPkC+ngP/zfYaLJ+sbolW9Qj2f\nZzxW3rmHoiKy5AkkdTDHhp5poGrXFlIVUMhr3yFYLjoDh3e0vPNuTexUkv8s8GbB\nAQbhDjsf2no6IK3f5JtEB/91K6GmfBpef+iyZUU1pG6EXx9/Keh69Iq5sKoNgIbg\nmTLsa9qhAoGBAPATr3yypGDLwJDfmBzBRCvtoME8PRNMX81fN1ZwIqzxZ1tB6F27\n6DzUuW1rDZmwLOsIFj+Quaas6NbIC0RFi8kvW40Pr86BKsrY2EQ/3Pu7O1a3S71q\nHGhAHHBxJGi/E4N/wSJVLWp6fB8DJqOdxuGW0AXC66lgSZuJ8+OguG3jAoGBANUf\nNewVgJZY5H5X8HiY6pZ0jWkyAq2U7rTYqaQuUOuJtNVeFLo6xj+Ne1+GnqWdRvUH\nGssaW7tSsgcfko7NcMdAu6pIhF+UxrDedswFeG7O0z+nFf1NCCHtYEIfDayPb+Ct\n2NWMxNowbCgx9ALOABhL1XrGuCxXYt+vTW4LIAwxAoGBAIc1rwn92pIhbsypARSA\nzJIo/PaXpJYv12zlCVeHRCA+vUUqM2JHKB7Kd7xmJHzAOiwMm+sk6Uoz69a7R40l\n1fpyz478nLkjCiTAR9z4Us77vgmypdeB4YndQacaMbVEmArhcraRXkivvyQANEzF\n2XLH61SzWOJFtm8BHPjAVd6dAoGBAJG3Qj4FwaKKasf7xn4eR57RV/KJ8AzQ3Jkn\n3m1UAZ3ZzJtqNQ/TqcLAMI9y0rv3mhFkZyxg/EFK3FBEhQdAbhC+MNHPvTpA1c0O\nffkm8F4K6aMG0eEbryjLTVpIMyg99kePdcck9V8dZoXhCa51PNlf2DmW70vZ/89i\n47UOxD2xAoGARoqgA9BMIlwfBcQ/7kBw6HbmadzV+Ob+rzoZjJiuSIQly9mv0rIQ\ngIGTFPcmPrZtb7FEGb4r101fLZwPNljIb430yaqz5fzGc3Wjv+Htjot9pSYFrlwr\n/C1/LCG0HfFj4srJSrGxPeMsohx3dhKj0Gr7o8fXi0d5ALhC/0g8Idk=\n-----END RSA PRIVATE KEY-----";
+
+  EVP_PKEY* keypair = nullptr;
+
+  /* public key */
+  // --------------------------------------------
+  {
+    BIO* bio = BIO_new(BIO_s_mem());
+    BIO_write(bio, public_pem.c_str(), public_pem.length());
+    //PEM_read_bio_PUBKEY(bio, &keypair, nullptr, nullptr);
+    //PEM_write_PUBKEY(stdout, keypair);
+    BIO_free(bio);
+  }
+
+  /* private key */
+  // --------------------------------------------
+  {
+    BIO* bio = BIO_new(BIO_s_mem());
+    BIO_write(bio, private_pem.c_str(), private_pem.length());
+    PEM_read_bio_PrivateKey(bio, &keypair, nullptr, nullptr);
+    PEM_write_PrivateKey(stdout, keypair, nullptr, nullptr, 0, 0, nullptr);
+    BIO_free(bio);
+  }
+}
+
+TEST_F(RSACryptorTest, DISABLED_Complete) {
   std::string input = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna est. Maecenas quis mi at est blandit tempor. Nullam ut quam porttitor, convallis nisl vitae, pulvinar quam. In hac habitasse platea dictumst. Aenean vehicula mauris odio, eu mattis augue tristique in. Morbi nec magna sit amet elit tempor sagittis. Suspendisse id tempor velit. Suspendisse nec velit orci. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus commodo ullamcorper convallis. Nunc congue lobortis dictum.";
 
   secure::RSACryptor cryptor;

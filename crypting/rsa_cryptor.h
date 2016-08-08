@@ -41,6 +41,11 @@ public:
   std::string decrypt(const std::string& source, const Key& private_key) override;
 
 private:
+  EVP_PKEY* m_keypair;
+  unsigned char* m_ek;
+  unsigned char* m_iv;
+  int m_ek_len;
+  int m_iv_len;
 };
 
 }
