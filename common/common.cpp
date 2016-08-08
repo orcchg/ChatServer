@@ -114,6 +114,14 @@ std::string restoreStrippedInMemoryPEM(const std::string& pem) {
     ++i2;
     ++k;
   }
+  if (i2 != i3) {
+    int rest_length = i3 - i2 + k;
+    std::string rest = pem.substr(i2 - k, rest_length);
+    strncpy(buffer + i2, rest.c_str(), rest.length());
+    i2 += rest_length;
+  }
+  buffer[i2] = '\n';
+  ++i2;
   std::string tail = pem.substr(i3);
   strncpy(buffer + i2, tail.c_str(), tail.length());
   DBG("%s", buffer);
