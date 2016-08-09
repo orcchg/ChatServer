@@ -120,6 +120,48 @@ int RSACryptor::decrypt(unsigned char* cipher, int cipher_len, unsigned char** p
   return 0;  // not decrypted
 }
 
+/* Wrapped */
+// ----------------------------------------------------------------------------
+RSACryptorWrapped::RSACryptorWrapped()
+  : m_cipher_len(0) {
+}
+
+RSACryptorWrapped::~RSACryptorWrapped() {
+}
+
+void RSACryptorWrapped::setKeypair(const std::pair<Key, Key>& keypair) {
+  m_cryptor.setKeypair(keypair);
+}
+
+std::string RSACryptorWrapped::encrypt(const std::string& source) {
+  unsigned char* cipher = new unsigned char[source.length() + EVP_MAX_IV_LENGTH];
+  m_cipher_len = m_cryptor.encrypt(source, &cipher);
+  if (m_cipher_len > 0) {
+    std::string result = common::bin2hex(cipher, m_cipher_len);
+    delete [] cipher;  cipher = nullptr;
+    return result;
+  }
+  delete [] cipher;  cipher = nullptr;
+  return source;
+}
+
+std::string RSACryptorWrapped::decrypt(const std::string& source) {
+  unsigned char* cipher = new unsigned char[m_cipher_len];
+  size_t cipher_len = 0;
+  common::hex2bin(source, cipher, cipher_len);
+  unsigned char* plain = new unsigned char[m_cipher_len + EVP_MAX_IV_LENGTH];
+  int plain_len = m_cryptor.decrypt(cipher, m_cipher_len, &plain);
+  if (plain_len > 0) {
+    std::string result = std::string((const char*) plain);
+    delete [] cipher;  cipher = nullptr;
+    delete [] plain;   plain  = nullptr;
+    return result;
+  }
+  delete [] cipher;  cipher = nullptr;
+  delete [] plain;   plain  = nullptr;
+  return source;
+}
+
 }
 
 #endif  // SECURE

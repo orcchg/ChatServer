@@ -52,6 +52,22 @@ private:
   std::pair<Key, Key> m_keypair_pem;
 };
 
+/* Wrapped */
+// ----------------------------------------------------------------------------
+class RSACryptorWrapped : public ICryptor {
+public:
+  RSACryptorWrapped();
+  virtual ~RSACryptorWrapped();
+
+  void setKeypair(const std::pair<Key, Key>& keypair);
+  std::string encrypt(const std::string& source) override;
+  std::string decrypt(const std::string& source) override;
+
+private:
+  int m_cipher_len;
+  RSACryptor m_cryptor;
+};
+
 }
 
 #endif  // SECURE
