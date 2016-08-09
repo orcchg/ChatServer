@@ -32,7 +32,8 @@
 namespace secure {
 
 RSACryptor::RSACryptor()
-  : m_keypair(EVP_PKEY_new())
+  : m_rsa(RSA_new())
+  , m_keypair(EVP_PKEY_new())
   , m_ek(nullptr)
   , m_iv(nullptr)
   , m_ek_len(0)
@@ -40,7 +41,8 @@ RSACryptor::RSACryptor()
 }
 
 RSACryptor::~RSACryptor() {
-  EVP_PKEY_free(m_keypair);  m_keypair = nullptr;
+  //RSA_free(m_rsa);  m_rsa = nullptr;
+  //EVP_PKEY_free(m_keypair);  m_keypair = nullptr;
   delete [] m_ek;  m_ek = nullptr;
   delete [] m_iv;  m_iv = nullptr;
 }
@@ -54,8 +56,8 @@ std::string RSACryptor::encrypt(const std::string& source, const Key& public_key
     DBG("%s", public_key.getKey().c_str());
     BIO* bio = BIO_new(BIO_s_mem());
     BIO_write(bio, public_key.getKey().c_str(), public_key.getKey().length());
-    PEM_read_bio_PUBKEY(bio, &m_keypair, nullptr, nullptr);
-    PEM_write_PUBKEY(stdout, m_keypair);
+    PEM_read_bio_RSAPublicKey(bio, &m_rsa, nullptr, nullptr);
+    EVP_PKEY_set1_RSA(m_keypair, m_rsa);  // EVP_PKEY_assign_RSA(m_keypair, m_rsa);
     BIO_free(bio);
 
     // encrypt
@@ -90,8 +92,8 @@ std::string RSACryptor::decrypt(const std::string& source, const Key& private_ke
     DBG("%s", private_key.getKey().c_str());
     BIO* bio = BIO_new(BIO_s_mem());
     BIO_write(bio, private_key.getKey().c_str(), private_key.getKey().length());
-    PEM_read_bio_PrivateKey(bio, &m_keypair, nullptr, nullptr);
-    PEM_write_PrivateKey(stdout, m_keypair, nullptr, nullptr, 0, 0, nullptr);
+    PEM_read_bio_RSAPrivateKey(bio, &m_rsa, nullptr, nullptr);
+    EVP_PKEY_set1_RSA(m_keypair, m_rsa);  // EVP_PKEY_assign_RSA(m_keypair, m_rsa);
     BIO_free(bio);
 
     // decrypt
