@@ -37,8 +37,9 @@ public:
   RSACryptor();
   virtual ~RSACryptor();
 
-  std::string encrypt(const std::string& source, const Key& public_key) override;
-  std::string decrypt(const std::string& source, const Key& private_key) override;
+  void setKeypair(const std::pair<Key, Key>& keypair) override;
+  int encrypt(const std::string& source, unsigned char** cipher) override;
+  int decrypt(unsigned char* cipher, int cipher_len, unsigned char** plain) override;
 
 private:
   RSA* m_rsa;
@@ -47,6 +48,8 @@ private:
   unsigned char* m_iv;
   int m_ek_len;
   int m_iv_len;
+
+  std::pair<Key, Key> m_keypair_pem;
 };
 
 }
