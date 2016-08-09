@@ -103,6 +103,58 @@ static void readKeysFromPEM(const char* pubfiles, const char* prifiles, RSA** rs
   fclose(prifile);
 }
 
+static int EncryptEVP(
+    const char* msg256,
+    int msg256_len,
+    EVP_PKEY* keypair,
+    unsigned char** ek,
+    int* ek_len,
+    unsigned char** iv,
+    int* iv_len,
+    unsigned char** cipher) {
+  *iv_len = EVP_MAX_IV_LENGTH;
+  int block_len = 0;
+  int cipher_len = 0;
+
+  EVP_CIPHER_CTX* rsa_enc_ctx = EVP_CIPHER_CTX_new();
+  EVP_SealInit(rsa_enc_ctx, EVP_aes_256_cbc(), ek, (int*) ek_len, *iv, &keypair, 1);
+  EVP_SealUpdate(rsa_enc_ctx, *cipher, (int*) &block_len, (unsigned char*) msg256, msg256_len);
+  cipher_len += block_len;
+  EVP_SealFinal(rsa_enc_ctx, *cipher + cipher_len, (int*) &block_len);
+  cipher_len += block_len;
+  EVP_CIPHER_CTX_free(rsa_enc_ctx);
+  INF("RSA Cipher length: %i", cipher_len);
+  TTY("RSA Cipher[%i]: %.*s", cipher_len, cipher_len, *cipher);
+  return cipher_len;
+}
+
+static int DecryptEVP(
+    unsigned char** plain,
+    EVP_PKEY* keypair,
+    unsigned char* ek,
+    int ek_len,
+    unsigned char* iv,
+    int iv_len,
+    unsigned char* cipher,
+    int cipher_len) {
+  int block_len = 0;
+  int plain_len = 0;
+
+  EVP_CIPHER_CTX* rsa_dec_ctx = EVP_CIPHER_CTX_new();
+  EVP_OpenInit(rsa_dec_ctx, EVP_aes_256_cbc(), ek, ek_len, iv, keypair);
+  EVP_OpenUpdate(rsa_dec_ctx, *plain, (int*) &block_len, cipher, cipher_len);
+  plain_len += block_len;
+  EVP_OpenFinal(rsa_dec_ctx, *plain + plain_len, (int*) &block_len);
+  plain_len += block_len;
+  EVP_CIPHER_CTX_free(rsa_dec_ctx);
+  INF("RSA Plain length: %i", plain_len);
+  TTY("RSA Plain[%i]: %.*s", plain_len, plain_len, *plain);
+  (*plain)[plain_len] = '\0';
+  return plain_len;
+}
+
+/* Tests */
+// ----------------------------------------------------------------------------
 TEST(RSACrypting, Direct) {
   // 255 chars + '\0', in practise must be not greater than (214 + '\0') due to padding
   const char* msg256 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna. Maecenas quis mi est blandit";
@@ -221,41 +273,18 @@ TEST(RSACrypting, Envelope) {
    * RSA: encrypt with public key
    */
   int pubkey_len = EVP_PKEY_size(keypair);
+  int ek_len = 0, iv_len = 0;
   unsigned char* ek = new unsigned char[pubkey_len];
   unsigned char* iv = new unsigned char[EVP_MAX_IV_LENGTH];
   unsigned char* cipher = new unsigned char[msg256_len + EVP_MAX_IV_LENGTH];
-  int ek_len = 0, iv_len = EVP_MAX_IV_LENGTH;
-  int block_len = 0;
-  int cipher_len = 0;
-
-  EVP_CIPHER_CTX* rsa_enc_ctx = EVP_CIPHER_CTX_new();
-  EVP_SealInit(rsa_enc_ctx, EVP_aes_256_cbc(), &ek, (int*) &ek_len, iv, &keypair, 1);
-  EVP_SealUpdate(rsa_enc_ctx, cipher, (int*) &block_len, (unsigned char*) msg256, msg256_len);
-  cipher_len += block_len;
-  EVP_SealFinal(rsa_enc_ctx, cipher + cipher_len, (int*) &block_len);
-  cipher_len += block_len;
-  EVP_CIPHER_CTX_free(rsa_enc_ctx);
-  INF("RSA Cipher length: %i", cipher_len);
-  TTY("RSA Cipher[%i]: %.*s", cipher_len, cipher_len, cipher);
+  int cipher_len = EncryptEVP(msg256, msg256_len, keypair, &ek, &ek_len, &iv, &iv_len, &cipher);
 
   // ============================================
   /*
    * RSA: decrypt with private key
    */
   unsigned char* plain = new unsigned char[cipher_len + iv_len];
-  int block_len_x = 0;
-  int plain_len = 0;
-
-  EVP_CIPHER_CTX* rsa_dec_ctx = EVP_CIPHER_CTX_new();
-  EVP_OpenInit(rsa_dec_ctx, EVP_aes_256_cbc(), ek, ek_len, iv, keypair);
-  EVP_OpenUpdate(rsa_dec_ctx, plain, (int*) &block_len_x, cipher, cipher_len);
-  plain_len += block_len_x;
-  EVP_OpenFinal(rsa_dec_ctx, plain + plain_len, (int*) &block_len_x);
-  plain_len += block_len_x;
-  EVP_CIPHER_CTX_free(rsa_dec_ctx);
-  INF("RSA Plain length: %i", plain_len);
-  TTY("RSA Plain[%i]: %.*s", plain_len, plain_len, plain);
-  plain[plain_len] = '\0';
+  int plain_len = DecryptEVP(&plain, keypair, ek, ek_len, iv, iv_len, cipher, cipher_len);
   EXPECT_STREQ(msg256, (const char*) plain);
 
   // ============================================
@@ -270,7 +299,7 @@ TEST(RSACrypting, Envelope) {
   EVP_PKEY_free(keypair);
 }
 
-TEST(RSACrypting, InMemoryComplete) {
+TEST(RSACrypting, DISABLED_InMemoryComplete) {
   std::string public_pem = "-----BEGIN RSA PUBLIC KEY-----\nMIIBCgKCAQEA5wz5fNXVx5FMs74hJPdHrZ1NnvD8o2I5EsHwY2Tmd4FqbkfiASav\njS5pglWYu10x0GHkJj1jHxU3yGqrnHchMW0zd0FmolVoc6Grutzryt0ekteCwsB4\neP23dfZhWRvUTCi0Mr94ui+8ejmTMT/db3Yg54fXK6ctPd5DnzojKm/h4n+z5r7x\nyRMQbQb8EUpn7cBqRGzD+kGadtEuiFwRQFyMOOWyhtQ0PpsyNNJTCNJsc8w3+gOG\ni11mfOYRZjaHINkUI4yJUincacUJOLQQK2jQH4mBH0P5Wq6b/mGcxz17yZDvnwZZ\nF3k82XDYsMYLEglKIzl1QXKua/dtEm0D+QIDAQAB\n-----END RSA PUBLIC KEY-----";
 
   std::string private_pem = "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAx92l9nphMp3WWHxmn8CVoN5Z8osCbkVwFKtSHq8Wo4QiP2zR\ns0lH5ghDhid/ZqZBXFPM8ZxIXUWloQzD1AnI6Q60jHLAT1tWForKtIdUdzY+H1TM\n967HIAQXQCW+tatrRD2ZzeqQDHhed0NkQj0/LCgVVzaHEwazRGO+kHskAwFNcJvu\nyniikepTsnrH1CwxrFVGtzMiYMHV8obFUc2P8WszDAbjlv/1CcN7YpvyRAjq3LLe\nPiGwzlXNkJP5+mOk3R5RnZDlxglS/5oNbFhD1Fu/dWX+nv0V+Cp9S6f1H22xMoy2\nI1+iK7X2JiCFNxtp8VgO1tMFPvLkq9xq5dOscwIDAQABAoIBAQCuEl60gDvdcNi5\nsodTBdGMDXx7oRSZ5AJNDjV0ofvuqGuHoAg3xVBIidP9qLLuPUjZ1+a8W+guzDUI\nQmzgZTFFwlf/pwXVV/Bvq6wGdYNcXLLYaOwnoGKvgMCbTwR9h3HiOmCVloClS8TC\nzMAqbNtzYunLTqNwL7q8ir7zaTyhG9uWHD01E5hPkC+ngP/zfYaLJ+sbolW9Qj2f\nZzxW3rmHoiKy5AkkdTDHhp5poGrXFlIVUMhr3yFYLjoDh3e0vPNuTexUkv8s8GbB\nAQbhDjsf2no6IK3f5JtEB/91K6GmfBpef+iyZUU1pG6EXx9/Keh69Iq5sKoNgIbg\nmTLsa9qhAoGBAPATr3yypGDLwJDfmBzBRCvtoME8PRNMX81fN1ZwIqzxZ1tB6F27\n6DzUuW1rDZmwLOsIFj+Quaas6NbIC0RFi8kvW40Pr86BKsrY2EQ/3Pu7O1a3S71q\nHGhAHHBxJGi/E4N/wSJVLWp6fB8DJqOdxuGW0AXC66lgSZuJ8+OguG3jAoGBANUf\nNewVgJZY5H5X8HiY6pZ0jWkyAq2U7rTYqaQuUOuJtNVeFLo6xj+Ne1+GnqWdRvUH\nGssaW7tSsgcfko7NcMdAu6pIhF+UxrDedswFeG7O0z+nFf1NCCHtYEIfDayPb+Ct\n2NWMxNowbCgx9ALOABhL1XrGuCxXYt+vTW4LIAwxAoGBAIc1rwn92pIhbsypARSA\nzJIo/PaXpJYv12zlCVeHRCA+vUUqM2JHKB7Kd7xmJHzAOiwMm+sk6Uoz69a7R40l\n1fpyz478nLkjCiTAR9z4Us77vgmypdeB4YndQacaMbVEmArhcraRXkivvyQANEzF\n2XLH61SzWOJFtm8BHPjAVd6dAoGBAJG3Qj4FwaKKasf7xn4eR57RV/KJ8AzQ3Jkn\n3m1UAZ3ZzJtqNQ/TqcLAMI9y0rv3mhFkZyxg/EFK3FBEhQdAbhC+MNHPvTpA1c0O\nffkm8F4K6aMG0eEbryjLTVpIMyg99kePdcck9V8dZoXhCa51PNlf2DmW70vZ/89i\n47UOxD2xAoGARoqgA9BMIlwfBcQ/7kBw6HbmadzV+Ob+rzoZjJiuSIQly9mv0rIQ\ngIGTFPcmPrZtb7FEGb4r101fLZwPNljIb430yaqz5fzGc3Wjv+Htjot9pSYFrlwr\n/C1/LCG0HfFj4srJSrGxPeMsohx3dhKj0Gr7o8fXi0d5ALhC/0g8Idk=\n-----END RSA PRIVATE KEY-----";
@@ -280,11 +309,28 @@ TEST(RSACrypting, InMemoryComplete) {
   /* public key */
   // --------------------------------------------
   {
+    size_t length = public_pem.length();
+    char* buffer = new char[length];
+    memset(buffer, 0, length);
+
     BIO* bio = BIO_new(BIO_s_mem());
-    BIO_write(bio, public_pem.c_str(), public_pem.length());
-    //PEM_read_bio_PUBKEY(bio, &keypair, nullptr, nullptr);
-    //PEM_write_PUBKEY(stdout, keypair);
+    BIO* o_bio = BIO_new(BIO_s_mem());
+    BIO_write(bio, public_pem.c_str(), length);
+    BIO_read(bio, buffer, length);
+    DBG("%s", buffer);
+
+    PEM_read_bio_PUBKEY(bio, &keypair, nullptr, nullptr);
+    PEM_write_bio_PUBKEY(o_bio, keypair);
+    int o_length = EVP_PKEY_size(keypair);
+    char* o_buffer = new char[o_length];
+    memset(o_buffer, 0, o_length);
+    BIO_read(o_bio, buffer, o_length);
+    TRC("%s", o_buffer);
+
     BIO_free(bio);
+    BIO_free(o_bio);
+    delete [] buffer;  buffer = nullptr;
+    delete [] o_buffer;  o_buffer = nullptr;
   }
 
   /* private key */
@@ -292,10 +338,61 @@ TEST(RSACrypting, InMemoryComplete) {
   {
     BIO* bio = BIO_new(BIO_s_mem());
     BIO_write(bio, private_pem.c_str(), private_pem.length());
-    PEM_read_bio_PrivateKey(bio, &keypair, nullptr, nullptr);
-    PEM_write_PrivateKey(stdout, keypair, nullptr, nullptr, 0, 0, nullptr);
+
+    //PEM_read_bio_PrivateKey(bio, &keypair, nullptr, nullptr);
+    //PEM_write_PrivateKey(stdout, keypair, nullptr, nullptr, 0, 0, nullptr);
+
     BIO_free(bio);
   }
+}
+
+TEST(RSACrypting, EnvelopeFile) {
+  // message of any length is possible for EVP
+  const char* msg256 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna est. Maecenas quis mi at est blandit tempor. Nullam ut quam porttitor, convallis nisl vitae, pulvinar quam. In hac habitasse platea dictumst. Aenean vehicula mauris odio, eu mattis augue tristique in. Morbi nec magna sit amet elit tempor sagittis. Suspendisse id tempor velit. Suspendisse nec velit orci. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus commodo ullamcorper convallis. Nunc congue lobortis dictum.";
+  int msg256_len = strlen(msg256);
+
+  // ============================================
+  /*
+   * RSA: read key pair
+   */
+  RSA* rsa = RSA_new();
+  readKeysFromPEM("../test/data/public.pem", "../test/data/private.pem", &rsa);
+
+  EVP_PKEY* keypair = EVP_PKEY_new();
+  EVP_PKEY_assign_RSA(keypair, rsa);
+
+  PEM_write_PrivateKey(stdout, keypair, nullptr, nullptr, 0, 0, nullptr);
+  PEM_write_PUBKEY(stdout, keypair);
+
+  // ============================================
+  /*
+   * RSA: encrypt with public key
+   */
+  int pubkey_len = EVP_PKEY_size(keypair);
+  int ek_len = 0, iv_len = 0;
+  unsigned char* ek = new unsigned char[pubkey_len];
+  unsigned char* iv = new unsigned char[EVP_MAX_IV_LENGTH];
+  unsigned char* cipher = new unsigned char[msg256_len + EVP_MAX_IV_LENGTH];
+  int cipher_len = EncryptEVP(msg256, msg256_len, keypair, &ek, &ek_len, &iv, &iv_len, &cipher);
+
+  // ============================================
+  /*
+   * RSA: decrypt with private key
+   */
+  unsigned char* plain = new unsigned char[cipher_len + iv_len];
+  int plain_len = DecryptEVP(&plain, keypair, ek, ek_len, iv, iv_len, cipher, cipher_len);
+  EXPECT_STREQ(msg256, (const char*) plain);
+
+  // ============================================
+  /*
+   * free
+   */
+  delete [] ek;  ek = nullptr;
+  delete [] iv;  iv = nullptr;
+  delete [] cipher;  cipher = nullptr;
+  delete [] plain;  plain = nullptr;
+
+  EVP_PKEY_free(keypair);
 }
 
 TEST_F(RSACryptorTest, DISABLED_Complete) {
