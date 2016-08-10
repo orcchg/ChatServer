@@ -422,7 +422,7 @@ TEST_F(RSACryptorTest, FixedKeys) {
 
   unsigned char* cipher = new unsigned char[input.length() + EVP_MAX_IV_LENGTH];
 
-  secure::RSACryptor cryptor;
+  secure::RSACryptorRaw cryptor;
   cryptor.setKeypair(keypair);
   int cipher_len = cryptor.encrypt(input, &cipher);
 
@@ -437,12 +437,12 @@ TEST_F(RSACryptorTest, FixedKeys) {
   delete [] plain;   plain  = nullptr;
 }
 
-TEST_F(RSACryptorTest, Complete) {
+TEST_F(RSACryptorTest, CompleteRaw) {
   std::string input = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna est. Maecenas quis mi at est blandit tempor. Nullam ut quam porttitor, convallis nisl vitae, pulvinar quam. In hac habitasse platea dictumst. Aenean vehicula mauris odio, eu mattis augue tristique in. Morbi nec magna sit amet elit tempor sagittis. Suspendisse id tempor velit. Suspendisse nec velit orci. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus commodo ullamcorper convallis. Nunc congue lobortis dictum.";
 
   unsigned char* cipher = new unsigned char[input.length() + EVP_MAX_IV_LENGTH];
 
-  secure::RSACryptor cryptor;
+  secure::RSACryptorRaw cryptor;
   cryptor.setKeypair(m_key_pair);
   int cipher_len = cryptor.encrypt(input, &cipher);
 
@@ -465,6 +465,16 @@ TEST_F(RSACryptorTest, CompleteWrapped) {
   std::string cipher = cryptor.encrypt(input);
   std::string output = cryptor.decrypt(cipher);
   EXPECT_STREQ(input.c_str(), output.c_str());
+}
+
+TEST_F(RSACryptorTest, Complete) {
+  std::string input = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna est. Maecenas quis mi at est blandit tempor. Nullam ut quam porttitor, convallis nisl vitae, pulvinar quam. In hac habitasse platea dictumst. Aenean vehicula mauris odio, eu mattis augue tristique in. Morbi nec magna sit amet elit tempor sagittis. Suspendisse id tempor velit. Suspendisse nec velit orci. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus commodo ullamcorper convallis. Nunc congue lobortis dictum.";
+
+  secure::RSACryptor cryptor;
+  std::string cipher = cryptor.encrypt(input, m_key_pair.first);
+  std::string output = cryptor.decrypt(cipher, m_key_pair.second);
+  EXPECT_STREQ(input.c_str(), output.c_str());
+  cryptor.recycle();
 }
 
 }

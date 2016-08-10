@@ -40,9 +40,8 @@ class IAsymmetricCryptor {
 public:
   virtual ~IAsymmetricCryptor() {}
 
-  virtual void setKeypair(const std::pair<Key, Key>& keypair) = 0;
-  virtual int encrypt(const std::string& source, unsigned char** cipher) = 0;
-  virtual int decrypt(unsigned char* cipher, int cipher_len, unsigned char** plain) = 0;
+  virtual std::string encrypt(const std::string& source, const secure::Key& public_key) = 0;
+  virtual std::string decrypt(const std::string& source, const secure::Key& private_key) = 0;
 };
 
 }

@@ -30,18 +30,21 @@
 // @see https://shanetully.com/2012/06/openssl-rsa-aes-and-c/
 // @see https://shanetully.com/2012/04/simple-public-key-encryption-with-rsa-and-openssl/
 
+/**
+ * @note:  cipher input string ('source') must be hex-encoded
+ */
 namespace secure {
 
-class RSACryptor : public IAsymmetricCryptor {
+class RSACryptorRaw {
 public:
-  RSACryptor();
-  virtual ~RSACryptor();
+  RSACryptorRaw();
+  virtual ~RSACryptorRaw();
 
-  void setKeypair(const std::pair<Key, Key>& keypair) override;
-  int encrypt(const std::string& source, unsigned char** cipher) override;
-  int decrypt(unsigned char* cipher, int cipher_len, unsigned char** plain) override;
+  void setKeypair(const std::pair<Key, Key>& keypair);
+  int encrypt(const std::string& source, unsigned char** cipher);
+  int decrypt(unsigned char* cipher, int cipher_len, unsigned char** plain);
 
-private:
+protected:
   RSA* m_rsa;
   EVP_PKEY* m_keypair;
   unsigned char* m_ek;
@@ -50,6 +53,9 @@ private:
   int m_iv_len;
 
   std::pair<Key, Key> m_keypair_pem;
+
+  int doEncrypt(const std::string& source, unsigned char** cipher);
+  int doDecrypt(unsigned char* cipher, int cipher_len, unsigned char** plain);
 };
 
 /* Wrapped */
@@ -65,7 +71,24 @@ public:
 
 private:
   int m_cipher_len;
-  RSACryptor m_cryptor;
+  RSACryptorRaw m_cryptor;
+};
+
+// ----------------------------------------------
+class RSACryptor : public IAsymmetricCryptor, private RSACryptorRaw {
+public:
+  RSACryptor();
+  virtual ~RSACryptor();
+
+  std::string encrypt(const std::string& source, const secure::Key& public_key) override;
+  std::string decrypt(const std::string& source, const secure::Key& private_key) override;
+
+  void recycle() {
+    RSA_free(m_rsa);
+  }
+
+private:
+  int m_cipher_len;
 };
 
 }
