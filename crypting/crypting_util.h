@@ -47,7 +47,7 @@ public:
   }
 
   virtual ~AsymmetricCryptorSingleton() {
-    m_cryptor.recycle();
+    //m_cryptor.recycle();
   }
 
   inline RSACryptor& getCryptor() { return m_cryptor; }

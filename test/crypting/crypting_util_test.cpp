@@ -70,6 +70,7 @@ void CryptingUtilTest::TearDown() {
 // ----------------------------------------------------------------------------
 TEST_F(CryptingUtilTest, Message) {
   Message init_message = m_message;  // copy
+  DBG("Message: %s", m_message.getMessage().c_str());
   m_message.encrypt(m_key_pair.first);
   m_message.decrypt(m_key_pair.second);
   EXPECT_EQ(init_message, m_message);

@@ -52,6 +52,29 @@ Message generateMessage(ID_t id);
 std::string bin2hex(unsigned char* src, size_t size);
 void hex2bin(const std::string& source, unsigned char* target, size_t& target_length);
 
+/* Dictionary */
+// ----------------------------------------------------------------------------
+class DictionarySingleton {
+public:
+  static DictionarySingleton& getInstance() {
+    static DictionarySingleton instance;
+    return instance;
+  }
+
+  std::string getMessage(size_t size) const;
+
+private:
+  std::vector<std::string> m_words;
+
+  DictionarySingleton();
+
+public:
+  DictionarySingleton(const DictionarySingleton& obj) = delete;
+  DictionarySingleton(DictionarySingleton&& rval_obj) = delete;
+  DictionarySingleton& operator = (const DictionarySingleton& rhs) = delete;
+  DictionarySingleton& operator = (DictionarySingleton&& rval_obj) = delete;
+};
+
 }
 
 #endif  // CHAT_SERVER_COMMON__H__
