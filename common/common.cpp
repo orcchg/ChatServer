@@ -162,15 +162,6 @@ void split(const std::string& input, char delimiter, std::vector<std::string>* o
   }
 }
 
-Message generateMessage(ID_t id) {
-  size_t size = rand() % 500 + 1;
-  std::string message = DictionarySingleton::getInstance().getMessage(size);
-  return Message::Builder(id).setLogin("login").setEmail("email@ya.ru").setChannel(0)
-      .setDestId(0).setTimestamp(1000000000).setSize(size)
-      .setEncrypted(false).setMessage(message)
-      .build();
-}
-
 // ----------------------------------------------------------------------------
 static int char2int(char input) {
   if (input >= '0' && input <= '9') {
@@ -212,9 +203,10 @@ void hex2bin(const std::string& source, unsigned char* target, size_t& target_le
 
 /* Dictionary */
 // ----------------------------------------------------------------------------
-DictionarySingleton::DictionarySingleton() {
-  std::string text = "Lorem ipsum dolor sit amet consectetur adipiscing elit Nulla mollis elit ac tincidunt scelerisque Vivamus scelerisque sem velit Fusce eget felis massa Cras eget arcu nec magna iaculis tempus nec et magna Interdum et malesuada fames ac ante ipsum primis in faucibus Integer eleifend lacus mauris eget dapibus lacus porttitor ut Donec sit amet faucibus mauris ac condimentum nisl Vestibulum consequat quis nisl eu faucibus Suspendisse tempor turpis vel magna mollis ut ultrices augue ultrices Etiam eu leo in velit pulvinar faucibus Ut ut fringilla justo Maecenas vel dictum mi Vivamus elementum sollicitudin rutrum Pellentesque eros eros tristique posuere consequat et facilisis at nulla.Suspendisse potenti Nunc odio sapien malesuada non ultrices vitae tempor a ex Vivamus sodales est dolor et congue nunc accumsan ut Mauris arcu nisi scelerisque eget volutpat eleifend porta id nisl Curabitur quam magna ullamcorper ut hendrerit vel aliquet nec nulla Nullam vitae orci porta tellus viverra rutrum eget quis lorem Maecenas facilisis laoreet lacus ac semper libero ullamcorper nec Nullam vestibulum felis in metus ullamcorper tempus Nam odio dui imperdiet id nisi eget porttitor lacinia dolor Fusce mattis ligula ac leo maximus porta Nulla vitae urna nisl Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas Sed ut lacus ultrices porta magna quis posuere elit Mauris sollicitudin metus in vehicula mattis Maecenas a massa vel est interdum tempus eu et magna Quisque ultricies tincidunt turpis at elementum Pellentesque suscipit mi id tortor dictum eget congue velit pellentesque Fusce non nulla sit amet ante semper pharetra Nunc at justo faucibus eleifend purus ut egestas tellus Vestibulum quis luctus nunc Duis id finibus lorem Sed dignissim ex in efficitur vestibulum Vivamus posuere consectetur quam a sodales Phasellus a ante eu nibh ullamcorper porta et quis est Aliquam in scelerisque ex Curabitur ornare ligula eros et egestas nisl accumsan ac Curabitur non efficitur erat a dapibus ipsum Phasellus tristique tortor sit amet lacus faucibus sed elementum orci vulputate Nunc nec urna justo Aliquam dictum nulla varius euismod sapien sed placerat ex Integer vitae porta est Sed sit amet sem massa Duis faucibus nulla vitae efficitur convallis mauris risus dapibus arcu a rutrum purus odio faucibus arcu Donec suscipit leo ac vehicula lobortis nisl lacus rutrum justo id sodales nibh dolor tempor ipsum Ut quis dignissim justo sed pulvinar risus Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae Aenean ut neque ut ligula iaculis pellentesque eu sed risus Sed facilisis erat vitae libero faucibus ullamcorper Nam ut ex ullamcorper iaculis tortor at scelerisque erat Aliquam dictum lorem a viverra ultrices Nullam ut faucibus ante vel placerat odio Etiam efficitur magna at dui tincidunt non mollis tellus pulvinar Suspendisse sed diam sed massa mollis ornare eu eget nibh Nulla nisi leo congue quis purus vel pulvinar porta ex In auctor turpis a velit facilisis faucibus Sed a erat magna Aliquam faucibus tristique metus ac sollicitudin Suspendisse tempus mauris dapibus diam luctus at aliquet est porttitor Donec consectetur libero felis vel sagittis \n";
+const char* text = "Lorem ipsum dolor sit amet consectetur adipiscing elit Nulla mollis elit ac tincidunt scelerisque Vivamus scelerisque sem velit Fusce eget felis massa Cras eget arcu nec magna iaculis tempus nec et magna Interdum et malesuada fames ac ante ipsum primis in faucibus Integer eleifend lacus mauris eget dapibus lacus porttitor ut Donec sit amet faucibus mauris ac condimentum nisl Vestibulum consequat quis nisl eu faucibus Suspendisse tempor turpis vel magna mollis ut ultrices augue ultrices Etiam eu leo in velit pulvinar faucibus Ut ut fringilla justo Maecenas vel dictum mi Vivamus elementum sollicitudin rutrum Pellentesque eros eros tristique posuere consequat et facilisis at nulla.Suspendisse potenti Nunc odio sapien malesuada non ultrices vitae tempor a ex Vivamus sodales est dolor et congue nunc accumsan ut Mauris arcu nisi scelerisque eget volutpat eleifend porta id nisl Curabitur quam magna ullamcorper ut hendrerit vel aliquet nec nulla Nullam vitae orci porta tellus viverra rutrum eget quis lorem Maecenas facilisis laoreet lacus ac semper libero ullamcorper nec Nullam vestibulum felis in metus ullamcorper tempus Nam odio dui imperdiet id nisi eget porttitor lacinia dolor Fusce mattis ligula ac leo maximus porta Nulla vitae urna nisl Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas Sed ut lacus ultrices porta magna quis posuere elit Mauris sollicitudin metus in vehicula mattis Maecenas a massa vel est interdum tempus eu et magna Quisque ultricies tincidunt turpis at elementum Pellentesque suscipit mi id tortor dictum eget congue velit pellentesque Fusce non nulla sit amet ante semper pharetra Nunc at justo faucibus eleifend purus ut egestas tellus Vestibulum quis luctus nunc Duis id finibus lorem Sed dignissim ex in efficitur vestibulum Vivamus posuere consectetur quam a sodales Phasellus a ante eu nibh ullamcorper porta et quis est Aliquam in scelerisque ex Curabitur ornare ligula eros et egestas nisl accumsan ac Curabitur non efficitur erat a dapibus ipsum Phasellus tristique tortor sit amet lacus faucibus sed elementum orci vulputate Nunc nec urna justo Aliquam dictum nulla varius euismod sapien sed placerat ex Integer vitae porta est Sed sit amet sem massa Duis faucibus nulla vitae efficitur convallis mauris risus dapibus arcu a rutrum purus odio faucibus arcu Donec suscipit leo ac vehicula lobortis nisl lacus rutrum justo id sodales nibh dolor tempor ipsum Ut quis dignissim justo sed pulvinar risus Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae Aenean ut neque ut ligula iaculis pellentesque eu sed risus Sed facilisis erat vitae libero faucibus ullamcorper Nam ut ex ullamcorper iaculis tortor at scelerisque erat Aliquam dictum lorem a viverra ultrices Nullam ut faucibus ante vel placerat odio Etiam efficitur magna at dui tincidunt non mollis tellus pulvinar Suspendisse sed diam sed massa mollis ornare eu eget nibh Nulla nisi leo congue quis purus vel pulvinar porta ex In auctor turpis a velit facilisis faucibus Sed a erat magna Aliquam faucibus tristique metus ac sollicitudin Suspendisse tempus mauris dapibus diam luctus at aliquet est porttitor Donec consectetur libero felis vel sagittis \n";
 
+Dictionary::Dictionary() {
+  TRC("Dictionary ctor()");
   std::istringstream iss(text);
   std::string word;
   while (iss >> word) {
@@ -225,7 +217,7 @@ DictionarySingleton::DictionarySingleton() {
   m_words.erase(std::unique(m_words.begin(), m_words.end(), lambda), m_words.end());
 }
 
-std::string DictionarySingleton::getMessage(size_t size) const {
+std::string Dictionary::getMessage(size_t size) const {
   size_t new_size = size > m_words.size() ? m_words.size() : size;
   std::ostringstream oss;
   const char* delimiter = "";
@@ -235,6 +227,15 @@ std::string DictionarySingleton::getMessage(size_t size) const {
     delimiter = " ";
   }
   return oss.str();
+}
+
+Message generateMessage(Dictionary& dictionary, ID_t id) {
+  size_t size = rand() % 500 + 1;
+  std::string message = dictionary.getMessage(size);
+  return Message::Builder(id).setLogin("login").setEmail("email@ya.ru").setChannel(0)
+      .setDestId(0).setTimestamp(1000000000).setSize(size)
+      .setEncrypted(false).setMessage(message)
+      .build();
 }
 
 }

@@ -26,12 +26,15 @@
 #include "common.h"
 #include "crypting/crypting_util.h"
 #include "crypting/random_util.h"
+#include "crypting/rsa_cryptor.h"
 #include "logger.h"
 
 namespace test {
 
 /* Fixture */
 // ----------------------------------------------------------------------------
+static common::Dictionary s_dictionary;
+
 class CryptingUtilTest : public ::testing::Test {
 protected:
   CryptingUtilTest() { --s_id; }
@@ -52,7 +55,7 @@ void CryptingUtilTest::SetUp() {
   std::string input = secure::random::generateString(size);
   secure::random::generateKeyPair(s_id, input.c_str(), size);
   m_key_pair = secure::random::loadKeyPair(s_id, &accessible);
-  m_message = common::generateMessage(s_id);
+  m_message = common::generateMessage(s_dictionary, s_id);
 }
 
 void CryptingUtilTest::TearDown() {
@@ -71,8 +74,9 @@ void CryptingUtilTest::TearDown() {
 TEST_F(CryptingUtilTest, Message) {
   Message init_message = m_message;  // copy
   DBG("Message: %s", m_message.getMessage().c_str());
-  m_message.encrypt(m_key_pair.first);
-  m_message.decrypt(m_key_pair.second);
+  secure::RSACryptor cryptor;
+  m_message.encrypt(cryptor, m_key_pair.first);
+  m_message.decrypt(cryptor, m_key_pair.second);
   EXPECT_EQ(init_message, m_message);
 }
 

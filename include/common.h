@@ -47,33 +47,23 @@ std::string restoreStrippedInMemoryPEM(const std::string& pem);
 std::string unwrapJsonObject(const char* field, const std::string& json, PreparseLeniency leniency = PreparseLeniency::DISABLED);
 
 void split(const std::string& input, char delimiter, std::vector<std::string>* output);
-Message generateMessage(ID_t id);
 
 std::string bin2hex(unsigned char* src, size_t size);
 void hex2bin(const std::string& source, unsigned char* target, size_t& target_length);
 
 /* Dictionary */
 // ----------------------------------------------------------------------------
-class DictionarySingleton {
+class Dictionary {
 public:
-  static DictionarySingleton& getInstance() {
-    static DictionarySingleton instance;
-    return instance;
-  }
+  Dictionary();
 
   std::string getMessage(size_t size) const;
 
 private:
   std::vector<std::string> m_words;
-
-  DictionarySingleton();
-
-public:
-  DictionarySingleton(const DictionarySingleton& obj) = delete;
-  DictionarySingleton(DictionarySingleton&& rval_obj) = delete;
-  DictionarySingleton& operator = (const DictionarySingleton& rhs) = delete;
-  DictionarySingleton& operator = (DictionarySingleton&& rval_obj) = delete;
 };
+
+Message generateMessage(Dictionary& dictionary, ID_t id);
 
 }
 
