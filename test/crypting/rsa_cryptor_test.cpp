@@ -474,7 +474,6 @@ TEST_F(RSACryptorTest, Complete) {
   std::string cipher = cryptor.encrypt(input, m_key_pair.first);
   std::string output = cryptor.decrypt(cipher, m_key_pair.second);
   EXPECT_STREQ(input.c_str(), output.c_str());
-  //cryptor.recycle();
 }
 
 }

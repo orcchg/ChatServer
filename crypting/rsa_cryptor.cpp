@@ -221,6 +221,9 @@ std::string RSACryptor::decrypt(const std::string& source, const secure::Key& pr
     common::hex2bin(source, cipher, cipher_len);
     unsigned char* plain = new unsigned char[m_cipher_len + EVP_MAX_IV_LENGTH];
     int plain_len = RSACryptorRaw::doDecrypt(cipher, m_cipher_len, &plain);
+
+    RSA_free(m_rsa);
+
     if (plain_len > 0) {
       std::string result = std::string((const char*) plain);
       delete [] cipher;  cipher = nullptr;

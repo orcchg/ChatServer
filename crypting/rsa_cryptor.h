@@ -83,10 +83,6 @@ public:
   std::string encrypt(const std::string& source, const secure::Key& public_key) override;
   std::string decrypt(const std::string& source, const secure::Key& private_key) override;
 
-  void recycle() {
-    RSA_free(m_rsa);
-  }
-
 private:
   int m_cipher_len;
 };
