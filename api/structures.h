@@ -175,7 +175,9 @@ public:
     std::string m_message; 
   };
 
+  Message();
   Message(const Builder& builder);
+  Message(const Message& message);
   std::string toJson() const;
   static Message fromJson(const std::string& json);
 
@@ -188,6 +190,9 @@ public:
   inline size_t getSize() const { return m_size; }
   inline bool isEncrypted() const { return m_is_encrypted; }
   inline const std::string& getMessage() const { return m_message; }
+
+  bool operator == (const Message& rhs) const;
+  bool operator != (const Message& rhs) const;
 
 #if SECURE
   void encrypt(const secure::Key& public_key);

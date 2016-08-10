@@ -196,6 +196,9 @@ Message Message::Builder::build() {
   return Message(*this);
 }
 
+Message::Message() {
+}
+
 Message::Message(const Message::Builder& builder)
   : m_id(builder.getId())
   , m_login(builder.getLogin())
@@ -206,6 +209,18 @@ Message::Message(const Message::Builder& builder)
   , m_size(builder.getSize())
   , m_is_encrypted(builder.isEncrypted())
   , m_message(builder.getMessage()) {
+}
+
+Message::Message(const Message& message)
+  : m_id(message.getId())
+  , m_login(message.getLogin())
+  , m_email(message.getEmail())
+  , m_channel(message.getChannel())
+  , m_dest_id(message.getDestId())
+  , m_timestamp(message.getTimestamp())
+  , m_size(message.getSize())
+  , m_is_encrypted(message.isEncrypted())
+  , m_message(message.getMessage()) {
 }
 
 std::string Message::toJson() const {
@@ -258,16 +273,28 @@ Message Message::fromJson(const std::string& json) {
   }
 }
 
+bool Message::operator == (const Message& rhs) const {
+  return m_id == rhs.m_id && m_dest_id == rhs.m_dest_id &&
+    m_login == rhs.m_login && m_email == rhs.m_email &&
+    m_channel == rhs.m_channel && m_timestamp == rhs.m_timestamp &&
+    m_size == rhs.m_size && m_is_encrypted == rhs.m_is_encrypted &&
+    m_message == rhs.m_message;
+}
+
+bool Message::operator != (const Message& rhs) const {
+  return !(*this == rhs);
+}
+
 #if SECURE
 
 // openssl encrypt with public key
 void Message::encrypt(const secure::Key& public_key) {
-  m_message = secure::encryptAndPack(public_key, m_message, m_is_encrypted);
+  m_message = secure::AsymmetricCryptorSingleton::getInstance().getCryptor().encrypt(m_message, public_key);
 }
 
 // openssl decrypt with private key
 void Message::decrypt(const secure::Key& private_key) {
-  m_message = secure::unpackAndDecrypt(private_key, m_message, m_is_encrypted);
+  m_message = secure::AsymmetricCryptorSingleton::getInstance().getCryptor().decrypt(m_message, private_key);
 }
 
 #endif  // SECURE

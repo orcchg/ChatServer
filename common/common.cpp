@@ -161,6 +161,14 @@ void split(const std::string& input, char delimiter, std::vector<std::string>* o
   }
 }
 
+Message generateMessage(ID_t id) {
+  // TODO: gen
+  return Message::Builder(id).setLogin(login).setEmail(email).setChannel(channel)
+      .setDestId(dest_id).setTimestamp(timestamp).setSize(size)
+      .setEncrypted(is_encrypted).setMessage(message)
+      .build();
+}
+
 // ----------------------------------------------------------------------------
 static int char2int(char input) {
   if (input >= '0' && input <= '9') {
