@@ -288,13 +288,13 @@ bool Message::operator != (const Message& rhs) const {
 #if SECURE
 
 // openssl encrypt with public key
-void Message::encrypt(const secure::Key& public_key) {
-  m_message = secure::AsymmetricCryptorSingleton::getInstance().getCryptor().encrypt(m_message, public_key);
+void Message::encrypt(secure::IAsymmetricCryptor& cryptor, const secure::Key& public_key) {
+  m_message = cryptor.encrypt(m_message, public_key);
 }
 
 // openssl decrypt with private key
-void Message::decrypt(const secure::Key& private_key) {
-  m_message = secure::AsymmetricCryptorSingleton::getInstance().getCryptor().decrypt(m_message, private_key);
+void Message::decrypt(secure::IAsymmetricCryptor& cryptor, const secure::Key& private_key) {
+  m_message = cryptor.decrypt(m_message, private_key);
 }
 
 #endif  // SECURE

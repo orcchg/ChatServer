@@ -25,7 +25,6 @@
 #include "api/structures.h"
 
 #if SECURE
-#include "rsa_cryptor.h"
 
 #define COMPOUND_MESSAGE_DELIMITER ':'
 #define COMPOUND_MESSAGE_DELIMITER_STR ":"
@@ -36,33 +35,6 @@ namespace secure {
 
 std::string encryptAndPack(const secure::Key& public_key, const std::string& plain, bool& encrypted);
 std::string unpackAndDecrypt(const secure::Key& private_key, const std::string& chunk, bool& decrypted);
-
-// ----------------------------------------------------------------------------
-// @see http://stackoverflow.com/questions/1008019/c-singleton-design-pattern
-class AsymmetricCryptorSingleton {
-public:
-  static AsymmetricCryptorSingleton& getInstance() {
-    static AsymmetricCryptorSingleton instance;
-    return instance;
-  }
-
-  virtual ~AsymmetricCryptorSingleton() {
-    //m_cryptor.recycle();
-  }
-
-  inline RSACryptor& getCryptor() { return m_cryptor; }
-
-private:
-  RSACryptor m_cryptor;
-
-  AsymmetricCryptorSingleton() {}
-
-public:
-  AsymmetricCryptorSingleton(const AsymmetricCryptorSingleton& obj) = delete;
-  AsymmetricCryptorSingleton(AsymmetricCryptorSingleton&& rval_obj) = delete;
-  AsymmetricCryptorSingleton& operator = (const AsymmetricCryptorSingleton& rhs) = delete;
-  AsymmetricCryptorSingleton& operator = (AsymmetricCryptorSingleton&& rval_rhs) = delete;
-};
 
 }
 

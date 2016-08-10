@@ -32,6 +32,8 @@
 
 namespace secure {
 
+class IAsymmetricCryptor;
+
 /**
  * {
  *   "id":1000,
@@ -195,8 +197,8 @@ public:
   bool operator != (const Message& rhs) const;
 
 #if SECURE
-  void encrypt(const secure::Key& public_key);
-  void decrypt(const secure::Key& private_key);
+  void encrypt(secure::IAsymmetricCryptor& cryptor, const secure::Key& public_key);
+  void decrypt(secure::IAsymmetricCryptor& cryptor, const secure::Key& private_key);
 #endif  // SECURE
 
 private:

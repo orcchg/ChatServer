@@ -25,6 +25,7 @@
 #include <unordered_map>
 #include "all.h"
 #include "api/api.h"
+#include "api/icryptor.h"
 #include "api/structures.h"
 #include "client_api_impl.h"
 #include "exception.h"
@@ -63,6 +64,7 @@ protected:
   ClientApi* m_api_impl;
 #if SECURE
   secure::ICryptor* m_cryptor;
+  secure::IAsymmetricCryptor* m_asym_cryptor;
   std::pair<secure::Key, secure::Key> m_key_pair;
   std::unordered_map<ID_t, secure::Key> m_handshakes;
 #endif  // SECURE

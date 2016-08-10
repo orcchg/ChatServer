@@ -33,6 +33,7 @@
 #if SECURE
 #include "crypting/cryptor.h"
 #include "crypting/random_util.h"
+#include "crypting/rsa_cryptor.h"
 #endif  // SECURE
 
 Client::Client(const std::string& config_file)
@@ -48,6 +49,7 @@ Client::~Client() {
   delete m_api_impl;  m_api_impl = nullptr;
 #if SECURE
   delete m_cryptor;  m_cryptor = nullptr;
+  delete m_asym_cryptor;  m_asym_cryptor = nullptr;
 #endif  // SECURE
 }
 
@@ -102,6 +104,7 @@ void Client::init() {
   m_api_impl = new ClientApiImpl(m_socket, m_ip_address, m_port);
 #if SECURE
   m_cryptor = new secure::Cryptor();
+  m_asym_cryptor = new secure::RSACryptor();
 #endif  // SECURE
 }
 
@@ -613,7 +616,7 @@ void Client::startChat() {
     if (m_private_secure_chat) {
       auto it = m_handshakes.find(m_dest_id);
       if (it != m_handshakes.end()) {
-        message.encrypt(it->second);
+        message.encrypt(*m_asym_cryptor, it->second);
       } else {
         WRN("Missing public key for peer [%lli]. Fallback to send not-encrypted message to dedicated peer", m_dest_id);
         m_api_impl->privateAbort(m_id, m_dest_id);  // abort handshake if keys are missing
@@ -726,7 +729,7 @@ void Client::receiverThread() {
 
 #if SECURE
       if (message.isEncrypted()) {
-        message.decrypt(m_key_pair.second);
+        message.decrypt(*m_asym_cryptor, m_key_pair.second);
       }
 #endif  // SECURE
 
