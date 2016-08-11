@@ -44,6 +44,22 @@ public:
   int encrypt(const std::string& source, unsigned char** cipher);
   int decrypt(unsigned char* cipher, int cipher_len, unsigned char** plain);
 
+  int getEKlength() const { return m_ek_len; }
+  int getIVlength() const { return m_iv_len; }
+  void getEK(unsigned char* ek) const { memcpy(ek, m_ek, m_ek_len); }
+  void getIV(unsigned char* iv) const { memcpy(iv, m_iv, m_iv_len); }
+
+  void setEK(int ek_len, unsigned char* ek) {
+    if (m_ek != nullptr) { delete [] m_ek;  m_ek = nullptr; }
+    m_ek = new unsigned char[ek_len];
+    memcpy(m_ek, ek, ek_len);
+  }
+  void setIV(int iv_len, unsigned char* iv) {
+    if (m_iv != nullptr) { delete [] m_iv;  m_iv = nullptr; }
+    m_iv = new unsigned char[iv_len];
+    memcpy(m_iv, iv, iv_len);
+  }
+
 protected:
   RSA* m_rsa;
   EVP_PKEY* m_keypair;
@@ -80,8 +96,16 @@ public:
   RSACryptor();
   virtual ~RSACryptor();
 
-  std::string encrypt(const std::string& source, const secure::Key& public_key) override;
-  std::string decrypt(const std::string& source, const secure::Key& private_key) override;
+  std::string encrypt(const std::string& source, const secure::Key& public_key, bool& encrypted) override;
+  std::string decrypt(const std::string& source, const secure::Key& private_key, bool& decrypted) override;
+
+  int getEKlength() const override { return RSACryptorRaw::getEKlength(); }
+  int getIVlength() const override { return RSACryptorRaw::getIVlength(); }
+  void getEK(unsigned char* ek) const override { RSACryptorRaw::getEK(ek); }
+  void getIV(unsigned char* iv) const override { RSACryptorRaw::getIV(iv); }
+
+  void setEK(int ek_len, unsigned char* ek) override { RSACryptorRaw::setEK(ek_len, ek); }
+  void setIV(int iv_len, unsigned char* iv) override { RSACryptorRaw::setIV(iv_len, iv); }
 
 private:
   int m_cipher_len;

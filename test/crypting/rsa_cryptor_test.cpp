@@ -411,12 +411,38 @@ TEST(RSACrypting, EnvelopeFile) {
 
 // @see http://stackoverflow.com/questions/9406840/rsa-encrypt-decrypt
 
-TEST_F(RSACryptorTest, FixedKeys) {
+TEST_F(RSACryptorTest, FixedKeys1) {
   std::string input = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna est. Maecenas quis mi at est blandit tempor. Nullam ut quam porttitor, convallis nisl vitae, pulvinar quam. In hac habitasse platea dictumst. Aenean vehicula mauris odio, eu mattis augue tristique in. Morbi nec magna sit amet elit tempor sagittis. Suspendisse id tempor velit. Suspendisse nec velit orci. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus commodo ullamcorper convallis. Nunc congue lobortis dictum.";
 
   std::string public_pem = "-----BEGIN RSA PUBLIC KEY-----\nMIIBCgKCAQEAtaucDkZfJF65TPZ4p6PiFpG2EK+zOxG5O4KIj7WjlO5/KS5jEf+6\noqpjsb0dhlTh7BjDC9Eslb1TGuaUMA4pwX1GYYHShcpqasIXYMZM0rUryZqSB5Xe\nrh4JdTpZcIvqnwF+hNqIx0W4SkyR8C99IMOJ3TXbZdUaAP56Uqa8jNiND3/inJZD\nqEZMpZ88eu9Tb+7xWxkcLjRSOdQrmGscj0c0qQF3POXkzcy08OHYzozY12fhe40E\nOAqvyWWDQt6mZlwfXp9OQRuU+r4L9jHlNkosIYVdLKY6f+yP2kx7tJVYQ5ISSA70\no1vlO6kKXhnLMAar8ad5F5O1ZQRdJeMwPQIDAQAB\n-----END RSA PUBLIC KEY-----\n";
 
   std::string private_pem = "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAtaucDkZfJF65TPZ4p6PiFpG2EK+zOxG5O4KIj7WjlO5/KS5j\nEf+6oqpjsb0dhlTh7BjDC9Eslb1TGuaUMA4pwX1GYYHShcpqasIXYMZM0rUryZqS\nB5Xerh4JdTpZcIvqnwF+hNqIx0W4SkyR8C99IMOJ3TXbZdUaAP56Uqa8jNiND3/i\nnJZDqEZMpZ88eu9Tb+7xWxkcLjRSOdQrmGscj0c0qQF3POXkzcy08OHYzozY12fh\ne40EOAqvyWWDQt6mZlwfXp9OQRuU+r4L9jHlNkosIYVdLKY6f+yP2kx7tJVYQ5IS\nSA70o1vlO6kKXhnLMAar8ad5F5O1ZQRdJeMwPQIDAQABAoIBAQCj1+vcq/butEdm\nc/uJJbKoLC4JioyYv3lRhH5pLaYkkZw5pc5P01WdkxJqoGbaWf+PkR2HsNUHD0K+\nRipr1Lov+S3ajt0xMMcdFYNEElQCzMZ7Al6lXLMCUbCx+zfi2y10zkIuy3EEV4rH\n55rPBeVSAUh7KzF9+92B/ACSPjJaywUgIykgBDLaW8acrJenGUt/s/KwDlSDfT79\nijq2I/D2KaF4K1DYwkZ2FB0Awyb5S5R7Ku+9YBbjyj0tDQ5kiJYLsCAIWos1KTS7\ndfp3U88r+Scqy8MHN4RRr6qkFIQgvQO60K6THfqtGciNP/FzGsrR2ciSf3lOTMYc\ngnktFBmBAoGBAOej/iLDj3r+F8QoRpMbUNy3juMPIlXV9Sw6KPe4CG4nqevv5wJl\ns/5B9ffhStooSR5u4LfXYNQ9aT2XXefk1zYmQftc/Lxph2BborBkl7WwpsK3QXp+\nWdK22z7NIECMnn5tEVVFGPdass44fcRDDpmtm9L3Jblx/SV+pFL4EFPtAoGBAMjG\nXZQSUFvI3HzCQCMOPYL0s9znWIKdOfdbX1GjkFysrVq7qfzvb6ZJeUIB9pOqtvKf\nwxFincSH9ibK0yiQ9bIDoQ8MyirdX04CFJWBg9fXlVAn31vqZVZ7PGtXy1vILdrr\n43mcOyaiKsjvBKUpjV0Yivl++NuF/voYbIp9C2ORAoGAI5I7ZHtDfU+ntqe4rr5z\nHHHTr2qTizrf+3qy79eC8+eDYIfmoaecjF70tqwSIo4tLE86kwCwDeegUaT89q9d\nnSMi3sbYyNYrw9BOm2fXJD+MXDpoA7eDc6hA4tP9L+xoKmH1V3LU8qcq7iAesBTc\nGR1f4HWzhVbL2QYpldQiLcECgYAOtHimH7FDB7MecBvCdYiLzuBdjZQt/NYCB+8z\nS4eHQh5wRs5seBz1UOxQqVQl/JrpqknfPBnSCyM8NB7DGdrk7t8c+xLTkOMqE3zu\ndk3xwRhuhn0VflVtwBjsw8FhN4gkQKKohYjPi5EWpmrwrdpstx92ppYTffzu1Fse\nyYnMAQKBgCynG+Otqwiowe8DfgrOyPV7cOG59FK49j6pZACqBzXm0q3dbBID+OZA\nGr1pv0nnMrY4ITM75jYMlL7gSCyJzGwvD251o1nHfBhuDe20mBp9u5DHYe95ENaV\nQCP05gaTTfYQobvfUZo2ikMEap3bX1ZXMH1rNigIGlf+0PYk/qH0\n-----END RSA PRIVATE KEY-----\n";
+
+  auto keypair = std::make_pair<secure::Key, secure::Key>(secure::Key(800, public_pem), secure::Key(800, private_pem));
+
+  unsigned char* cipher = new unsigned char[input.length() + EVP_MAX_IV_LENGTH];
+
+  secure::RSACryptorRaw cryptor;
+  cryptor.setKeypair(keypair);
+  int cipher_len = cryptor.encrypt(input, &cipher);
+
+  unsigned char* plain = new unsigned char[cipher_len + EVP_MAX_IV_LENGTH];
+
+  int plain_len = cryptor.decrypt(cipher, cipher_len, &plain);
+  std::string output((const char*) plain);
+  EXPECT_EQ(input.length(), plain_len);
+  EXPECT_STREQ(input.c_str(), output.c_str());
+
+  delete [] cipher;  cipher = nullptr;
+  delete [] plain;   plain  = nullptr;
+}
+
+TEST_F(RSACryptorTest, FixedKeys2) {
+  std::string input = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna est. Maecenas quis mi at est blandit tempor. Nullam ut quam porttitor, convallis nisl vitae, pulvinar quam. In hac habitasse platea dictumst. Aenean vehicula mauris odio, eu mattis augue tristique in. Morbi nec magna sit amet elit tempor sagittis. Suspendisse id tempor velit. Suspendisse nec velit orci. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus commodo ullamcorper convallis. Nunc congue lobortis dictum.";
+
+  std::string public_pem = "-----BEGIN RSA PUBLIC KEY-----\nMIIBCgKCAQEAoYU2rBQsP8oXiCiIY206MMNnhGyl9X7VAXTAwfC08b8jGx5jA/iz\naKZlOJM79Y4agSm4LzjGgK3Br1ONL23qpzvR1nL5NbqCEhDNvUaUgb/rrKkPXa0t\nuEaxE17ZVQAK7XwWpLN3tvZIh8WwzjOIqVpAKBQbOs029l6IxGuag5lBl3QyzSjc\nMgI+LPGihmehaZIkmuw/+bNMQ474MvEJQ8Bhsz76oMvGm1lPIovgvKdtHZq52KI0\nJDymYCA3R42CfICw1dwJkqpklYHjKxbv7jbefsD35iIYghpKm6QiE9v6b0pnpR/2\nAaxH/6C/NUD+ptGkJjq7Zj3ISFbOzxVyqwIDAQAB\n-----END RSA PUBLIC KEY-----\n";
+
+  std::string private_pem = "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAoYU2rBQsP8oXiCiIY206MMNnhGyl9X7VAXTAwfC08b8jGx5j\nA/izaKZlOJM79Y4agSm4LzjGgK3Br1ONL23qpzvR1nL5NbqCEhDNvUaUgb/rrKkP\nXa0tuEaxE17ZVQAK7XwWpLN3tvZIh8WwzjOIqVpAKBQbOs029l6IxGuag5lBl3Qy\nzSjcMgI+LPGihmehaZIkmuw/+bNMQ474MvEJQ8Bhsz76oMvGm1lPIovgvKdtHZq5\n2KI0JDymYCA3R42CfICw1dwJkqpklYHjKxbv7jbefsD35iIYghpKm6QiE9v6b0pn\npR/2AaxH/6C/NUD+ptGkJjq7Zj3ISFbOzxVyqwIDAQABAoIBADBbdrvcKkdK1PLB\n19uUpxhUWFiwQpuWRmVyNAecbj/2Tqde2JwmyGfrcWCXzBq/WbYT7H3OzLdXziYU\nqK9rhBZfdXpz36KzXR/VghNJ30pdUEzYLK6KG6cRGxDGk+C764mgXhMfXBcd8ycb\nC80gZqj1SUH2ixR2vh7SvLW51X/SV6s/KlPa3kTt0MwqqmAw4iGqEabqPjd/UYKF\na1fjMba38Ew6zSB1I0loqPfGGb8DoLVzmSQPamEElx0c7pYfYnTa+8esw6qTtJ7n\nbboNZ/Y3wUhkxjs4yulrWfQuyWcmRN2AfIFBm82jb8USxCRm8AnFpZMLW9K/aD8u\nKe46qOECgYEAy8tQIyTOF5PZhRZET0SGa4Df0Z2bnK/RWmFT/EM/ZnWCXKy/b12Q\nDf4Ik1vNA3dgBpBEL1gVviEis3/kSnSWUJ60IQzCgqDvsBrKm3ypK2QbIhK+YGTC\nYWdmJKMZ8Z+8bRfUX2JOntePzI5X0Yl853MmOKkFUWNuUGwnz4fjaHECgYEAyuWc\netB8PuLdYPRlWXuVlaR7o5h5ZU31m2HwEZCL3pArAnPv7aYGCPp5MCbxJ5lqbEq2\n/dggqK6U6tRi92RCllcRRfFN4ZroeN8gfBlSuHnG4h0MJbUUbk+bWotWdlyQb8rp\nW1YPmeXe/DZRP+6AaKjZ3RHD9P0lGOuw/5y5utsCgYEAr/tcs0xoD6Ij9zIYQN8q\nuJCsNiXEp9SHk2Vykec8S2zz6rVeBnwkFoEkxKNEcVbXfDN+PefxtqKEhb7N06HD\n39B8OgH7wbPZ5xfrl8NZjle+uni3HyRDWrtgUAjsMWO/4fDu+oM44x/AVGMi4JW6\nX19nRQxnxDV5oEcVRbfRn3ECgYAt/WO9ttoiyvuRCXSbltauJ61axKnnm4crZESt\nRo1dsmH9WVguDu7ZRCUKFBmfdzfXOgxGd6HXelMI84FHQDOTrkKdDvgvRhShqTnM\nx1SnufqpsBnbxjLOWj8FhAXiKFMY8+53JIe+w4sKsikyi5YRowxW/rrjIioxfuMM\n3XJ/9wKBgDFV2pkz/k0P6VigmmHunEJVDM3p1pMp1ufTdFmOu754zC5SOBFJ4s+a\neRqfJr/UVBRlSQ9aBiMgFYbmTvdc2a1EMWjvSxbFBMjgKnkaFGPu+IxhwbLxh5YR\n5VY7pEd+NFlu+4DSKm7NFgI6toyQpE5J12YL51P4DV4IVCWET9QY\n-----END RSA PRIVATE KEY-----\n";
 
   auto keypair = std::make_pair<secure::Key, secure::Key>(secure::Key(800, public_pem), secure::Key(800, private_pem));
 
@@ -467,12 +493,41 @@ TEST_F(RSACryptorTest, CompleteWrapped) {
   EXPECT_STREQ(input.c_str(), output.c_str());
 }
 
+TEST(RSACrypting, FixedKeys) {
+  std::string input = "hello";
+
+  std::string public_pem = "-----BEGIN RSA PUBLIC KEY-----\nMIIBCgKCAQEAoYU2rBQsP8oXiCiIY206MMNnhGyl9X7VAXTAwfC08b8jGx5jA/iz\naKZlOJM79Y4agSm4LzjGgK3Br1ONL23qpzvR1nL5NbqCEhDNvUaUgb/rrKkPXa0t\nuEaxE17ZVQAK7XwWpLN3tvZIh8WwzjOIqVpAKBQbOs029l6IxGuag5lBl3QyzSjc\nMgI+LPGihmehaZIkmuw/+bNMQ474MvEJQ8Bhsz76oMvGm1lPIovgvKdtHZq52KI0\nJDymYCA3R42CfICw1dwJkqpklYHjKxbv7jbefsD35iIYghpKm6QiE9v6b0pnpR/2\nAaxH/6C/NUD+ptGkJjq7Zj3ISFbOzxVyqwIDAQAB\n-----END RSA PUBLIC KEY-----\n";
+
+  std::string private_pem = "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAoYU2rBQsP8oXiCiIY206MMNnhGyl9X7VAXTAwfC08b8jGx5j\nA/izaKZlOJM79Y4agSm4LzjGgK3Br1ONL23qpzvR1nL5NbqCEhDNvUaUgb/rrKkP\nXa0tuEaxE17ZVQAK7XwWpLN3tvZIh8WwzjOIqVpAKBQbOs029l6IxGuag5lBl3Qy\nzSjcMgI+LPGihmehaZIkmuw/+bNMQ474MvEJQ8Bhsz76oMvGm1lPIovgvKdtHZq5\n2KI0JDymYCA3R42CfICw1dwJkqpklYHjKxbv7jbefsD35iIYghpKm6QiE9v6b0pn\npR/2AaxH/6C/NUD+ptGkJjq7Zj3ISFbOzxVyqwIDAQABAoIBADBbdrvcKkdK1PLB\n19uUpxhUWFiwQpuWRmVyNAecbj/2Tqde2JwmyGfrcWCXzBq/WbYT7H3OzLdXziYU\nqK9rhBZfdXpz36KzXR/VghNJ30pdUEzYLK6KG6cRGxDGk+C764mgXhMfXBcd8ycb\nC80gZqj1SUH2ixR2vh7SvLW51X/SV6s/KlPa3kTt0MwqqmAw4iGqEabqPjd/UYKF\na1fjMba38Ew6zSB1I0loqPfGGb8DoLVzmSQPamEElx0c7pYfYnTa+8esw6qTtJ7n\nbboNZ/Y3wUhkxjs4yulrWfQuyWcmRN2AfIFBm82jb8USxCRm8AnFpZMLW9K/aD8u\nKe46qOECgYEAy8tQIyTOF5PZhRZET0SGa4Df0Z2bnK/RWmFT/EM/ZnWCXKy/b12Q\nDf4Ik1vNA3dgBpBEL1gVviEis3/kSnSWUJ60IQzCgqDvsBrKm3ypK2QbIhK+YGTC\nYWdmJKMZ8Z+8bRfUX2JOntePzI5X0Yl853MmOKkFUWNuUGwnz4fjaHECgYEAyuWc\netB8PuLdYPRlWXuVlaR7o5h5ZU31m2HwEZCL3pArAnPv7aYGCPp5MCbxJ5lqbEq2\n/dggqK6U6tRi92RCllcRRfFN4ZroeN8gfBlSuHnG4h0MJbUUbk+bWotWdlyQb8rp\nW1YPmeXe/DZRP+6AaKjZ3RHD9P0lGOuw/5y5utsCgYEAr/tcs0xoD6Ij9zIYQN8q\nuJCsNiXEp9SHk2Vykec8S2zz6rVeBnwkFoEkxKNEcVbXfDN+PefxtqKEhb7N06HD\n39B8OgH7wbPZ5xfrl8NZjle+uni3HyRDWrtgUAjsMWO/4fDu+oM44x/AVGMi4JW6\nX19nRQxnxDV5oEcVRbfRn3ECgYAt/WO9ttoiyvuRCXSbltauJ61axKnnm4crZESt\nRo1dsmH9WVguDu7ZRCUKFBmfdzfXOgxGd6HXelMI84FHQDOTrkKdDvgvRhShqTnM\nx1SnufqpsBnbxjLOWj8FhAXiKFMY8+53JIe+w4sKsikyi5YRowxW/rrjIioxfuMM\n3XJ/9wKBgDFV2pkz/k0P6VigmmHunEJVDM3p1pMp1ufTdFmOu754zC5SOBFJ4s+a\neRqfJr/UVBRlSQ9aBiMgFYbmTvdc2a1EMWjvSxbFBMjgKnkaFGPu+IxhwbLxh5YR\n5VY7pEd+NFlu+4DSKm7NFgI6toyQpE5J12YL51P4DV4IVCWET9QY\n-----END RSA PRIVATE KEY-----\n";
+
+  auto keypair = std::make_pair<secure::Key, secure::Key>(secure::Key(700, public_pem), secure::Key(700, private_pem));
+
+  secure::RSACryptor cryptor;
+
+  bool encrypted = false;
+  std::string cipher = cryptor.encrypt(input, keypair.first, encrypted);
+  EXPECT_TRUE(encrypted);
+
+  bool decrypted = false;
+  std::string output = cryptor.decrypt(cipher, keypair.second, decrypted);
+  EXPECT_TRUE(decrypted);
+
+  EXPECT_STREQ(input.c_str(), output.c_str());
+}
+
 TEST_F(RSACryptorTest, Complete) {
   std::string input = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna est. Maecenas quis mi at est blandit tempor. Nullam ut quam porttitor, convallis nisl vitae, pulvinar quam. In hac habitasse platea dictumst. Aenean vehicula mauris odio, eu mattis augue tristique in. Morbi nec magna sit amet elit tempor sagittis. Suspendisse id tempor velit. Suspendisse nec velit orci. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus commodo ullamcorper convallis. Nunc congue lobortis dictum.";
 
   secure::RSACryptor cryptor;
-  std::string cipher = cryptor.encrypt(input, m_key_pair.first);
-  std::string output = cryptor.decrypt(cipher, m_key_pair.second);
+
+  bool encrypted = false;
+  std::string cipher = cryptor.encrypt(input, m_key_pair.first, encrypted);
+  EXPECT_TRUE(encrypted);
+
+  bool decrypted = false;
+  std::string output = cryptor.decrypt(cipher, m_key_pair.second, decrypted);
+  EXPECT_TRUE(decrypted);
+
   EXPECT_STREQ(input.c_str(), output.c_str());
 }
 

@@ -177,8 +177,9 @@ RSACryptor::RSACryptor() {
 RSACryptor::~RSACryptor() {
 }
 
-std::string RSACryptor::encrypt(const std::string& source, const secure::Key& public_key) {
+std::string RSACryptor::encrypt(const std::string& source, const secure::Key& public_key, bool& encrypted) {
   TRC("encrypt(%s)", source.c_str());
+  encrypted = false;
   if (public_key != Key::EMPTY) {
     DBG("%s", public_key.getKey().c_str());
     BIO* bio = BIO_new(BIO_s_mem());
@@ -189,15 +190,20 @@ std::string RSACryptor::encrypt(const std::string& source, const secure::Key& pu
     EVP_PKEY_set1_RSA(m_keypair, m_rsa);
 
     int pubkey_len = EVP_PKEY_size(m_keypair);
+    if (m_ek != nullptr) { delete [] m_ek;  m_ek = nullptr; }
+    if (m_iv != nullptr) { delete [] m_iv;  m_iv = nullptr; }
     m_ek = new unsigned char[pubkey_len];
     m_iv = new unsigned char[EVP_MAX_IV_LENGTH];
 
     unsigned char* cipher = new unsigned char[source.length() + EVP_MAX_IV_LENGTH];
     m_cipher_len = RSACryptorRaw::doEncrypt(source, &cipher);
     if (m_cipher_len > 0) {
+      encrypted = true;
       std::string result = common::bin2hex(cipher, m_cipher_len);
       delete [] cipher;  cipher = nullptr;
       return result;
+    } else {
+      ERR("Failed to encrypt");
     }
     delete [] cipher;  cipher = nullptr;
   }
@@ -205,8 +211,9 @@ std::string RSACryptor::encrypt(const std::string& source, const secure::Key& pu
   return source;
 }
 
-std::string RSACryptor::decrypt(const std::string& source, const secure::Key& private_key) {
+std::string RSACryptor::decrypt(const std::string& source, const secure::Key& private_key, bool& decrypted) {
   TRC("decrypt(%s)", source.c_str());
+  decrypted = false;
   if (private_key != Key::EMPTY) {
     DBG("%s", private_key.getKey().c_str());
     BIO* bio = BIO_new(BIO_s_mem());
@@ -222,13 +229,16 @@ std::string RSACryptor::decrypt(const std::string& source, const secure::Key& pr
     unsigned char* plain = new unsigned char[m_cipher_len + EVP_MAX_IV_LENGTH];
     int plain_len = RSACryptorRaw::doDecrypt(cipher, m_cipher_len, &plain);
 
-    RSA_free(m_rsa);
+    //RSA_free(m_rsa);
 
     if (plain_len > 0) {
+      decrypted = true;
       std::string result = std::string((const char*) plain);
       delete [] cipher;  cipher = nullptr;
       delete [] plain;   plain  = nullptr;
       return result;
+    } else {
+      ERR("Failed to decrypt");
     }
     delete [] cipher;  cipher = nullptr;
     delete [] plain;   plain  = nullptr;

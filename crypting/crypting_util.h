@@ -33,8 +33,16 @@
 
 namespace secure {
 
-std::string encryptAndPack(const secure::Key& public_key, const std::string& plain, bool& encrypted);
-std::string unpackAndDecrypt(const secure::Key& private_key, const std::string& chunk, bool& decrypted);
+/* These methods do not encrypt symmetric key - it has left unimplemented */
+std::string encryptAndPack(const Key& public_key, const std::string& plain, bool& encrypted);
+std::string unpackAndDecrypt(const Key& private_key, const std::string& chunk, bool& decrypted);
+
+namespace good {
+
+std::string encryptAndPack(secure::IAsymmetricCryptor& cryptor, const Key& public_key, const std::string& plain, bool& encrypted);
+std::string unpackAndDecrypt(secure::IAsymmetricCryptor& cryptor, const Key& private_key, const std::string& chunk, bool& decrypted);
+
+}
 
 }
 

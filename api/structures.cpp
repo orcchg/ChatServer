@@ -289,12 +289,16 @@ bool Message::operator != (const Message& rhs) const {
 
 // openssl encrypt with public key
 void Message::encrypt(secure::IAsymmetricCryptor& cryptor, const secure::Key& public_key) {
-  m_message = cryptor.encrypt(m_message, public_key);
+  m_message = secure::good::encryptAndPack(cryptor, public_key, m_message, m_is_encrypted);
+  SYS("Encrypted message[%i]: %s", isEncrypted(), getMessage().c_str());
 }
 
 // openssl decrypt with private key
 void Message::decrypt(secure::IAsymmetricCryptor& cryptor, const secure::Key& private_key) {
-  m_message = cryptor.decrypt(m_message, private_key);
+  bool decrypted = false;
+  m_message = secure::good::unpackAndDecrypt(cryptor, private_key, m_message, decrypted);
+  m_is_encrypted = !decrypted;
+  SYS("Decrypted message[%i]: %s", isEncrypted(), getMessage().c_str());
 }
 
 #endif  // SECURE

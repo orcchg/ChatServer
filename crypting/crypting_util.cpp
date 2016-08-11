@@ -84,6 +84,7 @@ std::string encryptAndPack(const secure::Key& public_key, const std::string& pla
   return plain;  // not encrypted
 }
 
+// ----------------------------------------------
 std::string unpackAndDecrypt(const secure::Key& private_key, const std::string& chunk, bool& decrypted) {
   TRC("decrypt(%zu)", private_key.getKey().length());
   decrypted = false;
@@ -145,7 +146,60 @@ std::string unpackAndDecrypt(const secure::Key& private_key, const std::string& 
   return chunk;  // not decrypted
 }
 
+namespace good {
+
+/* Good implementation with Envelope */
+// ----------------------------------------------------------------------------
+std::string encryptAndPack(secure::IAsymmetricCryptor& cryptor, const Key& public_key, const std::string& plain, bool& encrypted) {
+  std::string cipher = cryptor.encrypt(plain, public_key, encrypted);
+
+  int ek_len = cryptor.getEKlength();
+  int iv_len = cryptor.getIVlength();
+  unsigned char* ek = new unsigned char[ek_len];
+  unsigned char* iv = new unsigned char[iv_len];
+  cryptor.getEK(ek);
+  cryptor.getIV(iv);
+  std::string ek_hex = common::bin2hex(ek, ek_len);
+  std::string iv_hex = common::bin2hex(iv, iv_len);
+  delete [] ek;  ek = nullptr;
+  delete [] iv;  iv = nullptr;
+
+  std::ostringstream oss;
+  oss << ek_len << COMPOUND_MESSAGE_DELIMITER << ek_hex << COMPOUND_MESSAGE_DELIMITER
+      << iv_len << COMPOUND_MESSAGE_DELIMITER << iv_hex << COMPOUND_MESSAGE_DELIMITER
+      << cipher.length() << COMPOUND_MESSAGE_DELIMITER << cipher;
+  return oss.str();
 }
+
+// ----------------------------------------------
+std::string unpackAndDecrypt(secure::IAsymmetricCryptor& cryptor, const Key& private_key, const std::string& chunk, bool& decrypted) {
+  std::vector<std::string> values;
+  common::split(chunk, COMPOUND_MESSAGE_DELIMITER, &values);
+  int ek_len = std::stoi(values[0]);
+  std::string ek_hex = values[1];
+  int iv_len = std::stoi(values[2]);
+  std::string iv_hex = values[3];
+  int cipher_len = std::stoi(values[4]);
+  std::string cipher = values[5];
+  TTY("Values: EK [%i:%s], IV [%i:%s], cipher [%i:%s]",
+      ek_len, ek_hex.c_str(), iv_len, iv_hex.c_str(), cipher_len, cipher.c_str());
+
+  size_t o_ek_len = 0, o_iv_len = 0;
+  unsigned char* ek = new unsigned char[ek_len];
+  unsigned char* iv = new unsigned char[iv_len];
+  common::hex2bin(ek_hex, ek, o_ek_len);
+  common::hex2bin(iv_hex, iv, o_iv_len);
+  cryptor.setEK(ek_len, ek);
+  cryptor.setIV(iv_len, iv);
+  delete [] ek;  ek = nullptr;
+  delete [] iv;  iv = nullptr;
+
+  return cryptor.decrypt(cipher, private_key, decrypted);
+}
+
+}  // namespace good
+
+}  // namespace secure
 
 #endif  // SECURE
 

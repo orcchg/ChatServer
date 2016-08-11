@@ -706,7 +706,8 @@ void Client::receiverThread() {
           case PrivateHandshake::PUBKEY:
             {
               auto unwrapped_json = common::unwrapJsonObject(ITEM_PRIVATE_PUBKEY, response.body, common::PreparseLeniency::STRICT);
-              secure::Key key = secure::Key::fromJson(unwrapped_json);
+              secure::Key key_unformatted = secure::Key::fromJson(unwrapped_json);
+              secure::Key key(key_unformatted.getId(), common::restoreStrippedInMemoryPEM(key_unformatted.getKey()));
               printf("\e[5;01;34mReceived public key from peer [%lli]\e[m\n", key.getId());
               TRC("Public Key: %s", key.getKey().c_str());
               m_handshakes[key.getId()] = key;  // store public key of another peer
