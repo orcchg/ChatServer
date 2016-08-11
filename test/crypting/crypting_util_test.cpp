@@ -92,7 +92,58 @@ TEST_F(CryptingUtilTest, FixedMessage) {
   EXPECT_EQ(init_message, message);
 }
 
-TEST_F(CryptingUtilTest, RandomMessage) {
+TEST_F(CryptingUtilTest, DISABLED_SeparateCryptorsRaw) {
+  std::string small = "a";
+  std::string input = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna est. Maecenas quis mi at est blandit tempor. Nullam ut quam porttitor, convallis nisl vitae, pulvinar quam. In hac habitasse platea dictumst. Aenean vehicula mauris odio, eu mattis augue tristique in. Morbi nec magna sit amet elit tempor sagittis. Suspendisse id tempor velit. Suspendisse nec velit orci. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus commodo ullamcorper convallis. Nunc congue lobortis dictum.";
+
+  bool encrypted = false;
+  secure::RSACryptor cryptor_one;
+  std::string cipher = cryptor_one.encrypt(input, m_key_pair.first, encrypted);
+  EXPECT_TRUE(encrypted);
+
+  int ek_len = cryptor_one.getEKlength();
+  int iv_len = cryptor_one.getIVlength();
+  unsigned char* ek = new unsigned char[ek_len];
+  unsigned char* iv = new unsigned char[iv_len];
+  cryptor_one.getEK(ek);
+  cryptor_one.getIV(iv);
+
+  bool decrypted = false;
+  secure::RSACryptor cryptor_two;
+  cryptor_two.setEK(ek_len, ek);
+  cryptor_two.setIV(iv_len, iv);
+
+  std::string output = cryptor_two.decrypt(cipher, m_key_pair.second, decrypted);
+  EXPECT_TRUE(decrypted);
+
+  delete [] ek;  ek = nullptr;
+  delete [] iv;  iv = nullptr;
+
+  EXPECT_STREQ(input.c_str(), output.c_str());
+}
+
+TEST_F(CryptingUtilTest, DISABLED_SeparateCryptors) {
+  std::string text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna est. Maecenas quis mi at est blandit tempor. Nullam ut quam porttitor, convallis nisl vitae, pulvinar quam. In hac habitasse platea dictumst. Aenean vehicula mauris odio, eu mattis augue tristique in. Morbi nec magna sit amet elit tempor sagittis. Suspendisse id tempor velit. Suspendisse nec velit orci. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus commodo ullamcorper convallis. Nunc congue lobortis dictum.";
+
+  Message message = Message::Builder(100).setLogin("login").setEmail("email@ya.ru").setChannel(0)
+      .setDestId(0).setTimestamp(1000000000).setSize(text.length())
+      .setEncrypted(false).setMessage(text)
+      .build();
+  Message init_message = message;
+  DBG("Message: %s", message.getMessage().c_str());
+
+  secure::RSACryptor cryptor_one, cryptor_two;
+
+  message.encrypt(cryptor_one, m_key_pair.first);
+  EXPECT_TRUE(message.isEncrypted());
+
+  message.decrypt(cryptor_two, m_key_pair.second);
+  EXPECT_FALSE(message.isEncrypted());
+
+  EXPECT_EQ(init_message, message);
+}
+
+TEST_F(CryptingUtilTest, DISABLED_RandomMessage) {
   Message init_message = m_message;  // copy
   DBG("Message: %s", m_message.getMessage().c_str());
 
@@ -107,7 +158,7 @@ TEST_F(CryptingUtilTest, RandomMessage) {
   EXPECT_EQ(init_message, m_message);
 }
 
-TEST_F(CryptingUtilTest, Complete) {
+TEST_F(CryptingUtilTest, DISABLED_Complete) {
   std::string input = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna est. Maecenas quis mi at est blandit tempor. Nullam ut quam porttitor, convallis nisl vitae, pulvinar quam. In hac habitasse platea dictumst. Aenean vehicula mauris odio, eu mattis augue tristique in. Morbi nec magna sit amet elit tempor sagittis. Suspendisse id tempor velit. Suspendisse nec velit orci. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus commodo ullamcorper convallis. Nunc congue lobortis dictum.";
 
   bool encrypted = false;
