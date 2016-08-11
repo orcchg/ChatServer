@@ -20,6 +20,7 @@ SET( TARGET cryptor_test )
 SET( SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR} )
 SET( SOURCES
     ${SOURCE_DIR}/aes_cryptor_test.cpp
+    ${SOURCE_DIR}/evp_cryptor_test.cpp
     ${SOURCE_DIR}/rsa_cryptor_test.cpp
     ${SOURCE_DIR}/crypting_util_test.cpp
 )

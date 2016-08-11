@@ -22,6 +22,7 @@
 #include "common/common_test.cpp"
 #if SECURE
 #include "crypting/aes_cryptor_test.cpp"
+#include "crypting/evp_cryptor_test.cpp"
 #include "crypting/rsa_cryptor_test.cpp"
 #include "crypting/crypting_util_test.cpp"
 #endif  // SECURE
