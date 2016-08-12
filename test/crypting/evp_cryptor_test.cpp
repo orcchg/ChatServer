@@ -37,6 +37,8 @@ namespace test {
 
 /* Fixture */
 // ----------------------------------------------------------------------------
+static common::Dictionary s_dictionary_ex;
+
 class EVPfixture : public ::testing::Test {
 protected:
   EVPfixture() { --s_id; }
@@ -46,6 +48,7 @@ protected:
 protected:
   static ID_t s_id;
   std::pair<secure::Key, secure::Key> m_key_pair;
+  Message m_message;
 };
 
 ID_t EVPfixture::s_id = 800;
@@ -56,6 +59,7 @@ void EVPfixture::SetUp() {
   std::string input = secure::random::generateString(size);
   secure::random::generateKeyPair(s_id, input.c_str(), size);
   m_key_pair = secure::random::loadKeyPair(s_id, &accessible);
+  m_message = common::generateMessage(s_dictionary_ex, s_id);
 }
 
 void EVPfixture::TearDown() {
@@ -392,6 +396,43 @@ TEST_F(EVPfixture, Separate) {
   EXPECT_TRUE(decrypted);
 
   EXPECT_STREQ(message.c_str(), output.c_str());
+}
+
+// ----------------------------------------------
+TEST_F(EVPfixture, FixedMessage) {
+  std::string text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna est. Maecenas quis mi at est blandit tempor. Nullam ut quam porttitor, convallis nisl vitae, pulvinar quam. In hac habitasse platea dictumst. Aenean vehicula mauris odio, eu mattis augue tristique in. Morbi nec magna sit amet elit tempor sagittis. Suspendisse id tempor velit. Suspendisse nec velit orci. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus commodo ullamcorper convallis. Nunc congue lobortis dictum.";
+
+  Message message = Message::Builder(100).setLogin("login").setEmail("email@ya.ru").setChannel(0)
+      .setDestId(0).setTimestamp(1000000000).setSize(text.length())
+      .setEncrypted(false).setMessage(text)
+      .build();
+  Message init_message = message;
+  DBG("Message: %s", message.getMessage().c_str());
+
+  secure::EVPCryptor cryptor_one, cryptor_two;
+
+  message.encrypt(cryptor_one, m_key_pair.first);
+  EXPECT_TRUE(message.isEncrypted());
+
+  message.decrypt(cryptor_two, m_key_pair.second);
+  EXPECT_FALSE(message.isEncrypted());
+
+  EXPECT_EQ(init_message, message);
+}
+
+TEST_F(EVPfixture, RandomMessage) {
+  Message init_message = m_message;  // copy
+  DBG("Message: %s", m_message.getMessage().c_str());
+
+  secure::EVPCryptor cryptor_one, cryptor_two;
+
+  m_message.encrypt(cryptor_one, m_key_pair.first);
+  EXPECT_TRUE(m_message.isEncrypted());
+
+  m_message.decrypt(cryptor_two, m_key_pair.second);
+  EXPECT_FALSE(m_message.isEncrypted());
+
+  EXPECT_EQ(init_message, m_message);
 }
 
 }

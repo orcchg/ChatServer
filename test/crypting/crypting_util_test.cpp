@@ -92,8 +92,7 @@ TEST_F(CryptingUtilTest, FixedMessage) {
   EXPECT_EQ(init_message, message);
 }
 
-TEST_F(CryptingUtilTest, DISABLED_SeparateCryptorsRaw) {
-  std::string small = "a";
+TEST_F(CryptingUtilTest, SeparateCryptorsRaw) {
   std::string input = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna est. Maecenas quis mi at est blandit tempor. Nullam ut quam porttitor, convallis nisl vitae, pulvinar quam. In hac habitasse platea dictumst. Aenean vehicula mauris odio, eu mattis augue tristique in. Morbi nec magna sit amet elit tempor sagittis. Suspendisse id tempor velit. Suspendisse nec velit orci. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus commodo ullamcorper convallis. Nunc congue lobortis dictum.";
 
   bool encrypted = false;
@@ -112,6 +111,7 @@ TEST_F(CryptingUtilTest, DISABLED_SeparateCryptorsRaw) {
   secure::RSACryptor cryptor_two;
   cryptor_two.setEK(ek_len, ek);
   cryptor_two.setIV(iv_len, iv);
+  cryptor_two.setCipherLength(cryptor_one.getCipherLength());
 
   std::string output = cryptor_two.decrypt(cipher, m_key_pair.second, decrypted);
   EXPECT_TRUE(decrypted);
@@ -122,7 +122,7 @@ TEST_F(CryptingUtilTest, DISABLED_SeparateCryptorsRaw) {
   EXPECT_STREQ(input.c_str(), output.c_str());
 }
 
-TEST_F(CryptingUtilTest, DISABLED_SeparateCryptors) {
+TEST_F(CryptingUtilTest, SeparateCryptors) {
   std::string text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna est. Maecenas quis mi at est blandit tempor. Nullam ut quam porttitor, convallis nisl vitae, pulvinar quam. In hac habitasse platea dictumst. Aenean vehicula mauris odio, eu mattis augue tristique in. Morbi nec magna sit amet elit tempor sagittis. Suspendisse id tempor velit. Suspendisse nec velit orci. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus commodo ullamcorper convallis. Nunc congue lobortis dictum.";
 
   Message message = Message::Builder(100).setLogin("login").setEmail("email@ya.ru").setChannel(0)
@@ -143,7 +143,7 @@ TEST_F(CryptingUtilTest, DISABLED_SeparateCryptors) {
   EXPECT_EQ(init_message, message);
 }
 
-TEST_F(CryptingUtilTest, DISABLED_RandomMessage) {
+TEST_F(CryptingUtilTest, RandomMessage) {
   Message init_message = m_message;  // copy
   DBG("Message: %s", m_message.getMessage().c_str());
 
@@ -158,7 +158,7 @@ TEST_F(CryptingUtilTest, DISABLED_RandomMessage) {
   EXPECT_EQ(init_message, m_message);
 }
 
-TEST_F(CryptingUtilTest, DISABLED_Complete) {
+TEST_F(CryptingUtilTest, Complete) {
   std::string input = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna est. Maecenas quis mi at est blandit tempor. Nullam ut quam porttitor, convallis nisl vitae, pulvinar quam. In hac habitasse platea dictumst. Aenean vehicula mauris odio, eu mattis augue tristique in. Morbi nec magna sit amet elit tempor sagittis. Suspendisse id tempor velit. Suspendisse nec velit orci. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus commodo ullamcorper convallis. Nunc congue lobortis dictum.";
 
   bool encrypted = false;

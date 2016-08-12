@@ -167,7 +167,7 @@ std::string encryptAndPack(secure::IAsymmetricCryptor& cryptor, const Key& publi
   std::ostringstream oss;
   oss << ek_len << COMPOUND_MESSAGE_DELIMITER << ek_hex << COMPOUND_MESSAGE_DELIMITER
       << iv_len << COMPOUND_MESSAGE_DELIMITER << iv_hex << COMPOUND_MESSAGE_DELIMITER
-      << cipher.length() << COMPOUND_MESSAGE_DELIMITER << cipher;
+      << cryptor.getCipherLength() << COMPOUND_MESSAGE_DELIMITER << cipher;
   return oss.str();
 }
 
