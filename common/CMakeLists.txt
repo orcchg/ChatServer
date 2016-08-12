@@ -16,10 +16,12 @@
 #   along with this program; if not, write to the Free Software Foundation,
 #   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 
+SET( TARGET common )
 SET( SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR} )
 
 SET( SOURCES
     ${SOURCE_DIR}/common.cpp
 )
-ADD_LIBRARY( common SHARED ${SOURCES} )
+ADD_LIBRARY( ${TARGET} SHARED ${SOURCES} )
+TARGET_LINK_LIBRARIES( ${TARGET} api )
 

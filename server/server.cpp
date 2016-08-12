@@ -136,7 +136,7 @@ void Server::run() {
   char command[5];
   do {
     menu::printPrompt();
-    scanf("%s", command);
+    int total = scanf("%s", command);
   } while (menu::evaluate(this, command));
 }
 
