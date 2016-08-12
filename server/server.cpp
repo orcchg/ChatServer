@@ -25,7 +25,6 @@
 #include "server_api_impl.h"
 #include "server_menu.h"
 
-#define MESSAGE_SIZE 2048
 #define BASE_CONNECTION_ID 100
 
 /* Connection structure */

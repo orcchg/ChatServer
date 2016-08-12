@@ -28,15 +28,13 @@
 #include "api/icryptor.h"
 #include "api/structures.h"
 #include "client_api_impl.h"
+#include "common.h"
 #include "exception.h"
 #include "parser/my_parser.h"
 
 #if SECURE
 #include "api/icryptor.h"
 #endif  // SECURE
-
-#define MESSAGE_SIZE 2048
-#define USER_MESSAGE_MAX_SIZE 1600
 
 class Client {
 public:

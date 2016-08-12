@@ -25,7 +25,6 @@
 #include <sstream>
 #include <errno.h>
 #include "client.h"
-#include "common.h"
 #include "logger.h"
 #include "rapidjson/document.h"
 #include "utils.h"

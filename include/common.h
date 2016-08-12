@@ -27,6 +27,9 @@
 #include "api/structures.h"
 #include "api/types.h"
 
+#define MESSAGE_SIZE 4096
+#define USER_MESSAGE_MAX_SIZE 1600
+
 namespace common {
 
 enum PreparseLeniency {
