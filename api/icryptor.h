@@ -45,9 +45,11 @@ public:
 
   virtual int getEKlength() const = 0;
   virtual int getIVlength() const = 0;
+  virtual int getCipherLength() const = 0;
   virtual void getEK(unsigned char* ek) const = 0;
   virtual void getIV(unsigned char* iv) const = 0;
 
+  virtual void setCipherLength(int cipher_len) = 0;
   virtual void setEK(int ek_len, unsigned char* ek) = 0;
   virtual void setIV(int iv_len, unsigned char* iv) = 0;
 };

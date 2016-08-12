@@ -191,6 +191,7 @@ std::string unpackAndDecrypt(secure::IAsymmetricCryptor& cryptor, const Key& pri
   common::hex2bin(iv_hex, iv, o_iv_len);
   cryptor.setEK(ek_len, ek);
   cryptor.setIV(iv_len, iv);
+  cryptor.setCipherLength(cipher_len);
   delete [] ek;  ek = nullptr;
   delete [] iv;  iv = nullptr;
 

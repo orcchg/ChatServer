@@ -40,17 +40,21 @@ public:
 
   inline int getEKlength() const override { return m_ek_len; }
   inline int getIVlength() const override { return m_iv_len; }
+  inline int getCipherLength() const override { return m_cipher_len; }
   void getEK(unsigned char* ek) const override { memcpy(ek, m_ek, m_ek_len); }
   void getIV(unsigned char* iv) const override { memcpy(iv, m_iv, m_iv_len); }
 
+  inline void setCipherLength(int cipher_len) override { m_cipher_len = cipher_len; }
   void setEK(int ek_len, unsigned char* ek) override {
     if (m_ek != nullptr) { delete [] m_ek;  m_ek = nullptr; }
     m_ek = new unsigned char[ek_len];
+    m_ek_len = ek_len;
     memcpy(m_ek, ek, ek_len);
   }
   void setIV(int iv_len, unsigned char* iv) override {
     if (m_iv != nullptr) { delete [] m_iv;  m_iv = nullptr; }
     m_iv = new unsigned char[iv_len];
+    m_iv_len = iv_len;
     memcpy(m_iv, iv, iv_len);
   }
 

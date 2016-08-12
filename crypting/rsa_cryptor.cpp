@@ -229,7 +229,7 @@ std::string RSACryptor::decrypt(const std::string& source, const secure::Key& pr
     unsigned char* plain = new unsigned char[m_cipher_len + EVP_MAX_IV_LENGTH];
     int plain_len = RSACryptorRaw::doDecrypt(cipher, m_cipher_len, &plain);
 
-    //RSA_free(m_rsa);
+    //RSA_free(m_rsa);  valgrind requires that, but this causes heisen-crashes
 
     if (plain_len > 0) {
       decrypted = true;

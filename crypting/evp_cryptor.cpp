@@ -28,12 +28,12 @@ namespace secure {
 
 /* Core utils */
 // ----------------------------------------------
-static void handleErrors() {
+void handleErrors() {
   ERR_print_errors_fp(stderr);
   abort();
 }
 
-static int envelopeSeal(
+int envelopeSeal(
     EVP_PKEY** pub_key,
     unsigned char* plaintext, int plaintext_len,
     unsigned char** encrypted_key, int* encrypted_key_len,
@@ -46,6 +46,7 @@ static int envelopeSeal(
 
   /* Create and initialise the context */
   if (!(ctx = EVP_CIPHER_CTX_new())) {
+    ERR("Create context for seal");
     handleErrors();
   }
 
@@ -55,6 +56,7 @@ static int envelopeSeal(
    * this example the array size is just one. This operation also
    * generates an IV and places it in iv. */
   if (1 != EVP_SealInit(ctx, EVP_aes_256_cbc(), encrypted_key, encrypted_key_len, iv, pub_key, 1)) {
+    ERR("Seal init");
     handleErrors();
   }
 
@@ -62,6 +64,7 @@ static int envelopeSeal(
    * EVP_SealUpdate can be called multiple times if necessary
    */
   if (1 != EVP_SealUpdate(ctx, ciphertext, &len, plaintext, plaintext_len)) {
+    ERR("Seal update");
     handleErrors();
   }
 
@@ -71,6 +74,7 @@ static int envelopeSeal(
    * this stage.
    */
   if (1 != EVP_SealFinal(ctx, ciphertext + len, &len)) {
+    ERR("Seal final");
     handleErrors();
   }
 
@@ -82,7 +86,7 @@ static int envelopeSeal(
   return ciphertext_len;
 }
 
-static int envelopeOpen(
+int envelopeOpen(
     EVP_PKEY* priv_key,
     unsigned char* ciphertext, int ciphertext_len,
     unsigned char* encrypted_key, int encrypted_key_len,
@@ -95,6 +99,7 @@ static int envelopeOpen(
 
   /* Create and initialise the context */
   if (!(ctx = EVP_CIPHER_CTX_new())) {
+    ERR("Create context for open");
     handleErrors();
   }
 
@@ -102,6 +107,7 @@ static int envelopeOpen(
    * provided and priv_key, whilst the encrypted session key is held in
    * encrypted_key */
   if (1 != EVP_OpenInit(ctx, EVP_aes_256_cbc(), encrypted_key, encrypted_key_len, iv, priv_key)) {
+    ERR("Open init");
     handleErrors();
   }
 
@@ -109,6 +115,7 @@ static int envelopeOpen(
    * EVP_OpenUpdate can be called multiple times if necessary
    */
   if (1 != EVP_OpenUpdate(ctx, plaintext, &len, ciphertext, ciphertext_len)) {
+    ERR("Open update");
     handleErrors();
   }
 
@@ -118,6 +125,7 @@ static int envelopeOpen(
    * this stage.
    */
   if (1 != EVP_OpenFinal(ctx, plaintext + len, &len)) {
+    ERR("Open final");
     handleErrors();
   }
 
