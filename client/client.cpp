@@ -33,7 +33,7 @@
 #if SECURE
 #include "crypting/cryptor.h"
 #include "crypting/random_util.h"
-#include "crypting/rsa_cryptor.h"
+#include "crypting/evp_cryptor.h"
 #endif  // SECURE
 
 Client::Client(const std::string& config_file)
@@ -104,7 +104,7 @@ void Client::init() {
   m_api_impl = new ClientApiImpl(m_socket, m_ip_address, m_port);
 #if SECURE
   m_cryptor = new secure::Cryptor();
-  m_asym_cryptor = new secure::RSACryptor();
+  m_asym_cryptor = new secure::EVPCryptor();
 #endif  // SECURE
 }
 
