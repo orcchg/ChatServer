@@ -12,7 +12,7 @@ Key features:
 - Multi-channeling
 - Broadcast and dedicated messages
 - File transfer (IN PROGRESS...)
-- Secure messages transfering (IN PROGRESS...)
+- Secure messages transfering
 - Server CLI with a set of commands
 - Sample console Client
 
