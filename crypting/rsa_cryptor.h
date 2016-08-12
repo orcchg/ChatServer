@@ -44,8 +44,8 @@ public:
   int encrypt(const std::string& source, unsigned char** cipher);
   int decrypt(unsigned char* cipher, int cipher_len, unsigned char** plain);
 
-  int getEKlength() const { return m_ek_len; }
-  int getIVlength() const { return m_iv_len; }
+  inline int getEKlength() const { return m_ek_len; }
+  inline int getIVlength() const { return m_iv_len; }
   void getEK(unsigned char* ek) const { memcpy(ek, m_ek, m_ek_len); }
   void getIV(unsigned char* iv) const { memcpy(iv, m_iv, m_iv_len); }
 

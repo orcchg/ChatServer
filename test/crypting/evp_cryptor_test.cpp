@@ -22,9 +22,12 @@
 
 #include <gtest/gtest.h>
 #include <string>
+#include <vector>
 #include <cstdio>
 #include "common.h"
 #include "crypting/includes.h"
+#include "crypting/crypting_util.h"
+#include "crypting/evp_cryptor.h"
 #include "crypting/random_util.h"
 #include "logger.h"
 
@@ -275,8 +278,93 @@ TEST_F(EVPfixture, RSARawKeys) {
 }
 
 // ----------------------------------------------
-TEST_F(EVPfixture, Separate) {
+TEST_F(EVPfixture, SeparateRaw) {
+  std::string message = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna est. Maecenas quis mi at est blandit tempor. Nullam ut quam porttitor, convallis nisl vitae, pulvinar quam. In hac habitasse platea dictumst. Aenean vehicula mauris odio, eu mattis augue tristique in. Morbi nec magna sit amet elit tempor sagittis. Suspendisse id tempor velit. Suspendisse nec velit orci. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus commodo ullamcorper convallis. Nunc congue lobortis dictum.";
 
+  std::string public_pem = "-----BEGIN RSA PUBLIC KEY-----\nMIIBCgKCAQEAtaucDkZfJF65TPZ4p6PiFpG2EK+zOxG5O4KIj7WjlO5/KS5jEf+6\noqpjsb0dhlTh7BjDC9Eslb1TGuaUMA4pwX1GYYHShcpqasIXYMZM0rUryZqSB5Xe\nrh4JdTpZcIvqnwF+hNqIx0W4SkyR8C99IMOJ3TXbZdUaAP56Uqa8jNiND3/inJZD\nqEZMpZ88eu9Tb+7xWxkcLjRSOdQrmGscj0c0qQF3POXkzcy08OHYzozY12fhe40E\nOAqvyWWDQt6mZlwfXp9OQRuU+r4L9jHlNkosIYVdLKY6f+yP2kx7tJVYQ5ISSA70\no1vlO6kKXhnLMAar8ad5F5O1ZQRdJeMwPQIDAQAB\n-----END RSA PUBLIC KEY-----";
+
+  std::string private_pem = "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAtaucDkZfJF65TPZ4p6PiFpG2EK+zOxG5O4KIj7WjlO5/KS5j\nEf+6oqpjsb0dhlTh7BjDC9Eslb1TGuaUMA4pwX1GYYHShcpqasIXYMZM0rUryZqS\nB5Xerh4JdTpZcIvqnwF+hNqIx0W4SkyR8C99IMOJ3TXbZdUaAP56Uqa8jNiND3/i\nnJZDqEZMpZ88eu9Tb+7xWxkcLjRSOdQrmGscj0c0qQF3POXkzcy08OHYzozY12fh\ne40EOAqvyWWDQt6mZlwfXp9OQRuU+r4L9jHlNkosIYVdLKY6f+yP2kx7tJVYQ5IS\nSA70o1vlO6kKXhnLMAar8ad5F5O1ZQRdJeMwPQIDAQABAoIBAQCj1+vcq/butEdm\nc/uJJbKoLC4JioyYv3lRhH5pLaYkkZw5pc5P01WdkxJqoGbaWf+PkR2HsNUHD0K+\nRipr1Lov+S3ajt0xMMcdFYNEElQCzMZ7Al6lXLMCUbCx+zfi2y10zkIuy3EEV4rH\n55rPBeVSAUh7KzF9+92B/ACSPjJaywUgIykgBDLaW8acrJenGUt/s/KwDlSDfT79\nijq2I/D2KaF4K1DYwkZ2FB0Awyb5S5R7Ku+9YBbjyj0tDQ5kiJYLsCAIWos1KTS7\ndfp3U88r+Scqy8MHN4RRr6qkFIQgvQO60K6THfqtGciNP/FzGsrR2ciSf3lOTMYc\ngnktFBmBAoGBAOej/iLDj3r+F8QoRpMbUNy3juMPIlXV9Sw6KPe4CG4nqevv5wJl\ns/5B9ffhStooSR5u4LfXYNQ9aT2XXefk1zYmQftc/Lxph2BborBkl7WwpsK3QXp+\nWdK22z7NIECMnn5tEVVFGPdass44fcRDDpmtm9L3Jblx/SV+pFL4EFPtAoGBAMjG\nXZQSUFvI3HzCQCMOPYL0s9znWIKdOfdbX1GjkFysrVq7qfzvb6ZJeUIB9pOqtvKf\nwxFincSH9ibK0yiQ9bIDoQ8MyirdX04CFJWBg9fXlVAn31vqZVZ7PGtXy1vILdrr\n43mcOyaiKsjvBKUpjV0Yivl++NuF/voYbIp9C2ORAoGAI5I7ZHtDfU+ntqe4rr5z\nHHHTr2qTizrf+3qy79eC8+eDYIfmoaecjF70tqwSIo4tLE86kwCwDeegUaT89q9d\nnSMi3sbYyNYrw9BOm2fXJD+MXDpoA7eDc6hA4tP9L+xoKmH1V3LU8qcq7iAesBTc\nGR1f4HWzhVbL2QYpldQiLcECgYAOtHimH7FDB7MecBvCdYiLzuBdjZQt/NYCB+8z\nS4eHQh5wRs5seBz1UOxQqVQl/JrpqknfPBnSCyM8NB7DGdrk7t8c+xLTkOMqE3zu\ndk3xwRhuhn0VflVtwBjsw8FhN4gkQKKohYjPi5EWpmrwrdpstx92ppYTffzu1Fse\nyYnMAQKBgCynG+Otqwiowe8DfgrOyPV7cOG59FK49j6pZACqBzXm0q3dbBID+OZA\nGr1pv0nnMrY4ITM75jYMlL7gSCyJzGwvD251o1nHfBhuDe20mBp9u5DHYe95ENaV\nQCP05gaTTfYQobvfUZo2ikMEap3bX1ZXMH1rNigIGlf+0PYk/qH0\n-----END RSA PRIVATE KEY-----";
+
+  auto keypair = std::make_pair<secure::Key, secure::Key>(secure::Key(600, public_pem), secure::Key(600, private_pem));
+
+  /* encrypt */
+  // --------------------------------------------
+  secure::EVPCryptor cryptor_one;
+
+  bool encrypted = false;
+  std::string cipher = cryptor_one.encrypt(message, keypair.first, encrypted);
+
+  std::ostringstream oss;
+
+  {
+  int ek_len = cryptor_one.getEKlength();
+  int iv_len = cryptor_one.getIVlength();
+  unsigned char* ek = new unsigned char[ek_len];
+  unsigned char* iv = new unsigned char[iv_len];
+  cryptor_one.getEK(ek);
+  cryptor_one.getIV(iv);
+  std::string ek_hex = common::bin2hex(ek, ek_len);
+  std::string iv_hex = common::bin2hex(iv, iv_len);
+  delete [] ek;  ek = nullptr;
+  delete [] iv;  iv = nullptr;
+
+  oss << ek_len << COMPOUND_MESSAGE_DELIMITER << ek_hex << COMPOUND_MESSAGE_DELIMITER
+      << iv_len << COMPOUND_MESSAGE_DELIMITER << iv_hex << COMPOUND_MESSAGE_DELIMITER
+      << cipher.length() << COMPOUND_MESSAGE_DELIMITER << cipher;
+  }
+
+  /* decrypt */
+  // --------------------------------------------
+  secure::EVPCryptor cryptor_two;
+
+  std::string chunk = oss.str();
+
+  {
+  std::vector<std::string> values;
+  common::split(chunk, COMPOUND_MESSAGE_DELIMITER, &values);
+  int ek_len = std::stoi(values[0]);
+  std::string ek_hex = values[1];
+  int iv_len = std::stoi(values[2]);
+  std::string iv_hex = values[3];
+  int cipher_len = std::stoi(values[4]);
+  std::string cipher = values[5];
+  TTY("Values: EK [%i:%s], IV [%i:%s], cipher [%i:%s]",
+      ek_len, ek_hex.c_str(), iv_len, iv_hex.c_str(), cipher_len, cipher.c_str());
+
+  size_t o_ek_len = 0, o_iv_len = 0;
+  unsigned char* ek = new unsigned char[ek_len];
+  unsigned char* iv = new unsigned char[iv_len];
+  common::hex2bin(ek_hex, ek, o_ek_len);
+  common::hex2bin(iv_hex, iv, o_iv_len);
+  cryptor_two.setEK(ek_len, ek);
+  cryptor_two.setIV(iv_len, iv);
+  delete [] ek;  ek = nullptr;
+  delete [] iv;  iv = nullptr;
+  }
+
+  bool decrypted = false;
+  std::string output = cryptor_two.decrypt(cipher, keypair.second, decrypted);
+
+  /* check */
+  // --------------------------------------------
+  EXPECT_STREQ(message.c_str(), output.c_str());
+}
+
+// ----------------------------------------------
+TEST_F(EVPfixture, DISABLED_Separate) {
+  std::string message = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna est. Maecenas quis mi at est blandit tempor. Nullam ut quam porttitor, convallis nisl vitae, pulvinar quam. In hac habitasse platea dictumst. Aenean vehicula mauris odio, eu mattis augue tristique in. Morbi nec magna sit amet elit tempor sagittis. Suspendisse id tempor velit. Suspendisse nec velit orci. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus commodo ullamcorper convallis. Nunc congue lobortis dictum.";
+
+  secure::EVPCryptor cryptor_one, cryptor_two;
+
+  bool encrypted = false;
+  std::string cipher = secure::good::encryptAndPack(cryptor_one, m_key_pair.first, message, encrypted);
+  EXPECT_TRUE(encrypted);
+
+  bool decrypted = false;
+  std::string output = secure::good::unpackAndDecrypt(cryptor_two, m_key_pair.second, cipher, decrypted);
+  EXPECT_TRUE(decrypted);
+
+  EXPECT_STREQ(message.c_str(), output.c_str());
 }
 
 }

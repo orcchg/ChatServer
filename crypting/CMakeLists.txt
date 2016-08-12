@@ -19,6 +19,7 @@
 SET( SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR} )
 SET( SOURCES
     ${SOURCE_DIR}/aes_cryptor.cpp
+    ${SOURCE_DIR}/evp_cryptor.cpp
     ${SOURCE_DIR}/rsa_cryptor.cpp
     ${SOURCE_DIR}/cryptor.cpp
     ${SOURCE_DIR}/crypting_util.cpp
