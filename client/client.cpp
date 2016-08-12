@@ -610,7 +610,7 @@ void Client::startChat() {
     uint64_t timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     Message message = Message::Builder(m_id)
         .setLogin(m_name).setEmail(m_email).setChannel(m_channel).setDestId(m_dest_id)
-        .setTimestamp(timestamp).setMessage(buffer).build();
+        .setTimestamp(timestamp).setSize(buffer.length()).setEncrypted(false).setMessage(buffer).build();
 
 #if SECURE
     if (m_private_secure_chat) {

@@ -290,6 +290,7 @@ bool Message::operator != (const Message& rhs) const {
 // openssl encrypt with public key
 void Message::encrypt(secure::IAsymmetricCryptor& cryptor, const secure::Key& public_key) {
   m_message = secure::good::encryptAndPack(cryptor, public_key, m_message, m_is_encrypted);
+  m_size = m_message.length();
   SYS("Encrypted message[%i]: %s", isEncrypted(), getMessage().c_str());
 }
 
@@ -297,6 +298,7 @@ void Message::encrypt(secure::IAsymmetricCryptor& cryptor, const secure::Key& pu
 void Message::decrypt(secure::IAsymmetricCryptor& cryptor, const secure::Key& private_key) {
   bool decrypted = false;
   m_message = secure::good::unpackAndDecrypt(cryptor, private_key, m_message, decrypted);
+  m_size = m_message.length();
   m_is_encrypted = !decrypted;
   SYS("Decrypted message[%i]: %s", isEncrypted(), getMessage().c_str());
 }
