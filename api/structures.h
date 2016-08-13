@@ -86,7 +86,13 @@ public:
   std::string toJson() const;
   static LoginForm fromJson(const std::string& json);
 
+#if SECURE
+  void encrypt(secure::IAsymmetricCryptor& cryptor, const secure::Key& public_key);
+  void decrypt(secure::IAsymmetricCryptor& cryptor, const secure::Key& private_key);
+#endif  // SECURE
+
 protected:
+  bool m_is_password_encrypted;
   std::string m_login;
   std::string m_password;
 };

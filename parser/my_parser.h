@@ -104,6 +104,7 @@ protected:
 std::string trim(const std::string& str, const std::string& whitespace = " \t");
 std::string reduce(const std::string& str, const std::string& fill = " ", const std::string& whitespace = " \t");
 void parseParams(const std::string& input, std::vector<Query>* params);
+Query parseQuery(const std::string& item);
 
 #endif  // MY_PARSER__H__
 

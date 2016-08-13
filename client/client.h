@@ -88,7 +88,7 @@ protected:
   void checkRegistered(const std::string& name);
   void getRegistrationForm();
   void fillRegistrationForm(RegistrationForm* form);
-  void tryRegister(const RegistrationForm& form);
+  void tryRegister(RegistrationForm& form);
   void onRegister();
 
   void onWrongPassword(LoginForm& form);
@@ -98,6 +98,7 @@ protected:
 
   void receiverThread();
   void processSystemPayload(const std::string& payload);
+  void enterPassword(std::string& password);
 
 #if SECURE
   void getKeyPair();

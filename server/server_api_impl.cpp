@@ -26,6 +26,7 @@
 #include "common.h"
 #include "database/peer_table_impl.h"
 #if SECURE
+#include "crypting/evp_cryptor.h"
 #include "database/keys_table_impl.h"
 #endif  // SECURE
 #include "server_api_impl.h"
@@ -266,6 +267,13 @@ StatusCode ServerApiImpl::login(int socket, const std::string& json, ID_t& id) {
   TRC("login(%s)", json.c_str());
   try {
     LoginForm form = LoginForm::fromJson(json);
+#if SECURE
+    {
+      DBG("Decrypt received login form before login");
+      secure::EVPCryptor cryptor;
+      form.decrypt(cryptor, m_key_pair.second);
+    }
+#endif  // SECURE
     return loginPeer(socket, form, id);
   } catch (ConvertException e) {
     ERR("Login failed: invalid form: %s", json.c_str());
@@ -277,6 +285,13 @@ StatusCode ServerApiImpl::registrate(int socket, const std::string& json, ID_t& 
   TRC("registrate(%s)", json.c_str());
   try {
     RegistrationForm form = RegistrationForm::fromJson(json);
+#if SECURE
+    {
+      DBG("Decrypt received registration form before registration");
+      secure::EVPCryptor cryptor;
+      form.decrypt(cryptor, m_key_pair.second);
+    }
+#endif  // SECURE
     id = registerPeer(socket, form);
     if (id != UNKNOWN_ID) {
       INF("Registration succeeded: new id [%lli]", id);

@@ -330,17 +330,17 @@ void Client::getLoginForm() {
 void Client::fillLoginForm(LoginForm* form) {
   std::string login, password;
   login = util::enterSymbolic("Login or Email");
-#if SECURE
-  password = util::enterSymbolic("Password", m_cryptor, true);
-#else
-  password = util::enterSymbolic("Password", true);
-#endif  // SECURE
+  enterPassword(password);
   form->setLogin(login);
   form->setPassword(password);
 }
 
 void Client::tryLogin(LoginForm& form) {
   bool is_closed = false;
+#if SECURE
+  DBG("Encrypt login form before send");
+  form.encrypt(*m_asym_cryptor, m_server_pubkey);
+#endif  // SECURE
   m_api_impl->sendLoginForm(form);
   Response code_response = getResponse(m_socket, &is_closed);
   if (is_closed) {
@@ -466,19 +466,19 @@ void Client::fillRegistrationForm(RegistrationForm* form) {
   } while (!util::isEmailValid(email));
 
   /* password */
-#if SECURE
-  password = util::enterSymbolic("Password", m_cryptor, true);
-#else
-  password = util::enterSymbolic("Password", true);
-#endif  // SECURE
+  enterPassword(password);
 
   form->setLogin(login);
   form->setEmail(email);
   form->setPassword(password);
 }
 
-void Client::tryRegister(const RegistrationForm& form) {
+void Client::tryRegister(RegistrationForm& form) {
   bool is_closed = false;
+#if SECURE
+  DBG("Encrypt registration form before send");
+  form.encrypt(*m_asym_cryptor, m_server_pubkey);
+#endif  // SECURE
   m_api_impl->sendRegistrationForm(form);
   Response code_response = getResponse(m_socket, &is_closed);
   if (is_closed) {
@@ -529,11 +529,7 @@ void Client::onRegister() {
 void Client::onWrongPassword(LoginForm& form) {
   std::string password;
   printf("\e[5;00;33mWrong password! Retry\e[m\n");
-#if SECURE
-  password = util::enterSymbolic("Password", m_cryptor, true);
-#else
-  password = util::enterSymbolic("Password", true);
-#endif  // SECURE
+  enterPassword(password);
   form.setPassword(password);
 }
 
@@ -784,6 +780,14 @@ void Client::processSystemPayload(const std::string& payload) {
 #endif  // SECURE
     }
   }
+}
+
+void Client::enterPassword(std::string& password) {
+#if SECURE
+  password = util::enterSymbolic("Password", m_cryptor, true);
+#else
+  password = util::enterSymbolic("Password", true);
+#endif  // SECURE
 }
 
 #if SECURE

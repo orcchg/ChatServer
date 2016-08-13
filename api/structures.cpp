@@ -86,7 +86,9 @@ Key Key::fromJson(const std::string& json) {
 LoginForm::LoginForm(
     const std::string& login,
     const std::string& password)
-  : m_login(login), m_password(password) {
+  : m_is_password_encrypted(false)
+  , m_login(login)
+  , m_password(password) {
 }
 
 std::string LoginForm::toJson() const {
@@ -112,6 +114,24 @@ LoginForm LoginForm::fromJson(const std::string& json) {
     throw ConvertException();
   }
 }
+
+#if SECURE
+
+// openssl encrypt with public key
+void LoginForm::encrypt(secure::IAsymmetricCryptor& cryptor, const secure::Key& public_key) {
+  m_password = secure::good::encryptAndPack(cryptor, public_key, m_password, m_is_password_encrypted);
+  SYS("Encrypted password[%i]: %s", m_is_password_encrypted, m_password.c_str());
+}
+
+// openssl decrypt with private key
+void LoginForm::decrypt(secure::IAsymmetricCryptor& cryptor, const secure::Key& private_key) {
+  bool decrypted = false;
+  m_password = secure::good::unpackAndDecrypt(cryptor, private_key, m_password, decrypted);
+  m_is_password_encrypted = !decrypted;
+  SYS("Decrypted password[%i]: %s", m_is_password_encrypted, m_password.c_str());
+}
+
+#endif  // SECURE
 
 // ----------------------------------------------
 RegistrationForm::RegistrationForm(

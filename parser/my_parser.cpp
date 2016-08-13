@@ -128,8 +128,14 @@ std::string MyParser::parsePath(const std::string& path, std::vector<Query>* par
 
 void MyParser::parsePayload(const std::string& payload, std::vector<Query>* out) const {
   int i1 = payload.find_first_of("&");
-  if (i1 == std::string::npos) {  // no payload items
-    return;
+  if (i1 == std::string::npos) {
+    int i2 = payload.find_first_of("=");
+    if (i2 != std::string::npos) {
+      auto query = parseQuery(payload);
+      out->push_back(query);
+      return;  // single item
+    }
+    return;  // no payload items
   }
   parseParams(payload, out);
 }
@@ -289,12 +295,19 @@ void parseParams(const std::string& input, std::vector<Query>* params) {
   std::stringstream ss(input);
   std::string item;
   while (std::getline(ss, item, '&')) {
-    int i2 = item.find_first_of('=');
-    Query query;
-    query.key = item.substr(0, i2);
-    query.value = item.substr(i2 + 1);
+    auto query = parseQuery(item);
     params->push_back(query);
     TRC("Parsed param: %s:%s", query.key.c_str(), query.value.c_str());
   }
+}
+
+Query parseQuery(const std::string& item) {
+  int i2 = item.find_first_of('=');
+  Query query;
+  if (i2 != std::string::npos) {
+    query.key = item.substr(0, i2);
+    query.value = item.substr(i2 + 1);
+  }
+  return query;
 }
 
