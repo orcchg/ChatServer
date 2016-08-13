@@ -24,6 +24,9 @@
 #include "server.h"
 #include "server_api_impl.h"
 #include "server_menu.h"
+#if SECURE
+#include "crypting/random_util.h"
+#endif  // SECURE
 
 #define BASE_CONNECTION_ID 100
 
@@ -125,6 +128,9 @@ Server::~Server() {
 }
 
 void Server::run() {
+#if SECURE
+  getKeyPair();
+#endif  // SECURE
   m_launch_timestamp = common::getCurrentTime();  // launch timestamp
   std::thread t(&Server::runListener, this);
   t.detach();
@@ -181,6 +187,9 @@ void Server::runListener() {
     }
 
     Connection connection = storeClientInfo(peer_address_structure);  // log incoming connection
+
+    // send hello to new peer (only once)
+    m_api_impl->sendHello(peer_socket);
 
     // get incoming message
     std::thread t(&Server::handleRequest, this, peer_socket, connection.getId());
@@ -451,6 +460,14 @@ void Server::storeRequest(ID_t connection_id, const Request& request) {
     m_log_database->addLog(log);
   }
 }
+
+#if SECURE
+
+void Server::getKeyPair() {
+  m_api_impl->setKeyPair(secure::random::getKeyPair(SERVER_ID));
+}
+
+#endif  // SECURE
 
 /* Main */
 // ----------------------------------------------------------------------------

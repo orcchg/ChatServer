@@ -73,6 +73,23 @@ void ServerApiImpl::setSocket(int socket) {
   m_socket = socket;
 }
 
+void ServerApiImpl::sendHello(int socket) {
+  TRC("sendHello");
+  std::ostringstream oss, json;
+  json << "{\"" D_ITEM_SYSTEM "\":\"Server greetings you!\""
+       << ",\"" D_ITEM_PAYLOAD "\":\"";
+#if SECURE
+  std::string public_key = common::preparse(m_key_pair.first.getKey(), common::PreparseLeniency::STRICT);
+  json << ITEM_PRIVATE_PUBKEY << "=" << public_key;
+#endif  // SECURE
+  json << "\"}";
+  oss << "HTTP/1.1 200 OK\r\n" << STANDARD_HEADERS << "\r\n"
+      << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
+      << json.str();
+  MSG("Response: %s", oss.str().c_str());
+  send(socket, oss.str().c_str(), oss.str().length(), 0);
+}
+
 void ServerApiImpl::logoutPeerAtConnectionReset(int socket) {
   for (auto& it : m_peers) {
     if (it.second.getSocket() == socket) {
@@ -93,6 +110,7 @@ void ServerApiImpl::sendLoginForm() {
   oss << "HTTP/1.1 200 OK\r\n" << STANDARD_HEADERS << "\r\n"
       << CONTENT_LENGTH_HEADER << json.length() << "\r\n\r\n"
       << json;
+  MSG("Response: %s", oss.str().c_str());
   send(m_socket, oss.str().c_str(), oss.str().length(), 0);
 }
 
@@ -103,6 +121,7 @@ void ServerApiImpl::sendRegistrationForm() {
   oss << "HTTP/1.1 200 OK\r\n" << STANDARD_HEADERS << "\r\n"
       << CONTENT_LENGTH_HEADER << json.length() << "\r\n\r\n"
       << json;
+  MSG("Response: %s", oss.str().c_str());
   send(m_socket, oss.str().c_str(), oss.str().length(), 0);
 }
 
@@ -339,6 +358,7 @@ StatusCode ServerApiImpl::logout(const std::string& path, ID_t& id) {
       oss << "HTTP/1.1 200 Logged Out\r\n" << STANDARD_HEADERS << "\r\n"
           << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
           << json.str() << "\0";
+      MSG("Response: %s", oss.str().c_str());
       send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
       oss.str("");
       json.str("");
@@ -411,6 +431,7 @@ StatusCode ServerApiImpl::switchChannel(const std::string& path, ID_t& id) {
       oss << "HTTP/1.1 200 Switched channel\r\n" << STANDARD_HEADERS << "\r\n"
           << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
           << json.str() << "\0";
+      MSG("Response: %s", oss.str().c_str());
       send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
       oss.str("");
       json.str("");
@@ -481,6 +502,7 @@ void ServerApiImpl::terminate() {
   std::ostringstream oss;
   for (auto& it : m_peers) {
     prepareSimpleResponse(oss, TERMINATE_CODE, "Terminate");
+    MSG("Response: %s", oss.str().c_str());
     send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
     oss.str("");
   }
@@ -553,6 +575,7 @@ void ServerApiImpl::simpleResponse(const std::vector<ID_t>& ids, int code, const
     DBG("Broadcasting simple response");
     for (auto& it : m_peers) {
       prepareSimpleResponse(oss, code, message);
+      MSG("Response: %s", oss.str().c_str());
       send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
       oss.str("");
     }
@@ -563,6 +586,7 @@ void ServerApiImpl::simpleResponse(const std::vector<ID_t>& ids, int code, const
         DBG("Sending simple response to peer with id [%lli]...", peer_it->first);
         int socket = peer_it->second.getSocket();
         prepareSimpleResponse(oss, code, message);
+        MSG("Response: %s", oss.str().c_str());
         send(socket, oss.str().c_str(), oss.str().length(), 0);
         oss.str("");
       } else {
@@ -639,6 +663,7 @@ void ServerApiImpl::doLogin(ID_t id, const std::string& name, const std::string&
       oss << "HTTP/1.1 200 Logged In\r\n" << STANDARD_HEADERS << "\r\n"
           << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
           << json.str() << "\0";
+      MSG("Response: %s", oss.str().c_str());
       send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
       oss.str("");
       json.str("");
@@ -666,6 +691,7 @@ void ServerApiImpl::broadcast(const Message& message) {
       oss << "HTTP/1.1 102 Processing\r\n" << STANDARD_HEADERS << "\r\n"
           << CONTENT_LENGTH_HEADER << json.length() << "\r\n\r\n"
           << json;
+      MSG("Response: %s", oss.str().c_str());
       send(it->second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
       oss.str("");
     } else if (dest_id == message.getId()) {
@@ -689,6 +715,7 @@ void ServerApiImpl::broadcast(const Message& message) {
       oss << "HTTP/1.1 102 Processing\r\n" << STANDARD_HEADERS << "\r\n"
           << CONTENT_LENGTH_HEADER << json.length() << "\r\n\r\n"
           << json;
+      MSG("Response: %s", oss.str().c_str());
       send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
       oss.str("");
     } else if (id == message.getId()) {
@@ -759,6 +786,7 @@ StatusCode ServerApiImpl::privateRequest(const std::string& path, ID_t& id) {
     oss << "HTTP/1.1 200 Handshake request\r\n" << STANDARD_HEADERS << "\r\n"
         << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
         << json.str() << "\0";
+    MSG("Response: %s", oss.str().c_str());
     send(dest_peer_it->second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
     oss.str("");
     json.str("");
@@ -840,6 +868,10 @@ StatusCode ServerApiImpl::privatePubKeysExchange(const std::string& path, ID_t& 
   }
   auto src_public_key = m_keys_mapper.map(src_public_key_dto);
   sendPubKey(src_public_key, dest_id);
+}
+
+void ServerApiImpl::setKeyPair(const std::pair<secure::Key, secure::Key>& keypair) {
+  m_key_pair = keypair;
 }
 
 /* Utility */
@@ -935,6 +967,7 @@ StatusCode ServerApiImpl::sendPrivateConfirm(const std::string& path, bool i_abo
         << STANDARD_HEADERS << "\r\n"
         << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
         << json.str() << "\0";
+    MSG("Response: %s", oss.str().c_str());
     send(dest_peer_it->second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
     oss.str("");
     json.str("");

@@ -420,7 +420,7 @@ TEST_F(EVPfixture, FixedMessage) {
   EXPECT_EQ(init_message, message);
 }
 
-TEST_F(EVPfixture, RandomMessage) {
+TEST_F(EVPfixture, DISABLED_RandomMessage) {
   Message init_message = m_message;  // copy
   DBG("Message: %s", m_message.getMessage().c_str());
 

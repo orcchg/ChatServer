@@ -59,6 +59,7 @@ public:
   virtual ~ServerApiImpl();
 
   void setSocket(int socket) override;
+  void sendHello(int socket) override;
   void logoutPeerAtConnectionReset(int socket) override;
 
   /* API */
@@ -86,6 +87,8 @@ public:
   StatusCode privateAbort(const std::string& path, ID_t& id) override;
   StatusCode privatePubKey(const std::string& path, const std::string& json, ID_t& id) override;
   StatusCode privatePubKeysExchange(const std::string& path, ID_t& id) override;
+
+  void setKeyPair(const std::pair<secure::Key, secure::Key>& keypair) override;
 #endif  // SECURE
 
   void terminate() override;
@@ -111,6 +114,7 @@ private:
   RegistrationToPeerDTOMapper m_register_mapper;
 #if SECURE
   KeyDTOtoKeyMapper m_keys_mapper;
+  std::pair<secure::Key, secure::Key> m_key_pair;
 #endif  // SECURE
 
   StatusCode loginPeer(const LoginForm& form, ID_t& id);

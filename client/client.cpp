@@ -57,6 +57,25 @@ void Client::run() {
     ERR("No connection established to Server");
     throw ClientException();
   }
+
+  // receive Server's hello
+  bool is_stopped = false;
+  Response response = getResponse(m_socket, &is_stopped);
+  if (response.isEmpty()) {
+    ERR("Received empty response. Connection closed");
+    throw ClientException();
+  } else {
+    std::string system = "", payload = "";
+    Path action = Path::UNKNOWN;
+    ID_t id = UNKNOWN_ID;
+    if (util::checkSystemMessage(response.body, &system, &payload, action, id)) {
+      processSystemPayload(payload);
+    } else {
+      ERR("Incoming response is not a Server's hello!");
+      throw ClientException();
+    }
+  }
+
   goToMainMenu();
 }
 
@@ -104,6 +123,7 @@ void Client::init() {
 #if SECURE
   m_cryptor = new secure::Cryptor();
   m_asym_cryptor = new secure::EVPCryptor();
+  m_server_pubkey = secure::Key::EMPTY;
 #endif  // SECURE
 }
 
@@ -654,10 +674,10 @@ void Client::receiverThread() {
         continue;  // received status from Server
       }
       {
-        std::string system;
+        std::string system = "", payload = "";
         Path action = Path::UNKNOWN;
         ID_t id = UNKNOWN_ID;
-        if (util::checkSystemMessage(response.body, &system, action, id)) {
+        if (util::checkSystemMessage(response.body, &system, &payload, action, id)) {
           printf("\e[5;00;32mSystem: %s\e[m\n", system.c_str());
           switch (action) {
             case Path::LOGOUT:
@@ -673,6 +693,7 @@ void Client::receiverThread() {
               }
               break;
           }
+          processSystemPayload(payload);
           continue;  // received system message from Server
         }
       }
@@ -747,17 +768,28 @@ void Client::receiverThread() {
   end();
 }
 
+void Client::processSystemPayload(const std::string& payload) {
+  TRC("processSystemPayload(%s)", payload.c_str());
+  if (!payload.empty()) {
+    std::vector<Query> params;
+    m_parser.parsePayload(payload, &params);
+    if (!params.empty()) {
+#if SECURE
+      // server's public key has changed
+      if (strcmp(params[0].key.c_str(), ITEM_PRIVATE_PUBKEY) == 0) {
+        std::string pem = common::restoreStrippedInMemoryPEM(params[0].value);
+        m_server_pubkey = secure::Key(SERVER_ID, pem);
+        SYS("Received server's public key: %s", m_server_pubkey.getKey().c_str());
+      }
+#endif  // SECURE
+    }
+  }
+}
+
 #if SECURE
 
 void Client::getKeyPair() {
-  bool accessible = false;
-  m_key_pair = secure::random::loadKeyPair(m_id, &accessible);
-  if (!accessible) {
-    const size_t size = 80;
-    std::string input = secure::random::generateString(size);
-    secure::random::generateKeyPair(m_id, input.c_str(), size);
-    m_key_pair = secure::random::loadKeyPair(m_id, &accessible);
-  }
+  m_key_pair = secure::random::getKeyPair(m_id);
 }
 
 #endif  // SECURE

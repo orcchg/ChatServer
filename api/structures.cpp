@@ -278,7 +278,7 @@ bool Message::operator == (const Message& rhs) const {
     m_login == rhs.m_login && m_email == rhs.m_email &&
     m_channel == rhs.m_channel && m_timestamp == rhs.m_timestamp &&
     m_size == rhs.m_size && m_is_encrypted == rhs.m_is_encrypted &&
-    m_message == rhs.m_message;
+    m_message.compare(rhs.m_message) == 0;
 }
 
 bool Message::operator != (const Message& rhs) const {

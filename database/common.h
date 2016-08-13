@@ -21,7 +21,7 @@
 #ifndef CHAT_SERVER_COMMON__H__
 #define CHAT_SERVER_COMMON__H__
 
-#define BASE_ID 1000
+#define BASE_ID 1000  // base id for peers
 
 #define D_PEERS_TABLE_NAME "peers"
 #if SECURE

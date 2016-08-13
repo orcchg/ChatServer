@@ -92,6 +92,10 @@ private:
   Path getPath(const std::string& path) const;
   void handleRequest(int socket, ID_t connection_id);
   void storeRequest(ID_t connection_id, const Request& request);
+
+#if SECURE
+  void getKeyPair();
+#endif  // SECURE
 };
 
 #endif  // CHAT_SERVER_SERVER__H__

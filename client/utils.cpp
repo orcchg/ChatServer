@@ -103,7 +103,12 @@ bool checkStatus(const std::string& json) {
       document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64();
 }
 
-bool checkSystemMessage(const std::string& json, std::string* system, Path& action, ID_t& id) {
+bool checkSystemMessage(
+    const std::string& json,
+    std::string* system,
+    std::string* payload,
+    Path& action,
+    ID_t& id) {
   action = Path::UNKNOWN;
   id = UNKNOWN_ID;
   rapidjson::Document document;
@@ -119,6 +124,11 @@ bool checkSystemMessage(const std::string& json, std::string* system, Path& acti
       id = document[ITEM_ID].GetInt64();
     } else {
       DBG("System message json has no action and peer's id");
+    }
+    if (document.HasMember(ITEM_PAYLOAD) && document[ITEM_PAYLOAD].IsString()) {
+      *payload = document[ITEM_PAYLOAD].GetString();
+    } else {
+      DBG("System message json has no payload");
     }
   }
   return result;

@@ -65,6 +65,7 @@ protected:
   secure::IAsymmetricCryptor* m_asym_cryptor;
   std::pair<secure::Key, secure::Key> m_key_pair;
   std::unordered_map<ID_t, secure::Key> m_handshakes;
+  secure::Key m_server_pubkey;
 #endif  // SECURE
 
   bool readConfiguration(const std::string& config_file);
@@ -96,6 +97,7 @@ protected:
   void startChat();
 
   void receiverThread();
+  void processSystemPayload(const std::string& payload);
 
 #if SECURE
   void getKeyPair();

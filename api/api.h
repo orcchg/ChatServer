@@ -433,6 +433,7 @@ void print(HandshakeStatus status);
 /* API json */
 // ----------------------------------------------
 /**
+ * Server's hello:        {"system":TEXT,"payload":TEXT}
  * Login form:            {"login":TEXT,"password":TEXT}
  * Registration form:     {"login":TEXT,"email":TEXT,"password":TEXT}
  * Message:               {"id":INT,"login":TEXT,"email":TEXT,"channel":INT,"dest_id":INT,"timestamp":INT,"message":TEXT}
@@ -479,6 +480,7 @@ public:
   virtual ~ServerApi() {}
 
   virtual void setSocket(int socket) = 0;
+  virtual void sendHello(int socket) = 0;
   virtual void logoutPeerAtConnectionReset(int socket) = 0;
 
   virtual void sendLoginForm() = 0;
@@ -504,6 +506,8 @@ public:
   virtual StatusCode privateAbort(const std::string& path, ID_t& id) = 0;    // forward abort to dest peer
   virtual StatusCode privatePubKey(const std::string& path, const std::string& json, ID_t& id) = 0;  // store public key at Server side
   virtual StatusCode privatePubKeysExchange(const std::string& path, ID_t& id) = 0;  // exchange public keys between peers
+
+  virtual void setKeyPair(const std::pair<secure::Key, secure::Key>& keypair) = 0;  // set server-side key pair to this adapter
 #endif  // SECURE
 
   virtual void terminate() = 0;

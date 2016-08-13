@@ -143,7 +143,7 @@ TEST_F(CryptingUtilTest, SeparateCryptors) {
   EXPECT_EQ(init_message, message);
 }
 
-TEST_F(CryptingUtilTest, RandomMessage) {
+TEST_F(CryptingUtilTest, DISABLED_RandomMessage) {
   Message init_message = m_message;  // copy
   DBG("Message: %s", m_message.getMessage().c_str());
 

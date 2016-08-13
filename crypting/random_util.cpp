@@ -123,6 +123,18 @@ std::pair<Key, Key> loadKeyPair(ID_t id, bool* accessible) {
     return std::make_pair(Key::EMPTY, Key::EMPTY);
 }
 
+std::pair<Key, Key> getKeyPair(ID_t id) {
+  bool accessible = false;
+  auto keypair = secure::random::loadKeyPair(id, &accessible);
+  if (!accessible) {
+    const size_t size = 80;
+    std::string input = secure::random::generateString(size);
+    secure::random::generateKeyPair(id, input.c_str(), size);
+    keypair = secure::random::loadKeyPair(id, &accessible);
+  }
+  return keypair;
+}
+
 }
 }
 

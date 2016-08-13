@@ -37,6 +37,7 @@ int setRandomSeed();
 std::string generateString(int length);
 void generateKeyPair(ID_t id, const char* input, size_t size);
 std::pair<Key, Key> loadKeyPair(ID_t id, bool* accessible);
+std::pair<Key, Key> getKeyPair(ID_t id);
 
 }
 }
