@@ -87,8 +87,9 @@ public:
   static LoginForm fromJson(const std::string& json);
 
 #if SECURE
-  void encrypt(secure::IAsymmetricCryptor& cryptor, const secure::Key& public_key);
-  void decrypt(secure::IAsymmetricCryptor& cryptor, const secure::Key& private_key);
+  /* direct RSA encryption & decryption of password */
+  void encrypt(const secure::Key& public_key);
+  void decrypt(const secure::Key& private_key);
 #endif  // SECURE
 
 protected:

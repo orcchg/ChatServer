@@ -22,12 +22,14 @@
 
 #include <sstream>
 #include <vector>
+#include <cstring>
 #include "common.h"
 #include "crypting_util.h"
 #include "logger.h"
 
 #include "crypting/aes_cryptor.h"
 #include "crypting/cryptor.h"
+#include "crypting/includes.h"
 
 namespace secure {
 
@@ -196,6 +198,88 @@ std::string unpackAndDecrypt(secure::IAsymmetricCryptor& cryptor, const Key& pri
   delete [] iv;  iv = nullptr;
 
   return cryptor.decrypt(cipher, private_key, decrypted);
+}
+
+/* Direct RSA */
+// ----------------------------------------------------------------------------
+std::string encryptRSA(const Key& public_key, const std::string& plain, bool& encrypted) {
+  encrypted = false;
+  if (plain.length() > 214) {
+    ERR("Input must be no longer than 214 characters! Current length: %zu", plain.length());
+    return plain;
+  }
+  if (public_key == Key::EMPTY) {
+    WRN("Public key wasn't provided for RSA encryption!");
+    return plain;
+  }
+
+  BIO* bio = BIO_new(BIO_s_mem());
+  BIO_write(bio, public_key.getKey().c_str(), public_key.getKey().length());
+  RSA* rsa = RSA_new();
+  PEM_read_bio_RSAPublicKey(bio, &rsa, nullptr, nullptr);
+  BIO_free(bio);
+
+  unsigned char* cipher = new unsigned char[256];
+  memset(cipher, 0, 256);
+
+  int cipher_len = RSA_public_encrypt(plain.length() + 1, (unsigned char*) plain.c_str(), cipher, rsa, RSA_PKCS1_OAEP_PADDING);
+  if (cipher_len == -1 || cipher_len != 256) {
+    char* error = (char*) malloc(130);
+    ERR_load_crypto_strings();
+    ERR_error_string(ERR_get_error(), error);
+    ERR("Error encrypting message: %s\n", error);
+    delete [] cipher;  cipher = nullptr;
+    free(error);
+    RSA_free(rsa);
+    return plain;
+  }
+
+  encrypted = true;
+  std::string cipher_str = common::bin2hex(cipher, cipher_len);
+  delete [] cipher;  cipher = nullptr;
+  RSA_free(rsa);
+  return cipher_str;
+}
+
+std::string decryptRSA(const Key& private_key, const std::string& source, bool& decrypted) {
+  decrypted = false;
+  if (private_key == Key::EMPTY) {
+    WRN("Private key wasn't provided for RSA decryption!");
+    return source;
+  }
+
+  BIO* bio = BIO_new(BIO_s_mem());
+  BIO_write(bio, private_key.getKey().c_str(), private_key.getKey().length());
+  RSA* rsa = RSA_new();
+  PEM_read_bio_RSAPrivateKey(bio, &rsa, nullptr, nullptr);
+  BIO_free(bio);
+
+  size_t cipher_len = 0;
+  unsigned char* cipher = new unsigned char[256];
+  unsigned char* plain = new unsigned char[256];
+  memset(cipher, 0, 256);
+  memset(plain, 0, 256);
+
+  common::hex2bin(source, cipher, cipher_len);
+  int plain_len = RSA_private_decrypt(cipher_len, cipher, plain, rsa, RSA_PKCS1_OAEP_PADDING);
+  if (plain_len == -1) {
+    char* error = (char*) malloc(130);
+    ERR_load_crypto_strings();
+    ERR_error_string(ERR_get_error(), error);
+    ERR("Error decrypting message: %s\n", error);
+    delete [] cipher;  cipher = nullptr;
+    delete [] plain;   plain  = nullptr;
+    free(error);
+    RSA_free(rsa);
+    return source;
+  }
+
+  decrypted = true;
+  std::string plain_str((const char*) plain);
+  delete [] cipher;  cipher = nullptr;
+  delete [] plain;   plain  = nullptr;
+  RSA_free(rsa);
+  return plain_str;
 }
 
 }  // namespace good

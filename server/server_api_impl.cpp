@@ -270,8 +270,7 @@ StatusCode ServerApiImpl::login(int socket, const std::string& json, ID_t& id) {
 #if SECURE
     {
       DBG("Decrypt received login form before login");
-      secure::EVPCryptor cryptor;
-      form.decrypt(cryptor, m_key_pair.second);
+      form.decrypt(m_key_pair.second);
     }
 #endif  // SECURE
     return loginPeer(socket, form, id);
@@ -288,8 +287,7 @@ StatusCode ServerApiImpl::registrate(int socket, const std::string& json, ID_t& 
 #if SECURE
     {
       DBG("Decrypt received registration form before registration");
-      secure::EVPCryptor cryptor;
-      form.decrypt(cryptor, m_key_pair.second);
+      form.decrypt(m_key_pair.second);
     }
 #endif  // SECURE
     id = registerPeer(socket, form);

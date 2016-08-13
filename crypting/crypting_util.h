@@ -42,6 +42,9 @@ namespace good {
 std::string encryptAndPack(secure::IAsymmetricCryptor& cryptor, const Key& public_key, const std::string& plain, bool& encrypted);
 std::string unpackAndDecrypt(secure::IAsymmetricCryptor& cryptor, const Key& private_key, const std::string& chunk, bool& decrypted);
 
+std::string encryptRSA(const Key& public_key, const std::string& plain, bool& encrypted);
+std::string decryptRSA(const Key& private_key, const std::string& cipher, bool& decrypted);
+
 }
 
 }

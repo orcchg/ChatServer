@@ -118,15 +118,15 @@ LoginForm LoginForm::fromJson(const std::string& json) {
 #if SECURE
 
 // openssl encrypt with public key
-void LoginForm::encrypt(secure::IAsymmetricCryptor& cryptor, const secure::Key& public_key) {
-  m_password = secure::good::encryptAndPack(cryptor, public_key, m_password, m_is_password_encrypted);
+void LoginForm::encrypt(const secure::Key& public_key) {
+  m_password = secure::good::encryptRSA(public_key, m_password, m_is_password_encrypted);
   SYS("Encrypted password[%i]: %s", m_is_password_encrypted, m_password.c_str());
 }
 
 // openssl decrypt with private key
-void LoginForm::decrypt(secure::IAsymmetricCryptor& cryptor, const secure::Key& private_key) {
+void LoginForm::decrypt(const secure::Key& private_key) {
   bool decrypted = false;
-  m_password = secure::good::unpackAndDecrypt(cryptor, private_key, m_password, decrypted);
+  m_password = secure::good::decryptRSA(private_key, m_password, decrypted);
   m_is_password_encrypted = !decrypted;
   SYS("Decrypted password[%i]: %s", m_is_password_encrypted, m_password.c_str());
 }

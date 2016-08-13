@@ -338,8 +338,10 @@ void Client::fillLoginForm(LoginForm* form) {
 void Client::tryLogin(LoginForm& form) {
   bool is_closed = false;
 #if SECURE
-  DBG("Encrypt login form before send");
-  form.encrypt(*m_asym_cryptor, m_server_pubkey);
+  {
+    DBG("Encrypt login form before send");
+    form.encrypt(m_server_pubkey);
+  }
 #endif  // SECURE
   m_api_impl->sendLoginForm(form);
   Response code_response = getResponse(m_socket, &is_closed);
@@ -476,8 +478,10 @@ void Client::fillRegistrationForm(RegistrationForm* form) {
 void Client::tryRegister(RegistrationForm& form) {
   bool is_closed = false;
 #if SECURE
-  DBG("Encrypt registration form before send");
-  form.encrypt(*m_asym_cryptor, m_server_pubkey);
+  {
+    DBG("Encrypt registration form before send");
+    form.encrypt(m_server_pubkey);
+  }
 #endif  // SECURE
   m_api_impl->sendRegistrationForm(form);
   Response code_response = getResponse(m_socket, &is_closed);
@@ -787,6 +791,11 @@ void Client::enterPassword(std::string& password) {
   password = util::enterSymbolic("Password", m_cryptor, true);
 #else
   password = util::enterSymbolic("Password", true);
+  if (password.length() > 214) {
+    ERR("Password must be no longer that 214 characters! Retry");
+    password = "";
+    enterPassword(password);
+  }
 #endif  // SECURE
 }
 
