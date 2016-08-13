@@ -55,7 +55,7 @@ secure::Key KeyDTOtoKeyMapper::map(const KeyDTO& key) {
 /* Server implementation */
 // ----------------------------------------------------------------------------
 ServerApiImpl::ServerApiImpl()
-  : m_socket(0), m_payload(NULL_PAYLOAD) {
+  : m_payload(NULL_PAYLOAD) {
   m_peers_database = new db::PeerTable();
 #if SECURE
   m_keys_database = new db::KeysTable();
@@ -67,10 +67,6 @@ ServerApiImpl::~ServerApiImpl() {
 #if SECURE
   delete m_keys_database;  m_keys_database = nullptr;
 #endif  // SECURE
-}
-
-void ServerApiImpl::setSocket(int socket) {
-  m_socket = socket;
 }
 
 void ServerApiImpl::sendHello(int socket) {
@@ -103,7 +99,7 @@ void ServerApiImpl::logoutPeerAtConnectionReset(int socket) {
   }
 }
 
-void ServerApiImpl::sendLoginForm() {
+void ServerApiImpl::sendLoginForm(int socket) {
   TRC("sendLoginForm");
   std::string json = "{\"" D_ITEM_LOGIN "\":\"\",\"" D_ITEM_PASSWORD "\":\"\"}";
   std::ostringstream oss;
@@ -111,10 +107,10 @@ void ServerApiImpl::sendLoginForm() {
       << CONTENT_LENGTH_HEADER << json.length() << "\r\n\r\n"
       << json;
   MSG("Response: %s", oss.str().c_str());
-  send(m_socket, oss.str().c_str(), oss.str().length(), 0);
+  send(socket, oss.str().c_str(), oss.str().length(), 0);
 }
 
-void ServerApiImpl::sendRegistrationForm() {
+void ServerApiImpl::sendRegistrationForm(int socket) {
   TRC("sendRegistrationForm");
   std::string json = "{\"" D_ITEM_LOGIN "\":\"\",\"" D_ITEM_EMAIL "\":\"\",\"" D_ITEM_PASSWORD "\":\"\"}";
   std::ostringstream oss;
@@ -122,10 +118,10 @@ void ServerApiImpl::sendRegistrationForm() {
       << CONTENT_LENGTH_HEADER << json.length() << "\r\n\r\n"
       << json;
   MSG("Response: %s", oss.str().c_str());
-  send(m_socket, oss.str().c_str(), oss.str().length(), 0);
+  send(socket, oss.str().c_str(), oss.str().length(), 0);
 }
 
-void ServerApiImpl::sendStatus(StatusCode status, Path action, ID_t id) {
+void ServerApiImpl::sendStatus(int socket, StatusCode status, Path action, ID_t id) {
   TRC("sendStatus(%i, %i, %lli)", static_cast<int>(status), static_cast<int>(action), id);
   std::ostringstream oss, json;
   oss << "HTTP/1.1 ";
@@ -199,12 +195,12 @@ void ServerApiImpl::sendStatus(StatusCode status, Path action, ID_t id) {
   oss << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
       << json.str() << "\0";
   MSG("Response: %s", oss.str().c_str());
-  send(m_socket, oss.str().c_str(), oss.str().length(), 0);
+  send(socket, oss.str().c_str(), oss.str().length(), 0);
 
   m_payload = NULL_PAYLOAD;  // drop extra data
 }
 
-void ServerApiImpl::sendCheck(bool check, Path action, ID_t id) {
+void ServerApiImpl::sendCheck(int socket, bool check, Path action, ID_t id) {
   TRC("sendCheck(%i, %i, %lli)", check, static_cast<int>(action), id);
   std::ostringstream oss, json;
   json << "{\"" D_ITEM_CHECK "\":" << (check ? 1 : 0)
@@ -215,10 +211,10 @@ void ServerApiImpl::sendCheck(bool check, Path action, ID_t id) {
       << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
       << json.str() << "\0";
   MSG("Response: %s", oss.str().c_str());
-  send(m_socket, oss.str().c_str(), oss.str().length(), 0);
+  send(socket, oss.str().c_str(), oss.str().length(), 0);
 }
 
-void ServerApiImpl::sendPeers(StatusCode status, const std::vector<Peer>& peers, int channel) {
+void ServerApiImpl::sendPeers(int socket, StatusCode status, const std::vector<Peer>& peers, int channel) {
   TRC("sendPeers(size = %zu, channel = %i)", peers.size(), channel);
   std::string delimiter = "";
   std::ostringstream oss, json;
@@ -241,7 +237,7 @@ void ServerApiImpl::sendPeers(StatusCode status, const std::vector<Peer>& peers,
       << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
       << json.str() << "\0";
   MSG("Response: %s", oss.str().c_str());
-  send(m_socket, oss.str().c_str(), oss.str().length(), 0);
+  send(socket, oss.str().c_str(), oss.str().length(), 0);
 }
 
 #if SECURE
@@ -266,22 +262,22 @@ void ServerApiImpl::sendPubKey(const secure::Key& key, ID_t dest_id) {
 #endif  // SECURE
 
 // ----------------------------------------------
-StatusCode ServerApiImpl::login(const std::string& json, ID_t& id) {
+StatusCode ServerApiImpl::login(int socket, const std::string& json, ID_t& id) {
   TRC("login(%s)", json.c_str());
   try {
     LoginForm form = LoginForm::fromJson(json);
-    return loginPeer(form, id);
+    return loginPeer(socket, form, id);
   } catch (ConvertException e) {
     ERR("Login failed: invalid form: %s", json.c_str());
   }
   return StatusCode::INVALID_FORM;
 }
 
-StatusCode ServerApiImpl::registrate(const std::string& json, ID_t& id) {
+StatusCode ServerApiImpl::registrate(int socket, const std::string& json, ID_t& id) {
   TRC("registrate(%s)", json.c_str());
   try {
     RegistrationForm form = RegistrationForm::fromJson(json);
-    id = registerPeer(form);
+    id = registerPeer(socket, form);
     if (id != UNKNOWN_ID) {
       INF("Registration succeeded: new id [%lli]", id);
       return StatusCode::SUCCESS;
@@ -598,7 +594,7 @@ void ServerApiImpl::simpleResponse(const std::vector<ID_t>& ids, int code, const
 
 /* Internals */
 // ----------------------------------------------------------------------------
-StatusCode ServerApiImpl::loginPeer(const LoginForm& form, ID_t& id) {
+StatusCode ServerApiImpl::loginPeer(int socket, const LoginForm& form, ID_t& id) {
   TRC("loginPeer");
   PeerDTO peer = getPeerFromDatabase(form.getLogin(), id);
   if (id != UNKNOWN_ID) {
@@ -607,7 +603,7 @@ StatusCode ServerApiImpl::loginPeer(const LoginForm& form, ID_t& id) {
         ERR("Authentication failed: already logged in");
         return StatusCode::ALREADY_LOGGED_IN;
       }
-      doLogin(id, peer.getLogin(), peer.getEmail());
+      doLogin(socket, id, peer.getLogin(), peer.getEmail());
       return StatusCode::SUCCESS;
     } else {
       ERR("Authentication failed: wrong password");
@@ -619,14 +615,14 @@ StatusCode ServerApiImpl::loginPeer(const LoginForm& form, ID_t& id) {
   return StatusCode::NOT_REGISTERED;
 }
 
-ID_t ServerApiImpl::registerPeer(const RegistrationForm& form) {
+ID_t ServerApiImpl::registerPeer(int socket, const RegistrationForm& form) {
   TRC("registerPeer");
   ID_t id = UNKNOWN_ID;
   m_peers_database->getPeerByEmail(form.getEmail(), &id);  // email must be unique
   if (id == UNKNOWN_ID) {
     PeerDTO peer = m_register_mapper.map(form);
     ID_t id = m_peers_database->addPeer(peer);
-    doLogin(id, peer.getLogin(), peer.getEmail());  // login after register
+    doLogin(socket, id, peer.getLogin(), peer.getEmail());  // login after register
     return id;
   } else {
     WRN("Peer with login ["%s"] and email ["%s"] has already been registered!", form.getLogin().c_str(), form.getEmail().c_str());
@@ -639,11 +635,11 @@ bool ServerApiImpl::authenticate(const std::string& expected_pass, const std::st
   return expected_pass.compare(actual_pass) == 0;
 }
 
-void ServerApiImpl::doLogin(ID_t id, const std::string& name, const std::string& email) {
+void ServerApiImpl::doLogin(int socket, ID_t id, const std::string& name, const std::string& email) {
   TRC("doLogin(%lli, %s)", id, name.c_str());
   server::Peer peer(id, name, email);
   peer.setToken(name);
-  peer.setSocket(m_socket);
+  peer.setSocket(socket);
   m_peers.insert(std::make_pair(id, peer));
 
   std::ostringstream oss_payload;

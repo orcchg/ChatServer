@@ -479,21 +479,20 @@ class ServerApi {
 public:
   virtual ~ServerApi() {}
 
-  virtual void setSocket(int socket) = 0;
   virtual void sendHello(int socket) = 0;
   virtual void logoutPeerAtConnectionReset(int socket) = 0;
 
-  virtual void sendLoginForm() = 0;
-  virtual void sendRegistrationForm() = 0;
-  virtual void sendStatus(StatusCode status, Path action, ID_t id) = 0;
-  virtual void sendCheck(bool check, Path action, ID_t id) = 0;
-  virtual void sendPeers(StatusCode status, const std::vector<Peer>& peers, int channel) = 0;
+  virtual void sendLoginForm(int socket) = 0;
+  virtual void sendRegistrationForm(int socket) = 0;
+  virtual void sendStatus(int socket, StatusCode status, Path action, ID_t id) = 0;
+  virtual void sendCheck(int socket, bool check, Path action, ID_t id) = 0;
+  virtual void sendPeers(int socket, StatusCode status, const std::vector<Peer>& peers, int channel) = 0;
 #if SECURE
   virtual void sendPubKey(const secure::Key& key, ID_t dest_id) = 0;  // forward stored public key to dest peer
 #endif
 
-  virtual StatusCode login(const std::string& json, ID_t& id) = 0;
-  virtual StatusCode registrate(const std::string& json, ID_t& id) = 0;
+  virtual StatusCode login(int socket, const std::string& json, ID_t& id) = 0;
+  virtual StatusCode registrate(int socket, const std::string& json, ID_t& id) = 0;
   virtual StatusCode message(const std::string& json, ID_t& id) = 0;
   virtual StatusCode logout(const std::string& path, ID_t& id) = 0;
   virtual StatusCode switchChannel(const std::string& path, ID_t& id) = 0;

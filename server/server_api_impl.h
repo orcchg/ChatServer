@@ -58,23 +58,22 @@ public:
   ServerApiImpl();
   virtual ~ServerApiImpl();
 
-  void setSocket(int socket) override;
   void sendHello(int socket) override;
   void logoutPeerAtConnectionReset(int socket) override;
 
   /* API */
   // --------------------------------------------
-  void sendLoginForm() override;
-  void sendRegistrationForm() override;
-  void sendStatus(StatusCode status, Path action, ID_t id) override;
-  void sendCheck(bool check, Path action, ID_t id) override;
-  void sendPeers(StatusCode status, const std::vector<Peer>& peers, int channel) override;
+  void sendLoginForm(int socket) override;
+  void sendRegistrationForm(int socket) override;
+  void sendStatus(int socket, StatusCode status, Path action, ID_t id) override;
+  void sendCheck(int socket, bool check, Path action, ID_t id) override;
+  void sendPeers(int socket, StatusCode status, const std::vector<Peer>& peers, int channel) override;
 #if SECURE
   void sendPubKey(const secure::Key& key, ID_t dest_id) override;
 #endif
 
-  StatusCode login(const std::string& json, ID_t& id) override;
-  StatusCode registrate(const std::string& json, ID_t& id) override;
+  StatusCode login(int socket, const std::string& json, ID_t& id) override;
+  StatusCode registrate(int socket, const std::string& json, ID_t& id) override;
   StatusCode message(const std::string& json, ID_t& id) override;
   StatusCode logout(const std::string& path, ID_t& id) override;
   StatusCode switchChannel(const std::string& path, ID_t& id) override;
@@ -101,7 +100,6 @@ public:
 #endif  // SECURE
 
 private:
-  int m_socket;
   std::string m_payload;  // extra data
   MyParser m_parser;
   std::unordered_map<ID_t, server::Peer> m_peers;
@@ -117,10 +115,10 @@ private:
   std::pair<secure::Key, secure::Key> m_key_pair;
 #endif  // SECURE
 
-  StatusCode loginPeer(const LoginForm& form, ID_t& id);
-  ID_t registerPeer(const RegistrationForm& form);
+  StatusCode loginPeer(int socket, const LoginForm& form, ID_t& id);
+  ID_t registerPeer(int socket, const RegistrationForm& form);
   bool authenticate(const std::string& expected_pass, const std::string& actual_pass) const;
-  void doLogin(ID_t id, const std::string& name, const std::string& email);
+  void doLogin(int socket, ID_t id, const std::string& name, const std::string& email);
   bool isAuthorized(ID_t id) const;
   void broadcast(const Message& message);
 
