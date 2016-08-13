@@ -102,7 +102,8 @@ void ServerApiImpl::logoutPeerAtConnectionReset(int socket) {
 
 void ServerApiImpl::sendLoginForm(int socket) {
   TRC("sendLoginForm");
-  std::string json = "{\"" D_ITEM_LOGIN "\":\"\",\"" D_ITEM_PASSWORD "\":\"\"}";
+  LoginForm form("", "");
+  std::string json = form.toJson();
   std::ostringstream oss;
   oss << "HTTP/1.1 200 OK\r\n" << STANDARD_HEADERS << "\r\n"
       << CONTENT_LENGTH_HEADER << json.length() << "\r\n\r\n"
@@ -113,7 +114,8 @@ void ServerApiImpl::sendLoginForm(int socket) {
 
 void ServerApiImpl::sendRegistrationForm(int socket) {
   TRC("sendRegistrationForm");
-  std::string json = "{\"" D_ITEM_LOGIN "\":\"\",\"" D_ITEM_EMAIL "\":\"\",\"" D_ITEM_PASSWORD "\":\"\"}";
+  RegistrationForm form("", "", "");
+  std::string json = form.toJson();
   std::ostringstream oss;
   oss << "HTTP/1.1 200 OK\r\n" << STANDARD_HEADERS << "\r\n"
       << CONTENT_LENGTH_HEADER << json.length() << "\r\n\r\n"
@@ -268,7 +270,7 @@ StatusCode ServerApiImpl::login(int socket, const std::string& json, ID_t& id) {
   try {
     LoginForm form = LoginForm::fromJson(json);
 #if SECURE
-    {
+    if (form.isEncrypted()) {
       DBG("Decrypt received login form before login");
       form.decrypt(m_key_pair.second);
     }
@@ -285,7 +287,7 @@ StatusCode ServerApiImpl::registrate(int socket, const std::string& json, ID_t& 
   try {
     RegistrationForm form = RegistrationForm::fromJson(json);
 #if SECURE
-    {
+    if (form.isEncrypted()) {
       DBG("Decrypt received registration form before registration");
       form.decrypt(m_key_pair.second);
     }
