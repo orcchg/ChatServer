@@ -222,7 +222,7 @@ std::string encryptRSA(const Key& public_key, const std::string& plain, bool& en
   unsigned char* cipher = new unsigned char[256];
   memset(cipher, 0, 256);
 
-  int cipher_len = RSA_public_encrypt(plain.length() + 1, (unsigned char*) plain.c_str(), cipher, rsa, RSA_PKCS1_OAEP_PADDING);
+  int cipher_len = RSA_public_encrypt(plain.length() + 1, (unsigned char*) plain.c_str(), cipher, rsa, RSA_PKCS1_PADDING);
   if (cipher_len == -1 || cipher_len != 256) {
     char* error = (char*) malloc(130);
     ERR_load_crypto_strings();
@@ -261,7 +261,7 @@ std::string decryptRSA(const Key& private_key, const std::string& source, bool& 
   memset(plain, 0, 256);
 
   common::hex2bin(source, cipher, cipher_len);
-  int plain_len = RSA_private_decrypt(cipher_len, cipher, plain, rsa, RSA_PKCS1_OAEP_PADDING);
+  int plain_len = RSA_private_decrypt(cipher_len, cipher, plain, rsa, RSA_PKCS1_PADDING);
   if (plain_len == -1) {
     char* error = (char*) malloc(130);
     ERR_load_crypto_strings();
