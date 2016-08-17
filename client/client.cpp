@@ -561,6 +561,12 @@ void Client::startChat() {
     util::Command command = util::parseCommand(buffer, value);
     switch (command) {
       case util::Command::DIRECT_MESSAGE:
+        printf("\e[5;00;34mSystem: next message will be addressed directly to peer [%lli]\e[m\n", value);
+        if (m_private_secure_chat && m_dest_id != value) {
+          printf("\e[5;00;33mSystem: private communication from current peer [%lli] has aborted\e[m\n", m_id);
+          m_api_impl->privateAbort(m_id, m_dest_id);
+          m_private_secure_chat = false;
+        }
         m_dest_id = value;
         continue;
       case util::Command::SWITCH_CHANNEL:
@@ -721,6 +727,9 @@ void Client::receiverThread() {
           case PrivateHandshake::ABORT:
             printf("\e[5;01;35mPeer [%lli] has aborted private communication with you\e[m\n", bundle.src_id);
             m_handshakes.erase(bundle.src_id);  // remove previously stored public key
+            if (m_dest_id == bundle.src_id) {
+              m_dest_id = UNKNOWN_ID;
+            }
             m_private_secure_chat = false;
             continue;
           case PrivateHandshake::PUBKEY:
