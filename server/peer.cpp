@@ -18,6 +18,8 @@
  *   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
+#include <sstream>
+#include "api/api.h"
 #include "peer.h"
 
 namespace server {
@@ -38,6 +40,16 @@ void Peer::setToken(const std::string& input) {
 
 void Peer::setSocket(int socket_id) {
   m_socket = socket_id;
+}
+
+std::string Peer::toJson() const {
+  std::ostringstream json;
+  json << "{\"" D_ITEM_ID "\":" << m_id
+       << ",\"" D_ITEM_LOGIN "\":\"" << m_name << "\""
+       << ",\"" D_ITEM_EMAIL "\":\"" << m_email << "\""
+       << ",\"" D_ITEM_CHANNEL "\":" << m_channel
+       << "}";
+  return json.str();
 }
 
 }  // namespace server

@@ -224,10 +224,7 @@ void ServerApiImpl::sendPeers(int socket, StatusCode status, const std::vector<P
   json << "{\"" D_ITEM_PEERS "\":[";
   for (auto it = peers.begin(); it != peers.end(); ++it) {
     json << delimiter;
-    json << "{\"" D_ITEM_ID "\":" << it->getId()
-         << ",\"" D_ITEM_LOGIN "\":\"" << it->getLogin() << "\""
-         << ",\"" D_ITEM_CHANNEL "\":" << it->getChannel()
-         << "}";
+    json << it->toJson();
     delimiter = ",";
   }
   json << "]";
@@ -485,6 +482,7 @@ StatusCode ServerApiImpl::getAllPeers(const std::string& path, std::vector<Peer>
     for (auto& it : m_peers) {
       Peer peer = Peer::Builder(it.first)
           .setLogin(it.second.getLogin())
+          .setEmail(it.second.getEmail())
           .setChannel(it.second.getChannel())
           .build();
       peers->emplace_back(peer);
@@ -495,6 +493,7 @@ StatusCode ServerApiImpl::getAllPeers(const std::string& path, std::vector<Peer>
       if (channel == it.second.getChannel()) {
         Peer peer = Peer::Builder(it.first)
             .setLogin(it.second.getLogin())
+            .setEmail(it.second.getEmail())
             .setChannel(it.second.getChannel())
             .build();
         peers->emplace_back(peer);

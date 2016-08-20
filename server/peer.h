@@ -43,6 +43,8 @@ public:
   inline const Token& getToken() const { return m_token; }
   inline int getSocket() const { return m_socket; }
 
+  std::string toJson() const;
+
 private:
   ID_t m_id;
   std::string m_name;
