@@ -358,6 +358,7 @@ Peer Peer::Builder::build() {
 Peer::Peer(const Peer::Builder& builder)
   : m_id(builder.getId())
   , m_login(builder.getLogin())
+  , m_email(builder.getEmail())
   , m_channel(builder.getChannel()) {
 }
 
@@ -367,7 +368,7 @@ std::string Peer::toJson() const {
       << ",\"" D_ITEM_LOGIN "\":\"" << m_login
       << "\",\"" D_ITEM_EMAIL "\":\"" << m_email
       << "\",\"" D_ITEM_CHANNEL "\":" << m_channel
-      << "\"}";
+      << "}";
   return oss.str();
 }
 

@@ -223,8 +223,7 @@ void ServerApiImpl::sendPeers(int socket, StatusCode status, const std::vector<P
   std::ostringstream oss, json;
   json << "{\"" D_ITEM_PEERS "\":[";
   for (auto it = peers.begin(); it != peers.end(); ++it) {
-    json << delimiter;
-    json << it->toJson();
+    json << delimiter << it->toJson();
     delimiter = ",";
   }
   json << "]";
@@ -650,7 +649,7 @@ bool ServerApiImpl::authenticate(const std::string& expected_pass, const std::st
 }
 
 void ServerApiImpl::doLogin(int socket, ID_t id, const std::string& name, const std::string& email) {
-  TRC("doLogin(%lli, %s)", id, name.c_str());
+  TRC("doLogin(%lli, %s, %s)", id, name.c_str(), email.c_str());
   server::Peer peer(id, name, email);
   peer.setToken(name);
   peer.setSocket(socket);
