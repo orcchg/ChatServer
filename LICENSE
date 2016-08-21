@@ -2,8 +2,17 @@
                        Version 3, 29 June 2007
 
  Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>
+               2016 Maxim Alov <alovmax@yandex.ru>
  Everyone is permitted to copy and distribute verbatim copies
  of this license document, but changing it is not allowed.
+
+ This program and text files composing it, and/or compiled binary files
+ (object files, shared objects, binary executables) obtained from text
+ files of this program using compiler, as well as other files (text, images, etc.)
+ composing this program as a software project, or any part of it,
+ cannot be used by 3rd-parties in any commercial way (selling for money or for free,
+ advertising, commercial distribution, promotion, marketing, publishing in media, etc.).
+ Only the original author - Maxim Alov - has right to do any of the above actions.
 
                             Preamble
 
