@@ -50,8 +50,7 @@ std::string getRegistrationForm_request(const std::string& host) {
 std::string sendLoginForm_request(const std::string& host, const LoginForm& form) {
   std::ostringstream oss;
   oss << "POST " D_PATH_LOGIN " HTTP/1.1\r\nHost: " << host << "\r\n\r\n"
-      << "{\"" D_ITEM_LOGIN "\":\"" << form.getLogin()
-      << "\",\"" D_ITEM_PASSWORD "\":\"" << form.getPassword() << "\"}";
+      << form.toJson();
   MSG("Request: %s", oss.str().c_str());
   return oss.str();
 }
@@ -59,9 +58,7 @@ std::string sendLoginForm_request(const std::string& host, const LoginForm& form
 std::string sendRegistrationForm_request(const std::string& host, const RegistrationForm& form) {
   std::ostringstream oss;
   oss << "POST " D_PATH_REGISTER " HTTP/1.1\r\nHost: " << host << "\r\n\r\n"
-      << "{\"" D_ITEM_LOGIN "\":\"" << form.getLogin()
-      << "\",\"" D_ITEM_EMAIL "\":\"" << form.getEmail()
-      << "\",\"" D_ITEM_PASSWORD "\":\"" << form.getPassword() << "\"}";
+      << form.toJson();
   MSG("Request: %s", oss.str().c_str());
   return oss.str();
 }

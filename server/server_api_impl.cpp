@@ -110,7 +110,8 @@ void ServerApiImpl::logoutPeerAtConnectionReset(int socket) {
 
 void ServerApiImpl::sendLoginForm(int socket) {
   TRC("sendLoginForm");
-  std::string json = "{\"" D_ITEM_LOGIN "\":\"\",\"" D_ITEM_PASSWORD "\":\"\"}";
+  LoginForm form("", "");
+  std::string json = form.toJson();
   std::ostringstream oss;
   oss << "HTTP/1.1 200 OK\r\n" << STANDARD_HEADERS << "\r\n"
       << CONTENT_LENGTH_HEADER << json.length() << "\r\n\r\n"
@@ -121,7 +122,8 @@ void ServerApiImpl::sendLoginForm(int socket) {
 
 void ServerApiImpl::sendRegistrationForm(int socket) {
   TRC("sendRegistrationForm");
-  std::string json = "{\"" D_ITEM_LOGIN "\":\"\",\"" D_ITEM_EMAIL "\":\"\",\"" D_ITEM_PASSWORD "\":\"\"}";
+  RegistrationForm form("", "", "");
+  std::string json = form.toJson();
   std::ostringstream oss;
   oss << "HTTP/1.1 200 OK\r\n" << STANDARD_HEADERS << "\r\n"
       << CONTENT_LENGTH_HEADER << json.length() << "\r\n\r\n"
@@ -229,11 +231,7 @@ void ServerApiImpl::sendPeers(int socket, StatusCode status, const std::vector<P
   std::ostringstream oss, json;
   json << "{\"" D_ITEM_PEERS "\":[";
   for (auto it = peers.begin(); it != peers.end(); ++it) {
-    json << delimiter;
-    json << "{\"" D_ITEM_ID "\":" << it->getId()
-         << ",\"" D_ITEM_LOGIN "\":\"" << it->getLogin() << "\""
-         << ",\"" D_ITEM_CHANNEL "\":" << it->getChannel()
-         << "}";
+    json << delimiter << it->toJson();
     delimiter = ",";
   }
   json << "]";
@@ -276,7 +274,7 @@ StatusCode ServerApiImpl::login(int socket, const std::string& json, ID_t& id) {
   try {
     LoginForm form = LoginForm::fromJson(json);
 #if SECURE
-    {
+    if (form.isEncrypted()) {
       DBG("Decrypt received login form before login");
       form.decrypt(m_key_pair.second);
     }
@@ -293,7 +291,7 @@ StatusCode ServerApiImpl::registrate(int socket, const std::string& json, ID_t& 
   try {
     RegistrationForm form = RegistrationForm::fromJson(json);
 #if SECURE
-    {
+    if (form.isEncrypted()) {
       DBG("Decrypt received registration form before registration");
       form.decrypt(m_key_pair.second);
     }
@@ -375,7 +373,7 @@ StatusCode ServerApiImpl::logout(const std::string& path, ID_t& id) {
       oss << "HTTP/1.1 200 Logged Out\r\n" << STANDARD_HEADERS << "\r\n"
           << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
           << json.str() << "\0";
-      MSG("Response: %s", oss.str().c_str());
+      // MSG("Response: %s", oss.str().c_str());
       send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
       oss.str("");
       json.str("");
@@ -448,7 +446,7 @@ StatusCode ServerApiImpl::switchChannel(const std::string& path, ID_t& id) {
       oss << "HTTP/1.1 200 Switched channel\r\n" << STANDARD_HEADERS << "\r\n"
           << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
           << json.str() << "\0";
-      MSG("Response: %s", oss.str().c_str());
+      // MSG("Response: %s", oss.str().c_str());
       send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
       oss.str("");
       json.str("");
@@ -491,6 +489,7 @@ StatusCode ServerApiImpl::getAllPeers(const std::string& path, std::vector<Peer>
     for (auto& it : m_peers) {
       Peer peer = Peer::Builder(it.first)
           .setLogin(it.second.getLogin())
+          .setEmail(it.second.getEmail())
           .setChannel(it.second.getChannel())
           .build();
       peers->emplace_back(peer);
@@ -501,6 +500,7 @@ StatusCode ServerApiImpl::getAllPeers(const std::string& path, std::vector<Peer>
       if (channel == it.second.getChannel()) {
         Peer peer = Peer::Builder(it.first)
             .setLogin(it.second.getLogin())
+            .setEmail(it.second.getEmail())
             .setChannel(it.second.getChannel())
             .build();
         peers->emplace_back(peer);
@@ -657,7 +657,7 @@ bool ServerApiImpl::authenticate(const std::string& expected_pass, const std::st
 }
 
 void ServerApiImpl::doLogin(int socket, ID_t id, const std::string& name, const std::string& email) {
-  TRC("doLogin(%lli, %s)", id, name.c_str());
+  TRC("doLogin(%lli, %s, %s)", id, name.c_str(), email.c_str());
   server::Peer peer(id, name, email);
   peer.setToken(name);
   peer.setSocket(socket);
@@ -680,7 +680,7 @@ void ServerApiImpl::doLogin(int socket, ID_t id, const std::string& name, const 
       oss << "HTTP/1.1 200 Logged In\r\n" << STANDARD_HEADERS << "\r\n"
           << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
           << json.str() << "\0";
-      MSG("Response: %s", oss.str().c_str());
+      // MSG("Response: %s", oss.str().c_str());
       send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
       oss.str("");
       json.str("");
@@ -732,7 +732,7 @@ void ServerApiImpl::broadcast(const Message& message) {
       oss << "HTTP/1.1 102 Processing\r\n" << STANDARD_HEADERS << "\r\n"
           << CONTENT_LENGTH_HEADER << json.length() << "\r\n\r\n"
           << json;
-      MSG("Response: %s", oss.str().c_str());
+      // MSG("Response: %s", oss.str().c_str());
       send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
       oss.str("");
     } else if (id == message.getId()) {

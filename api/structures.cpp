@@ -103,7 +103,8 @@ std::string LoginForm::toJson() const {
   std::ostringstream oss;
   oss << "{\"" D_ITEM_LOGIN "\":\"" << m_login
       << "\",\"" D_ITEM_PASSWORD "\":\"" << m_password
-      << "\"}";
+      << "\",\"" D_ITEM_ENCRYPTED "\":" << (m_is_password_encrypted ? 1 : 0)
+      << "}";
   return oss.str();
 }
 
@@ -114,8 +115,10 @@ LoginForm LoginForm::fromJson(const std::string& json) {
 
   if (document.IsObject() &&
       document.HasMember(ITEM_LOGIN) && document[ITEM_LOGIN].IsString() &&
-      document.HasMember(ITEM_PASSWORD) && document[ITEM_PASSWORD].IsString()) {
+      document.HasMember(ITEM_PASSWORD) && document[ITEM_PASSWORD].IsString() &&
+      document.HasMember(ITEM_ENCRYPTED) && document[ITEM_ENCRYPTED].IsInt()) {
     LoginForm form(document[ITEM_LOGIN].GetString(), document[ITEM_PASSWORD].GetString());
+    form.setEncrypted(document[ITEM_ENCRYPTED].GetInt() != 0);
     return form;
   } else {
     ERR("Login Form parse failed: invalid json: %s", json.c_str());
@@ -154,7 +157,8 @@ std::string RegistrationForm::toJson() const {
   oss << "{\"" D_ITEM_LOGIN "\":\"" << m_login
       << "\",\"" D_ITEM_EMAIL "\":\"" << m_email
       << "\",\"" D_ITEM_PASSWORD "\":\"" << m_password
-      << "\"}";
+      << "\",\"" D_ITEM_ENCRYPTED "\":" << (m_is_password_encrypted ? 1 : 0)
+      << "}";
   return oss.str();
 }
 
@@ -166,8 +170,10 @@ RegistrationForm RegistrationForm::fromJson(const std::string& json) {
   if (document.IsObject() &&
       document.HasMember(ITEM_LOGIN) && document[ITEM_LOGIN].IsString() &&
       document.HasMember(ITEM_EMAIL) && document[ITEM_EMAIL].IsString() &&
-      document.HasMember(ITEM_PASSWORD) && document[ITEM_PASSWORD].IsString()) {
+      document.HasMember(ITEM_PASSWORD) && document[ITEM_PASSWORD].IsString() &&
+      document.HasMember(ITEM_ENCRYPTED) && document[ITEM_ENCRYPTED].IsInt()) {
     RegistrationForm form(document[ITEM_LOGIN].GetString(), document[ITEM_EMAIL].GetString(), document[ITEM_PASSWORD].GetString());
+    form.setEncrypted(document[ITEM_ENCRYPTED].GetInt() != 0);
     return form;
   } else {
     ERR("Registration Form parse failed: invalid json: %s", json.c_str());
@@ -360,6 +366,7 @@ Peer Peer::Builder::build() {
 Peer::Peer(const Peer::Builder& builder)
   : m_id(builder.getId())
   , m_login(builder.getLogin())
+  , m_email(builder.getEmail())
   , m_channel(builder.getChannel()) {
 }
 
@@ -369,7 +376,7 @@ std::string Peer::toJson() const {
       << ",\"" D_ITEM_LOGIN "\":\"" << m_login
       << "\",\"" D_ITEM_EMAIL "\":\"" << m_email
       << "\",\"" D_ITEM_CHANNEL "\":" << m_channel
-      << "\"}";
+      << "}";
   return oss.str();
 }
 

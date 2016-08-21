@@ -195,6 +195,23 @@ TEST_F(CryptingUtilTest, RSAdirect) {
   EXPECT_STREQ(input.c_str(), output.c_str());
 }
 
+TEST_F(CryptingUtilTest, RSAdirectDoubleCipher) {
+  // 255 chars + '\0', in practise must be not greater than (214 + '\0') due to padding
+  std::string input = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna. Maecenas quis mi est blandit";
+
+  bool encrypted = false, decrypted = false;
+  std::string cipher_one = secure::good::encryptRSA(m_key_pair.first, input, encrypted);
+  std::string cipher_two = secure::good::encryptRSA(m_key_pair.first, input, encrypted);
+  EXPECT_STRNE(cipher_one.c_str(), cipher_two.c_str());
+
+  std::string output_one = secure::good::decryptRSA(m_key_pair.second, cipher_one, decrypted);
+  std::string output_two = secure::good::decryptRSA(m_key_pair.second, cipher_two, decrypted);
+
+  EXPECT_STREQ(output_one.c_str(), output_two.c_str());
+  EXPECT_STREQ(input.c_str(), output_one.c_str());
+  EXPECT_STREQ(input.c_str(), output_two.c_str());
+}
+
 }
 
 #endif  // SECURE

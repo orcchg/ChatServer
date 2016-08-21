@@ -87,9 +87,11 @@ public:
 
   inline const std::string& getLogin() const { return m_login; }
   inline const std::string& getPassword() const { return m_password; }
+  inline bool isEncrypted() const { return m_is_password_encrypted; }
 
   inline void setLogin(const std::string& login) { m_login = login; }
   inline void setPassword(const std::string& password) { m_password = password; }
+  inline void setEncrypted(bool is_encrypted) { m_is_password_encrypted = is_encrypted; }
 
   std::string toJson() const;
   static LoginForm fromJson(const std::string& json);
