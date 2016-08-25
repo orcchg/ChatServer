@@ -77,7 +77,7 @@ protected:
 #endif  // SECURE
 
   bool readConfiguration(const std::string& config_file);
-  virtual Response getResponse(int socket, bool* is_closed);
+  virtual Response getResponse(int socket, bool* is_closed, std::vector<Response>* responses);
 
   void goToMainMenu();
   void stopThread();

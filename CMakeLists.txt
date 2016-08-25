@@ -63,7 +63,7 @@ else()
     ADD_DEFINITIONS( -DSECURE=0 )
 endif()
 
-if( TEST )
+if( WITH_TEST )
     MESSAGE( STATUS "Build with tests" )
     ADD_SUBDIRECTORY( googletest )
     ADD_SUBDIRECTORY( test )

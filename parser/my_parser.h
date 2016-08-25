@@ -39,6 +39,13 @@ struct Query {
   std::string value;
 
   std::string to_string() const;
+
+  inline bool operator == (const Query& rhs) const {
+    return key == rhs.key && value == rhs.value;
+  }
+  inline bool operator != (const Query& rhs) const {
+    return !(*this == rhs);
+  }
 };
 
 struct StartLine {
@@ -47,6 +54,13 @@ struct StartLine {
   int version;
 
   std::string to_string() const;
+
+  inline bool operator == (const StartLine& rhs) const {
+    return method == rhs.method && path == rhs.path && version == rhs.version;
+  }
+  inline bool operator != (const StartLine& rhs) const {
+    return !(*this == rhs);
+  }
 };
 
 struct CodeLine {
@@ -55,6 +69,13 @@ struct CodeLine {
   std::string message;
 
   std::string to_string() const;
+
+  inline bool operator == (const CodeLine& rhs) const {
+    return version == rhs.version && code == rhs.code && message == rhs.message;
+  }
+  inline bool operator != (const CodeLine& rhs) const {
+    return !(*this == rhs);
+  }
 };
 
 struct Header {
@@ -62,6 +83,13 @@ struct Header {
   std::string value;
 
   std::string to_string() const;
+
+  inline bool operator == (const Header& rhs) const {
+    return name == rhs.name && value == rhs.value;
+  }
+  inline bool operator != (const Header& rhs) const {
+    return !(*this == rhs);
+  }
 };
 
 struct Request {
@@ -72,6 +100,9 @@ struct Request {
   static Request EMPTY;
 
   bool isEmpty();
+
+  bool operator == (const Request& rhs) const;
+  bool operator != (const Request& rhs) const;
 };
 
 struct Response {
@@ -82,6 +113,9 @@ struct Response {
   static Response EMPTY;
 
   bool isEmpty();
+
+  bool operator == (const Response& rhs) const;
+  bool operator != (const Response& rhs) const;
 };
 
 std::ostream& operator << (std::ostream& out, const StartLine& startline);
@@ -95,8 +129,11 @@ public:
   MyParser();
   virtual ~MyParser();
 
-  Request parseRequest(char* http, int nbytes) const;
-  Response parseResponse(char* http, int nbytes) const;
+  Request parseRequest(const char* http, int nbytes) const;
+  Response parseResponse(const char* http, int nbytes) const;
+
+  Request parseBufferedRequests(char* http, int nbytes, std::vector<Request>* requests) const;
+  Response parseBufferedResponses(char* http, int nbytes, std::vector<Response>* responses) const;
 
   std::string parsePath(const std::string& path, std::vector<Query>* params) const;
 

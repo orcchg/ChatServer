@@ -31,6 +31,7 @@
 #include <cstring>
 #include <iostream>
 #include <sstream>
+#include <vector>
 #include <errno.h>
 #include "client.h"
 #include "logger.h"
@@ -68,7 +69,8 @@ void Client::run() {
 
   // receive Server's hello
   bool is_stopped = false;
-  Response response = getResponse(m_socket, &is_stopped);
+  std::vector<Response> responses;
+  Response response = getResponse(m_socket, &is_stopped, &responses);
   if (response.isEmpty()) {
     ERR("Received empty response. Connection closed");
     throw ClientException();
@@ -216,7 +218,7 @@ void Client::goToMainMenu() {
 
 /* Process response */
 // ----------------------------------------------
-Response Client::getResponse(int socket, bool* is_closed) {
+Response Client::getResponse(int socket, bool* is_closed, std::vector<Response>* responses) {
   char buffer[MESSAGE_SIZE];
   memset(buffer, 0, MESSAGE_SIZE);
   int read_bytes = recv(socket, buffer, MESSAGE_SIZE, 0);
@@ -231,7 +233,7 @@ Response Client::getResponse(int socket, bool* is_closed) {
     return Response::EMPTY;
   }
   DBG("Raw response[%i bytes]: %.*s", read_bytes, (int) read_bytes, buffer);
-  return m_parser.parseResponse(buffer, read_bytes);
+  return m_parser.parseBufferedResponses(buffer, read_bytes, responses);
 }
 
 /* API invocations */
@@ -256,7 +258,8 @@ void Client::listAllPeers(int channel) {
 
 void Client::receiveAndprocessListAllPeersResponse(bool withChannel) {
   bool is_closed = false;
-  Response check_response = getResponse(m_socket, &is_closed);
+  std::vector<Response> responses;
+  Response check_response = getResponse(m_socket, &is_closed, &responses);
   if (is_closed) {
     return;
   }
@@ -292,7 +295,8 @@ void Client::receiveAndprocessListAllPeersResponse(bool withChannel) {
 void Client::checkLoggedIn(const std::string& name) {
   bool is_closed = false;
   m_api_impl->isLoggedIn(name);
-  Response check_response = getResponse(m_socket, &is_closed);
+  std::vector<Response> responses;
+  Response check_response = getResponse(m_socket, &is_closed, &responses);
   if (is_closed) {
     return;
   }
@@ -320,7 +324,8 @@ void Client::checkLoggedIn(const std::string& name) {
 void Client::getLoginForm() {
   bool is_closed = false;
   m_api_impl->getLoginForm();
-  Response login_form_response = getResponse(m_socket, &is_closed);
+  std::vector<Response> responses;
+  Response login_form_response = getResponse(m_socket, &is_closed, &responses);
   if (is_closed) {
     return;
   }
@@ -352,7 +357,8 @@ void Client::tryLogin(LoginForm& form) {
   }
 #endif  // SECURE
   m_api_impl->sendLoginForm(form);
-  Response code_response = getResponse(m_socket, &is_closed);
+  std::vector<Response> responses;
+  Response code_response = getResponse(m_socket, &is_closed, &responses);
   if (is_closed) {
     return;
   }
@@ -409,7 +415,8 @@ void Client::onLogin() {
 void Client::checkRegistered(const std::string& name) {
   bool is_closed = false;
   m_api_impl->isRegistered(name);
-  Response check_response = getResponse(m_socket, &is_closed);
+  std::vector<Response> responses;
+  Response check_response = getResponse(m_socket, &is_closed, &responses);
   if (is_closed) {
     return;
   }
@@ -437,7 +444,8 @@ void Client::checkRegistered(const std::string& name) {
 void Client::getRegistrationForm() {
   bool is_closed = false;
   m_api_impl->getRegistrationForm();
-  Response register_form_response = getResponse(m_socket, &is_closed);
+  std::vector<Response> responses;
+  Response register_form_response = getResponse(m_socket, &is_closed, &responses);
   if (is_closed) {
     return;
   }
@@ -492,7 +500,8 @@ void Client::tryRegister(RegistrationForm& form) {
   }
 #endif  // SECURE
   m_api_impl->sendRegistrationForm(form);
-  Response code_response = getResponse(m_socket, &is_closed);
+  std::vector<Response> responses;
+  Response code_response = getResponse(m_socket, &is_closed, &responses);
   if (is_closed) {
     return;
   }
@@ -673,7 +682,8 @@ void Client::startChat() {
 
 void Client::receiverThread() {
   while (!m_is_stopped) {
-    Response response = getResponse(m_socket, &m_is_stopped);
+    std::vector<Response> responses;
+    Response response = getResponse(m_socket, &m_is_stopped, &responses);
     if (response.isEmpty()) {
       DBG("Received empty response. Connection closed");
       break;

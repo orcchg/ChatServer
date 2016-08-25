@@ -28,6 +28,7 @@ SET( TARGET common_test )
 SET( SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR} )
 SET( SOURCES
     ${SOURCE_DIR}/common_test.cpp
+    ${SOURCE_DIR}/parser_test.cpp
 )
 ADD_LIBRARY( ${TARGET} STATIC ${SOURCES} )
 TARGET_LINK_LIBRARIES( ${TARGET} ${OPENSSL_LIBS} common gtest )

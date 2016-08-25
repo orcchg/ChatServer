@@ -43,7 +43,18 @@ MyParser::MyParser() {
 MyParser::~MyParser() {
 }
 
-Request MyParser::parseRequest(char* http, int nbytes) const {
+bool Request::operator == (const Request& rhs) const {
+  return startline == rhs.startline &&
+    headers == rhs.headers && body == rhs.body;
+}
+
+bool Request::operator != (const Request& rhs) const {
+  return !(*this == rhs);
+}
+
+Request MyParser::parseRequest(const char* http, int nbytes) const {
+  TRC("parseRequest[%i](%s)", nbytes, http);
+
   const char* CRLF = "\r\n";
   std::istringstream iss(http);
   //MSG("Input: %s", iss.str().c_str());
@@ -84,7 +95,18 @@ Request MyParser::parseRequest(char* http, int nbytes) const {
   return request;  
 }
 
-Response MyParser::parseResponse(char* http, int nbytes) const {
+bool Response::operator == (const Response& rhs) const {
+  return codeline == rhs.codeline &&
+    headers == rhs.headers && body == rhs.body;
+}
+
+bool Response::operator != (const Response& rhs) const {
+  return !(*this == rhs);
+}
+
+Response MyParser::parseResponse(const char* http, int nbytes) const {
+  TRC("parseResponse[%i](%s)", nbytes, http);
+
   const char* CRLF = "\r\n";
   std::istringstream iss(http);
   //MSG("Input: %s", iss.str().c_str());
@@ -123,6 +145,65 @@ Response MyParser::parseResponse(char* http, int nbytes) const {
   }
 
   return response;
+}
+
+static char* anyOfRequest(char* input) {
+  char* ptr = nullptr;
+
+  ptr = strstr(input, "GET /");     if (ptr != nullptr) { return ptr; }
+  ptr = strstr(input, "POST /");    if (ptr != nullptr) { return ptr; }
+  ptr = strstr(input, "PUT /");     if (ptr != nullptr) { return ptr; }
+  ptr = strstr(input, "DELETE /");  if (ptr != nullptr) { return ptr; }
+
+  return ptr;
+}
+
+Request MyParser::parseBufferedRequests(char* http, int nbytes, std::vector<Request>* requests) const {
+  int shift = 4;
+  char* prev = http;
+  char* next = anyOfRequest(http + shift);
+  do {
+    int size = (next != nullptr ? next - prev : strlen(prev));
+    char* buffer = new char[size + shift];
+    memset(buffer, '\0', size + shift);
+    memcpy(buffer, prev, size);
+    Request request = parseRequest(buffer, nbytes);
+    requests->emplace_back(request);
+    delete [] buffer;  buffer = nullptr;
+    prev = next;
+    if (next != nullptr) {
+      next = anyOfRequest(next + shift);
+    }
+  } while (prev != nullptr);
+
+  if (!requests->empty()) {
+    return requests->at(0);
+  }
+  return Request::EMPTY;
+}
+
+Response MyParser::parseBufferedResponses(char* http, int nbytes, std::vector<Response>* responses) const {
+  int shift = 8;
+  char* prev = http;
+  char* next = strstr(http + shift, "HTTP/1.1");
+  do {
+    int size = (next != nullptr ? next - prev : strlen(prev));
+    char* buffer = new char[size + shift];
+    memset(buffer, '\0', size + shift);
+    memcpy(buffer, prev, size);
+    Response response = parseResponse(buffer, nbytes);
+    responses->emplace_back(response);
+    delete [] buffer;  buffer = nullptr;
+    prev = next;
+    if (next != nullptr) {
+      next = strstr(next + shift, "HTTP");
+    }
+  } while (prev != nullptr);
+
+  if (!responses->empty()) {
+    return responses->at(0);
+  }
+  return Response::EMPTY;
 }
 
 std::string MyParser::parsePath(const std::string& path, std::vector<Query>* params) const {

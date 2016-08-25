@@ -67,6 +67,7 @@ void hex2bin(const std::string& source, unsigned char* target, size_t& target_le
 class Dictionary {
 public:
   Dictionary();
+  virtual ~Dictionary();
 
   std::string getMessage(size_t size) const;
 

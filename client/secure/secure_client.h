@@ -48,7 +48,7 @@ protected:
   SSL_CTX* m_ssl_context;
   SSL* m_ssl;  // ssl connection structure
 
-  Response getResponse(int socket, bool* is_closed) override;
+  Response getResponse(int socket, bool* is_closed, std::vector<Response>* responses) override;
   void end() override;
 };
 

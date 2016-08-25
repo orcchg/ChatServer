@@ -102,7 +102,7 @@ void SecureClient::end() {
 
 /* Process response */
 // ----------------------------------------------
-Response SecureClient::getResponse(int socket, bool* is_closed) {
+Response SecureClient::getResponse(int socket, bool* is_closed, std::vector<Response>* responses) {
   char buffer[MESSAGE_SIZE];
   memset(buffer, 0, MESSAGE_SIZE);
   int read_bytes = BIO_read(m_bio, buffer, MESSAGE_SIZE);
@@ -117,7 +117,7 @@ Response SecureClient::getResponse(int socket, bool* is_closed) {
     }
   }
   DBG("Raw response: %.*s", (int) read_bytes, buffer);
-  return m_parser.parseResponse(buffer, read_bytes);
+  return m_parser.parseBufferedResponses(buffer, read_bytes, responses);
 
   FAILURE:
     *is_closed = true;

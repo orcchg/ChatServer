@@ -28,6 +28,7 @@
 
 #include <gtest/gtest.h>
 #include "common/common_test.cpp"
+#include "common/parser_test.cpp"
 #if SECURE
 #include "crypting/aes_cryptor_test.cpp"
 #include "crypting/evp_cryptor_test.cpp"
