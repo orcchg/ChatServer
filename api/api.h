@@ -430,7 +430,8 @@ enum class StatusCode : int {
   ANOTHER_ACTION_REQUIRED = 15,
   PUBLIC_KEY_MISSING = 16,
   PERMISSION_DENIED  = 17,
-  KICKED             = 18
+  KICKED             = 18,
+  FORBIDDEN_MESSAGE  = 19
 };
 
 enum class ChannelMove : int {

@@ -62,6 +62,8 @@ void split(const std::string& input, char delimiter, std::vector<std::string>* o
 std::string bin2hex(unsigned char* src, size_t size);
 void hex2bin(const std::string& source, unsigned char* target, size_t& target_length);
 
+bool isMessageForbidden(const std::string& message);
+
 /* Dictionary */
 // ----------------------------------------------------------------------------
 class Dictionary {

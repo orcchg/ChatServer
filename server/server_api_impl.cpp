@@ -211,6 +211,9 @@ void ServerApiImpl::sendStatus(int socket, StatusCode status, Path action, ID_t 
     case StatusCode::KICKED:
       oss << "200 Kicked by administrator\r\n" << STANDARD_HEADERS << "\r\n";
       break;
+    case StatusCode::FORBIDDEN_MESSAGE:
+      oss << "403 Forbidden message\r\n" << STANDARD_HEADERS << "\r\n";
+      break;
     case StatusCode::UNKNOWN:
       oss << "500 Internal server error\r\n" << STANDARD_HEADERS << "\r\n";
       break;
@@ -342,6 +345,14 @@ StatusCode ServerApiImpl::message(const std::string& json, ID_t& id) {
     if (!isAuthorized(id)) {
       ERR("Peer with id [%lli] is not authorized", id);
       return StatusCode::UNAUTHORIZED;
+    }
+
+    {
+      const std::string& message_str = message.getMessage();
+      if (common::isMessageForbidden(message_str)) {
+        ERR("Forbidden message: %s", message_str.c_str());
+        return StatusCode::FORBIDDEN_MESSAGE;
+      }
     }
 
     broadcast(message);

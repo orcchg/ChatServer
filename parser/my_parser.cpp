@@ -183,9 +183,9 @@ Request MyParser::parseBufferedRequests(char* http, int nbytes, std::vector<Requ
 }
 
 Response MyParser::parseBufferedResponses(char* http, int nbytes, std::vector<Response>* responses) const {
-  int shift = 8;
+  int shift = 5;
   char* prev = http;
-  char* next = strstr(http + shift, "HTTP/1.1");
+  char* next = strstr(http + shift, "HTTP/");
   do {
     int size = (next != nullptr ? next - prev : strlen(prev));
     char* buffer = new char[size + shift];
@@ -196,7 +196,7 @@ Response MyParser::parseBufferedResponses(char* http, int nbytes, std::vector<Re
     delete [] buffer;  buffer = nullptr;
     prev = next;
     if (next != nullptr) {
-      next = strstr(next + shift, "HTTP");
+      next = strstr(next + shift, "HTTP/");
     }
   } while (prev != nullptr);
 

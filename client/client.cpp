@@ -717,6 +717,9 @@ void Client::receiverThread() {
                 stopThread();
                 interruption = true;
                 break;
+              case StatusCode::FORBIDDEN_MESSAGE:
+                printf("\e[5;00;31mSystem: Forbidden message (not sent)\e[m\n");
+                break;
             }
             continue;  // received status from Server
           }
