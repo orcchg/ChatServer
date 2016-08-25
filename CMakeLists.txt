@@ -26,7 +26,8 @@
 
 cmake_minimum_required( VERSION 2.8 )
 PROJECT( ChatServer )
-SET( D_VERSION "1.4" )
+SET( D_VERSION "1.5" )
+MESSAGE( STATUS "Version ${D_VERSION}" )
 
 # -----------------------------------------------------------------------------
 # --------------------------- Common header -----------------------------------
