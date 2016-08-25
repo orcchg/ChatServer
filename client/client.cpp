@@ -597,6 +597,7 @@ void Client::startChat() {
         printf("\t\e[5;00;37m.pe <id> - send public key to <id>\e[m\n");
         printf("\t\e[5;00;37m.pk - store public key remotely (generate if not exists)\e[m\n");
 #endif  // SECURE
+        printf("\t\e[5;00;37m.x <id> - send request to kick peer with <id>\e[m\n");
         printf("\t\e[5;00;37m.q - logout\e[m\n");
         continue;
 #if SECURE
@@ -628,6 +629,9 @@ void Client::startChat() {
         m_api_impl->privatePubKey(m_id, m_key_pair.first);
         continue;
 #endif  // SECURE
+      case util::Command::KICK:
+        m_api_impl->sendKickRequest(m_id, value);
+        continue;
       case util::Command::UNKNOWN:
       default:
         // ignore invalid commands, it could be just a message
@@ -684,10 +688,22 @@ void Client::receiverThread() {
         break;
       }
 
-      if (util::checkStatus(response.body)) {
-        continue;  // received status from Server
+      {  // status code
+        StatusCode status = StatusCode::UNKNOWN;
+        if (util::checkStatus(response.body, status)) {
+          SYS("Received status: %i", static_cast<int>(status));
+          switch (status) {
+            case StatusCode::KICKED:
+              INF("Kicked by administrator");
+              printf("\e[5;00;31mSystem: Kicked by administrator\e[m\n");
+              stopThread();
+              break;
+          }
+          continue;  // received status from Server
+        }
       }
-      {
+
+      {  // system message
         std::string system = "", payload = "";
         Path action = Path::UNKNOWN;
         ID_t id = UNKNOWN_ID;

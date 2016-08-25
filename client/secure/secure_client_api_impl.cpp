@@ -101,28 +101,35 @@ void SecureClientApiImpl::getAllPeers(int channel) {
 
 /* Private secure communication */
 // ----------------------------------------------------------------------------
-void SecureClientApiImpl::privateRequest(int src_id, int dest_id) {
+void SecureClientApiImpl::privateRequest(ID_t src_id, ID_t dest_id) {
   std::string request = util::privateRequest_request(m_host, src_id, dest_id);
   BIO_write(m_bio, request.c_str(), request.length());
 }
 
-void SecureClientApiImpl::privateConfirm(int src_id, int dest_id, bool accept) {
+void SecureClientApiImpl::privateConfirm(ID_t src_id, ID_t dest_id, bool accept) {
   std::string request = util::privateConfirm_request(m_host, src_id, dest_id, accept);
   BIO_write(m_bio, request.c_str(), request.length());
 }
 
-void SecureClientApiImpl::privateAbort(int src_id, int dest_id) {
+void SecureClientApiImpl::privateAbort(ID_t src_id, ID_t dest_id) {
   std::string request = util::privateAbort_request(m_host, src_id, dest_id);
   BIO_write(m_bio, request.c_str(), request.length());
 }
 
-void SecureClientApiImpl::privatePubKey(int id, const secure::Key& key) {
+void SecureClientApiImpl::privatePubKey(ID_t id, const secure::Key& key) {
   std::string request = util::privatePubKey_request(m_host, id, key);
   BIO_write(m_bio, request.c_str(), request.length());
 }
 
-void SecureClientApiImpl::privatePubKeysExchange(int src_id, int dest_id) {
+void SecureClientApiImpl::privatePubKeysExchange(ID_t src_id, ID_t dest_id) {
   std::string request = util::privatePubKeysExchange_request(m_host, src_id, dest_id);
+  BIO_write(m_bio, request.c_str(), request.length());
+}
+
+/* Administrating */
+// ----------------------------------------------------------------------------
+void SecureClientApiImpl::sendKickRequest(ID_t src_id, ID_t dest_id) {
+  std::string request = util::sendKickRequest_request(m_host, src_id, dest_id);
   BIO_write(m_bio, request.c_str(), request.length());
 }
 

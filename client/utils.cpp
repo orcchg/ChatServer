@@ -102,13 +102,18 @@ int selectChannel() {
   return channel;
 }
 
-bool checkStatus(const std::string& json) {
+bool checkStatus(const std::string& json, StatusCode& status) {
+  status = StatusCode::UNKNOWN;
   rapidjson::Document document;
   auto prepared_json = common::preparse(json);
   document.Parse(prepared_json.c_str());
-  return document.IsObject() &&
+  bool result = document.IsObject() &&
       document.HasMember(ITEM_CODE) && document[ITEM_CODE].IsInt() &&
       document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64();
+  if (result) {
+    status = static_cast<StatusCode>(document[ITEM_CODE].GetInt());
+  }
+  return result;
 }
 
 bool checkSystemMessage(
@@ -205,13 +210,13 @@ PrivateHandshake checkPrivateHandshake(const std::string& json, HandshakeBundle*
 #endif  // SECURE
 
 bool isEmailValid(const std::string& email) {
-  try {
+  /*try {
     auto pattern = std::regex(EMAIL_REGEX_PATTERN);
     return std::regex_match(email, pattern);
   } catch (std::regex_error) {
-    ERR("Regular expressions aren't supported. Using simple verification...");
+    ERR("Regular expressions aren't supported. Using simple verification...");*/
     return email.find('@') != std::string::npos;
-  }
+  /*}*/
 }
 
 Command parseCommand(const std::string& command, ID_t& value) {
@@ -239,6 +244,7 @@ Command parseCommand(const std::string& command, ID_t& value) {
         }
         break;
 #endif  // SECURE
+      case 'x': return Command::KICK;
     }
   }
   return Command::UNKNOWN;

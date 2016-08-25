@@ -78,6 +78,23 @@ ServerApiImpl::~ServerApiImpl() {
 #endif  // SECURE
 }
 
+void ServerApiImpl::kickPeer(ID_t id) {
+  TRC("kickPeer(%lli)", id);
+  auto it = m_peers.find(id);
+  if (it != m_peers.end()) {
+    // send notification for kicked peer
+    sendStatus(it->second.getSocket(), StatusCode::KICKED, Path::KICK, it->first);
+
+    INF("Kick peer with ID[%lli] at command", it->first);
+    std::ostringstream oss;
+    oss << PATH_LOGOUT << "?" D_ITEM_ID "=" << it->first << "&" D_ITEM_LOGIN "=" << it->second.getLogin(); 
+    ID_t o_id = UNKNOWN_ID;
+    logout(oss.str(), o_id);
+  } else {
+    WRN("No such peer to kick: %lli", id);
+  }
+}
+
 void ServerApiImpl::sendHello(int socket) {
   TRC("sendHello");
   std::ostringstream oss, json;
@@ -92,7 +109,7 @@ void ServerApiImpl::sendHello(int socket) {
       << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
       << json.str();
   MSG("Response: %s", oss.str().c_str());
-  send(socket, oss.str().c_str(), oss.str().length(), 0);
+  sendToSocket(socket, oss.str().c_str(), oss.str().length());
 }
 
 void ServerApiImpl::logoutPeerAtConnectionReset(int socket) {
@@ -117,7 +134,7 @@ void ServerApiImpl::sendLoginForm(int socket) {
       << CONTENT_LENGTH_HEADER << json.length() << "\r\n\r\n"
       << json;
   MSG("Response: %s", oss.str().c_str());
-  send(socket, oss.str().c_str(), oss.str().length(), 0);
+  sendToSocket(socket, oss.str().c_str(), oss.str().length());
 }
 
 void ServerApiImpl::sendRegistrationForm(int socket) {
@@ -129,7 +146,7 @@ void ServerApiImpl::sendRegistrationForm(int socket) {
       << CONTENT_LENGTH_HEADER << json.length() << "\r\n\r\n"
       << json;
   MSG("Response: %s", oss.str().c_str());
-  send(socket, oss.str().c_str(), oss.str().length(), 0);
+  sendToSocket(socket, oss.str().c_str(), oss.str().length());
 }
 
 void ServerApiImpl::sendStatus(int socket, StatusCode status, Path action, ID_t id) {
@@ -188,6 +205,12 @@ void ServerApiImpl::sendStatus(int socket, StatusCode status, Path action, ID_t 
     case StatusCode::PUBLIC_KEY_MISSING:
       oss << "404 Public key is missing\r\n" << STANDARD_HEADERS << "\r\n";
       break;
+    case StatusCode::PERMISSION_DENIED:
+      oss << "403 Permission denied\r\n" << STANDARD_HEADERS << "\r\n";
+      break;
+    case StatusCode::KICKED:
+      oss << "200 Kicked by administrator\r\n" << STANDARD_HEADERS << "\r\n";
+      break;
     case StatusCode::UNKNOWN:
       oss << "500 Internal server error\r\n" << STANDARD_HEADERS << "\r\n";
       break;
@@ -206,7 +229,7 @@ void ServerApiImpl::sendStatus(int socket, StatusCode status, Path action, ID_t 
   oss << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
       << json.str() << "\0";
   MSG("Response: %s", oss.str().c_str());
-  send(socket, oss.str().c_str(), oss.str().length(), 0);
+  sendToSocket(socket, oss.str().c_str(), oss.str().length());
 
   m_payload = NULL_PAYLOAD;  // drop extra data
 }
@@ -222,7 +245,7 @@ void ServerApiImpl::sendCheck(int socket, bool check, Path action, ID_t id) {
       << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
       << json.str() << "\0";
   MSG("Response: %s", oss.str().c_str());
-  send(socket, oss.str().c_str(), oss.str().length(), 0);
+  sendToSocket(socket, oss.str().c_str(), oss.str().length());
 }
 
 void ServerApiImpl::sendPeers(int socket, StatusCode status, const std::vector<Peer>& peers, int channel) {
@@ -244,7 +267,7 @@ void ServerApiImpl::sendPeers(int socket, StatusCode status, const std::vector<P
       << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
       << json.str() << "\0";
   MSG("Response: %s", oss.str().c_str());
-  send(socket, oss.str().c_str(), oss.str().length(), 0);
+  sendToSocket(socket, oss.str().c_str(), oss.str().length());
 }
 
 #if SECURE
@@ -263,7 +286,7 @@ void ServerApiImpl::sendPubKey(const secure::Key& key, ID_t dest_id) {
       << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
       << json.str() << "\0";
   MSG("Response: %s", oss.str().c_str());
-  send(dest_peer_it->second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
+  sendToSocket(dest_peer_it->second.getSocket(), oss.str().c_str(), oss.str().length());
 }
 
 #endif  // SECURE
@@ -374,7 +397,7 @@ StatusCode ServerApiImpl::logout(const std::string& path, ID_t& id) {
           << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
           << json.str() << "\0";
       // MSG("Response: %s", oss.str().c_str());
-      send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
+      sendToSocket(it.second.getSocket(), oss.str().c_str(), oss.str().length());
       oss.str("");
       json.str("");
     }
@@ -447,7 +470,7 @@ StatusCode ServerApiImpl::switchChannel(const std::string& path, ID_t& id) {
           << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
           << json.str() << "\0";
       // MSG("Response: %s", oss.str().c_str());
-      send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
+      sendToSocket(it.second.getSocket(), oss.str().c_str(), oss.str().length());
       oss.str("");
       json.str("");
     }
@@ -520,9 +543,14 @@ void ServerApiImpl::terminate() {
   for (auto& it : m_peers) {
     prepareSimpleResponse(oss, TERMINATE_CODE, "Terminate");
     MSG("Response: %s", oss.str().c_str());
-    send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
+    sendToSocket(it.second.getSocket(), oss.str().c_str(), oss.str().length());
     oss.str("");
   }
+}
+
+void ServerApiImpl::sendToSocket(int socket, const char* buffer, int length) {
+  std::lock_guard<std::mutex> latch(m_mutex);
+  send(socket, buffer, length, 0);
 }
 
 /* Internal */
@@ -585,7 +613,7 @@ std::ostringstream& ServerApiImpl::prepareSimpleResponse(std::ostringstream& out
   return out;
 }
 
-void ServerApiImpl::simpleResponse(const std::vector<ID_t>& ids, int code, const std::string& message) const {
+void ServerApiImpl::simpleResponse(const std::vector<ID_t>& ids, int code, const std::string& message) {
   TRC("simpleResponse(size = %zu)", ids.size());
   std::ostringstream oss;
   if (ids.empty()) {
@@ -593,7 +621,7 @@ void ServerApiImpl::simpleResponse(const std::vector<ID_t>& ids, int code, const
     for (auto& it : m_peers) {
       prepareSimpleResponse(oss, code, message);
       MSG("Response: %s", oss.str().c_str());
-      send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
+      sendToSocket(it.second.getSocket(), oss.str().c_str(), oss.str().length());
       oss.str("");
     }
   } else {
@@ -604,13 +632,18 @@ void ServerApiImpl::simpleResponse(const std::vector<ID_t>& ids, int code, const
         int socket = peer_it->second.getSocket();
         prepareSimpleResponse(oss, code, message);
         MSG("Response: %s", oss.str().c_str());
-        send(socket, oss.str().c_str(), oss.str().length(), 0);
+        sendToSocket(socket, oss.str().c_str(), oss.str().length());
         oss.str("");
       } else {
         WRN("Peer with id [%lli] not found!", it);  // skip
       }
     }
   }
+}
+
+bool ServerApiImpl::checkPermission(ID_t id) const {
+  // TODO: check for admin
+  return true;
 }
 
 /* Internals */
@@ -681,7 +714,7 @@ void ServerApiImpl::doLogin(int socket, ID_t id, const std::string& name, const 
           << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
           << json.str() << "\0";
       // MSG("Response: %s", oss.str().c_str());
-      send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
+      sendToSocket(it.second.getSocket(), oss.str().c_str(), oss.str().length());
       oss.str("");
       json.str("");
     }
@@ -709,7 +742,7 @@ void ServerApiImpl::broadcast(const Message& message) {
           << CONTENT_LENGTH_HEADER << json.length() << "\r\n\r\n"
           << json;
       MSG("Response: %s", oss.str().c_str());
-      send(it->second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
+      sendToSocket(it->second.getSocket(), oss.str().c_str(), oss.str().length());
       oss.str("");
     } else if (dest_id == message.getId()) {
       printf("\e[5;00;33mNot sent: same peer\e[m\n");
@@ -733,7 +766,7 @@ void ServerApiImpl::broadcast(const Message& message) {
           << CONTENT_LENGTH_HEADER << json.length() << "\r\n\r\n"
           << json;
       // MSG("Response: %s", oss.str().c_str());
-      send(it.second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
+      sendToSocket(it.second.getSocket(), oss.str().c_str(), oss.str().length());
       oss.str("");
     } else if (id == message.getId()) {
       printf("\e[5;00;33mNot sent: same peer\e[m\n");
@@ -804,7 +837,7 @@ StatusCode ServerApiImpl::privateRequest(const std::string& path, ID_t& id) {
         << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
         << json.str() << "\0";
     MSG("Response: %s", oss.str().c_str());
-    send(dest_peer_it->second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
+    sendToSocket(dest_peer_it->second.getSocket(), oss.str().c_str(), oss.str().length());
     oss.str("");
     json.str("");
   } else {
@@ -985,7 +1018,7 @@ StatusCode ServerApiImpl::sendPrivateConfirm(const std::string& path, bool i_abo
         << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
         << json.str() << "\0";
     MSG("Response: %s", oss.str().c_str());
-    send(dest_peer_it->second.getSocket(), oss.str().c_str(), oss.str().length(), 0);
+    sendToSocket(dest_peer_it->second.getSocket(), oss.str().c_str(), oss.str().length());
     oss.str("");
     json.str("");
   } else {
@@ -1093,6 +1126,44 @@ void ServerApiImpl::eraseAllPendingHandshakes(ID_t id) {
     total += item.second.erase(id);
   }
   DBG("Erased %i handshakes", total);
+}
+
+/* Administrating */
+// ----------------------------------------------------------------------------
+StatusCode ServerApiImpl::tryKickPeer(const std::string& path, ID_t& id) {
+  TRC("tryKickPeer(%s)", path.c_str());
+  id = UNKNOWN_ID;
+  std::vector<Query> params;
+  m_parser.parsePath(path, &params);
+  for (auto& query : params) {
+    DBG("Query: %s: %s", query.key.c_str(), query.value.c_str());
+  }
+  if (params.size() < 2 || params[0].key.compare(ITEM_SRC_ID) != 0 ||
+      params[1].key.compare(ITEM_DEST_ID) != 0) {
+    ERR("Try kick peer failed: wrong query params: %s", path.c_str());
+    return StatusCode::INVALID_QUERY;
+  }
+  ID_t src_id = std::stoll(params[0].value.c_str());
+  ID_t dest_id = std::stoll(params[1].value.c_str());
+  id = src_id;
+  if (!isAuthorized(id)) {
+    ERR("Source peer with id [%lli] is not authorized", id);
+    return StatusCode::UNAUTHORIZED;
+  }
+  if (id == dest_id) {
+    ERR("Same id in query params: src_id [%lli], dest_id [%lli]", id, dest_id);
+    return StatusCode::INVALID_QUERY;
+  }
+  if (!isAuthorized(dest_id)) {
+    ERR("Destination peer hasn't logged in, dest_id [%lli]", dest_id);
+    return StatusCode::NO_SUCH_PEER;
+  }
+  if (!checkPermission(src_id)) {
+    ERR("Source peer with id [%lli] has no administrator permissions", id);
+    return StatusCode::PERMISSION_DENIED;
+  }
+  kickPeer(dest_id);  // kick dest peer by src peer (admin)
+  return StatusCode::SUCCESS;
 }
 
 #endif  // SECURE

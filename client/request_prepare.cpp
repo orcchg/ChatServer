@@ -123,7 +123,7 @@ std::string getAllPeers_request(const std::string& host, int channel) {
 // ----------------------------------------------------------------------------
 #if SECURE
 
-std::string privateRequest_request(const std::string& host, int src_id, int dest_id) {
+std::string privateRequest_request(const std::string& host, ID_t src_id, ID_t dest_id) {
   std::ostringstream oss;
   oss << "POST " D_PATH_PRIVATE_REQUEST "?" D_ITEM_SRC_ID "=" << src_id
       << "&" D_ITEM_DEST_ID "=" << dest_id
@@ -132,7 +132,7 @@ std::string privateRequest_request(const std::string& host, int src_id, int dest
   return oss.str();
 }
 
-std::string privateConfirm_request(const std::string& host, int src_id, int dest_id, bool accept) {
+std::string privateConfirm_request(const std::string& host, ID_t src_id, ID_t dest_id, bool accept) {
   std::ostringstream oss;
   oss << "POST " D_PATH_PRIVATE_CONFIRM "?" D_ITEM_SRC_ID "=" << src_id
       << "&" D_ITEM_DEST_ID "=" << dest_id
@@ -142,7 +142,7 @@ std::string privateConfirm_request(const std::string& host, int src_id, int dest
   return oss.str();
 }
 
-std::string privateAbort_request(const std::string& host, int src_id, int dest_id) {
+std::string privateAbort_request(const std::string& host, ID_t src_id, ID_t dest_id) {
   std::ostringstream oss;
   oss << "DELETE " D_PATH_PRIVATE_ABORT "?" D_ITEM_SRC_ID "=" << src_id
       << "&" D_ITEM_DEST_ID "=" << dest_id
@@ -151,7 +151,7 @@ std::string privateAbort_request(const std::string& host, int src_id, int dest_i
   return oss.str();
 }
 
-std::string privatePubKey_request(const std::string& host, int src_id, const secure::Key& key) {
+std::string privatePubKey_request(const std::string& host, ID_t src_id, const secure::Key& key) {
   std::ostringstream oss;
   oss << "POST " D_PATH_PRIVATE_PUBKEY "?" D_ITEM_ID "=" << src_id
       << " HTTP/1.1\r\nHost: " << host << "\r\n\r\n"
@@ -160,7 +160,7 @@ std::string privatePubKey_request(const std::string& host, int src_id, const sec
   return oss.str();
 }
 
-std::string privatePubKeysExchange_request(const std::string& host, int src_id, int dest_id) {
+std::string privatePubKeysExchange_request(const std::string& host, ID_t src_id, ID_t dest_id) {
   std::ostringstream oss;
   oss << "POST " D_PATH_PRIVATE_PUBKEY_EXCHANGE "?" D_ITEM_SRC_ID "=" << src_id
       << "&" D_ITEM_DEST_ID "=" << dest_id
@@ -170,6 +170,17 @@ std::string privatePubKeysExchange_request(const std::string& host, int src_id, 
 }
 
 #endif  // SECURE
+
+/* Administrating */
+// ----------------------------------------------------------------------------
+std::string sendKickRequest_request(const std::string& host, ID_t src_id, ID_t dest_id) {
+  std::ostringstream oss;
+  oss << "DELETE " D_PATH_KICK "?" D_ITEM_SRC_ID "=" << src_id
+      << "&" D_ITEM_DEST_ID "=" << dest_id
+      << " HTTP/1.1\r\nHost: " << host << "\r\n\r\n";
+  MSG("Request: %s", oss.str().c_str());
+  return oss.str();
+}
 
 }
 

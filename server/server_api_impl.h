@@ -29,6 +29,7 @@
 #ifndef CHAT_SERVER_SERVER_API_IMPL__H__
 #define CHAT_SERVER_SERVER_API_IMPL__H__
 
+#include <mutex>
 #include <unordered_map>
 #include "api/api.h"
 #include "api/structures.h"
@@ -66,6 +67,7 @@ public:
   ServerApiImpl();
   virtual ~ServerApiImpl();
 
+  void kickPeer(ID_t id) override;
   void sendHello(int socket) override;
   void logoutPeerAtConnectionReset(int socket) override;
 
@@ -97,6 +99,7 @@ public:
 
   void setKeyPair(const std::pair<secure::Key, secure::Key>& keypair) override;
 #endif  // SECURE
+  StatusCode tryKickPeer(const std::string& path, ID_t& id) override;
 
   void terminate() override;
 
@@ -122,6 +125,9 @@ private:
   KeyDTOtoKeyMapper m_keys_mapper;
   std::pair<secure::Key, secure::Key> m_key_pair;
 #endif  // SECURE
+  std::mutex m_mutex;
+
+  void sendToSocket(int socket, const char* buffer, int length);
 
   StatusCode loginPeer(int socket, const LoginForm& form, ID_t& id);
   ID_t registerPeer(int socket, const RegistrationForm& form);
@@ -134,7 +140,8 @@ private:
   std::string getSymbolicFromQuery(const std::string& path) const;
   PeerDTO getPeerFromDatabase(const std::string& symbolic, ID_t& id) const;
   std::ostringstream& prepareSimpleResponse(std::ostringstream& out, int code, const std::string& message) const;
-  void simpleResponse(const std::vector<ID_t>& ids, int code, const std::string& message) const;
+  void simpleResponse(const std::vector<ID_t>& ids, int code, const std::string& message);
+  bool checkPermission(ID_t id) const;
 #if SECURE
   StatusCode sendPrivateConfirm(const std::string& path, bool i_abort, ID_t& src_id, ID_t& dest_id);
   void storePublicKey(ID_t id, const secure::Key& key);

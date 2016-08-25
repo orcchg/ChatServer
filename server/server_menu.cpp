@@ -26,6 +26,7 @@
  *   Only the original author - Maxim Alov - has right to do any of the above actions.
  */
 
+#include <string>
 #include <cstdio>
 #include <cstring>
 #include "logger.h"
@@ -34,6 +35,7 @@
 namespace menu {
 
 const char* HELP = "help";
+const char* KICK = "kick";
 const char* LOGI = "logi";
 const char* LIST = "list";
 #if SECURE
@@ -41,30 +43,47 @@ const char* PRIV = "priv";
 #endif  // SECURE
 const char* STOP = "stop";
 
-bool evaluate(Server* server, char* command) {
-  if (strcmp(HELP, command) == 0) {
+static bool evaluateKick(const std::string& command, ID_t& id) {
+  id = UNKNOWN_ID;
+  if (command.length() >= 6 &&
+      command[0] == 'k' && command[1] == 'i' && command[2] == 'c' && command[3] == 'k') {
+    int i1 = command.find_last_of(' ');
+    if (i1 != std::string::npos) {
+      id = std::stoll(command.substr(i1 + 1));
+      return true;
+    }
+  }
+  return false;
+}
+
+bool evaluate(Server* server, const std::string& command) {
+  ID_t id = UNKNOWN_ID;
+  if (strcmp(HELP, command.c_str()) == 0) {
     printHelp();
-  } else if (strcmp(LOGI, command) == 0) {
+  } else if (evaluateKick(command, id)) {
+    server->kick(id);
+  } else if (strcmp(LOGI, command.c_str()) == 0) {
     server->logIncoming();
-  } else if (strcmp(LIST, command) == 0) {
+  } else if (strcmp(LIST, command.c_str()) == 0) {
     server->listAllPeers();
 #if SECURE
-  } else if (strcmp(PRIV, command) == 0) {
+  } else if (strcmp(PRIV, command.c_str()) == 0) {
     server->listPrivateCommunications();
 #endif  // SECURE
-  } else if (strcmp(STOP, command) == 0) {
+  } else if (strcmp(STOP, command.c_str()) == 0) {
     server->stop();
     return false;
   } else {
-    WRN("Undefined command: %s", command);
+    WRN("Undefined command: %s", command.c_str());
   }
   return true;
 }
 
 void printHelp() {
   printf("Commands:\n\t%s - print this help \
+                   \n\t%s - force logout peer with <id> \
                    \n\t%s - enable / disable incoming requests logging \
-                   \n\t%s - list all logged in peers", HELP, LOGI, LIST);
+                   \n\t%s - list all logged in peers", HELP, KICK, LOGI, LIST);
 #if SECURE
   printf("\n\t%s - show list of private communications", PRIV);
 #endif  // SECURE

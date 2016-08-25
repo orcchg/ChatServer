@@ -104,6 +104,7 @@ Server::Server(int port_number)
   m_methods["PUT"]    = Method::PUT;
   m_methods["DELETE"] = Method::DELETE;
 
+  m_paths[PATH_KICK]           = Path::KICK;
   m_paths[PATH_LOGIN]          = Path::LOGIN;
   m_paths[PATH_REGISTER]       = Path::REGISTER;
   m_paths[PATH_MESSAGE]        = Path::MESSAGE;
@@ -146,10 +147,10 @@ void Server::run() {
   menu::printHelp();
 
   // evaluate user commands
-  char command[5];
+  std::string command;
   do {
     menu::printPrompt();
-    int total = scanf("%s", command);
+    std::getline(std::cin, command);
   } while (menu::evaluate(this, command));
 }
 
@@ -157,6 +158,10 @@ void Server::stop() {
   m_is_stopped = true;
   m_api_impl->terminate();
   close(m_socket);
+}
+
+void Server::kick(ID_t id) {
+  m_api_impl->kickPeer(id);
 }
 
 void Server::logIncoming() {
@@ -451,6 +456,17 @@ void Server::handleRequest(int socket, ID_t connection_id) {
         }
         break;
 #endif  // SECURE
+      case Path::KICK:
+        switch (method) {
+          case Method::DELETE:
+          {
+            ID_t id = UNKNOWN_ID;
+            auto status = m_api_impl->tryKickPeer(request.startline.path, id);
+            m_api_impl->sendStatus(socket, status, path, id);
+          }
+          break;
+        }
+        break;
     }
   }
 }

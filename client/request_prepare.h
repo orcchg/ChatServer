@@ -47,12 +47,13 @@ std::string isRegistered_request(const std::string& host, const std::string& nam
 std::string getAllPeers_request(const std::string& host);
 std::string getAllPeers_request(const std::string& host, int channel);
 #if SECURE
-std::string privateRequest_request(const std::string& host, int src_id, int dest_id);
-std::string privateConfirm_request(const std::string& host, int src_id, int dest_id, bool accept);
-std::string privateAbort_request(const std::string& host, int src_id, int dest_id);
-std::string privatePubKey_request(const std::string& host, int src_id, const secure::Key& key);
-std::string privatePubKeysExchange_request(const std::string& host, int src_id, int dest_id);
+std::string privateRequest_request(const std::string& host, ID_t src_id, ID_t dest_id);
+std::string privateConfirm_request(const std::string& host, ID_t src_id, ID_t dest_id, bool accept);
+std::string privateAbort_request(const std::string& host, ID_t src_id, ID_t dest_id);
+std::string privatePubKey_request(const std::string& host, ID_t src_id, const secure::Key& key);
+std::string privatePubKeysExchange_request(const std::string& host, ID_t src_id, ID_t dest_id);
 #endif  // SECURE
+std::string sendKickRequest_request(const std::string& host, ID_t src_id, ID_t dest_id);
 
 }
 

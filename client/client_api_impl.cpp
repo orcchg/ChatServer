@@ -102,28 +102,35 @@ void ClientApiImpl::getAllPeers(int channel) {
 // ----------------------------------------------------------------------------
 #if SECURE
 
-void ClientApiImpl::privateRequest(int src_id, int dest_id) {
+void ClientApiImpl::privateRequest(ID_t src_id, ID_t dest_id) {
   std::string request = util::privateRequest_request(m_host, src_id, dest_id);
   send(m_socket, request.c_str(), request.length(), 0);
 }
 
-void ClientApiImpl::privateConfirm(int src_id, int dest_id, bool accept) {
+void ClientApiImpl::privateConfirm(ID_t src_id, ID_t dest_id, bool accept) {
   std::string request = util::privateConfirm_request(m_host, src_id, dest_id, accept);
   send(m_socket, request.c_str(), request.length(), 0);
 }
 
-void ClientApiImpl::privateAbort(int src_id, int dest_id) {
+void ClientApiImpl::privateAbort(ID_t src_id, ID_t dest_id) {
   std::string request = util::privateAbort_request(m_host, src_id, dest_id);
   send(m_socket, request.c_str(), request.length(), 0);
 }
 
-void ClientApiImpl::privatePubKey(int id, const secure::Key& key) {
+void ClientApiImpl::privatePubKey(ID_t id, const secure::Key& key) {
   std::string request = util::privatePubKey_request(m_host, id, key);
   send(m_socket, request.c_str(), request.length(), 0);
 }
 
-void ClientApiImpl::privatePubKeysExchange(int src_id, int dest_id) {
+void ClientApiImpl::privatePubKeysExchange(ID_t src_id, ID_t dest_id) {
   std::string request = util::privatePubKeysExchange_request(m_host, src_id, dest_id);
+  send(m_socket, request.c_str(), request.length(), 0);
+}
+
+/* Administrating */
+// ----------------------------------------------------------------------------
+void ClientApiImpl::sendKickRequest(ID_t src_id, ID_t dest_id) {
+  std::string request = util::sendKickRequest_request(m_host, src_id, dest_id);
   send(m_socket, request.c_str(), request.length(), 0);
 }
 

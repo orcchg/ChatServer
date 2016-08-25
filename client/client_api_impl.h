@@ -54,12 +54,13 @@ public:
   void getAllPeers() override;
   void getAllPeers(int channel) override;
 #if SECURE
-  void privateRequest(int src_id, int dest_id) override;
-  void privateConfirm(int src_id, int dest_id, bool accept) override;
-  void privateAbort(int src_id, int dest_id) override;
-  void privatePubKey(int src_id, const secure::Key& key) override;
-  void privatePubKeysExchange(int src_id, int dest_id) override;
+  void privateRequest(ID_t src_id, ID_t dest_id) override;
+  void privateConfirm(ID_t src_id, ID_t dest_id, bool accept) override;
+  void privateAbort(ID_t src_id, ID_t dest_id) override;
+  void privatePubKey(ID_t src_id, const secure::Key& key) override;
+  void privatePubKeysExchange(ID_t src_id, ID_t dest_id) override;
 #endif  // SECURE
+  void sendKickRequest(ID_t src_id, ID_t dest_id) override;
 
 private:
   int m_socket;

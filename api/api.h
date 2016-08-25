@@ -61,6 +61,19 @@
 
 /* API details */
 // ----------------------------------------------------------------------------
+/* Kick */
+// ----------------------------------------------
+/**
+ *  DELETE /kick
+ *
+ *  Force logout destination peer from chat.
+ *
+ *  @params:  src_id   :  INT - source peer's id
+ *            dest_id  :  INT - destination peer's id
+ *
+ *  @note:  source peer must have admin priviledges.
+ */
+
 /* Login */
 // ----------------------------------------------
 /**
@@ -267,6 +280,7 @@
 // ----------------------------------------------------------------------------
 #define TERMINATE_CODE 99
 
+#define D_ITEM_KICK      "kick"
 #define D_ITEM_LOGIN     "login"
 #define D_ITEM_EMAIL     "email"
 #define D_ITEM_PASSWORD  "password"
@@ -301,6 +315,7 @@
 #define D_ITEM_PRIVATE_PUBKEY_EXCHANGE "private_pubkey_exchange"
 #endif  // SECURE
 
+#define D_PATH_KICK            "/kick"
 #define D_PATH_LOGIN           "/login"
 #define D_PATH_REGISTER        "/register"
 #define D_PATH_MESSAGE         "/message"
@@ -318,6 +333,7 @@
 #define D_PATH_PRIVATE_PUBKEY_EXCHANGE "/private_pubkey_exchange"
 #endif  // SECURE
 
+extern const char* ITEM_KICK;
 extern const char* ITEM_LOGIN;
 extern const char* ITEM_EMAIL;
 extern const char* ITEM_PASSWORD;
@@ -352,6 +368,7 @@ extern const char* ITEM_PRIVATE_PUBKEY;
 extern const char* ITEM_PRIVATE_PUBKEY_EXCHANGE;
 #endif  // SECURE
 
+extern const char* PATH_KICK;
 extern const char* PATH_LOGIN;
 extern const char* PATH_REGISTER;
 extern const char* PATH_MESSAGE;
@@ -375,6 +392,7 @@ enum class Method : int {
 
 enum class Path : int {
   UNKNOWN        = -1,
+  KICK           = -2,
   LOGIN          = 0,
   REGISTER       = 1,
   MESSAGE        = 2,
@@ -410,7 +428,9 @@ enum class StatusCode : int {
   ALREADY_RESPONDED  = 13,
   REJECTED           = 14,
   ANOTHER_ACTION_REQUIRED = 15,
-  PUBLIC_KEY_MISSING = 16
+  PUBLIC_KEY_MISSING = 16,
+  PERMISSION_DENIED  = 17,
+  KICKED             = 18
 };
 
 enum class ChannelMove : int {
@@ -470,12 +490,13 @@ public:
   virtual void getAllPeers() = 0;
   virtual void getAllPeers(int channel) = 0;
 #if SECURE
-  virtual void privateRequest(int src_id, int dest_id) = 0;  // send request to Server from src peer
-  virtual void privateConfirm(int src_id, int dest_id, bool accept) = 0;  // send confirm to Server from src peer
-  virtual void privateAbort(int src_id, int dest_id) = 0;    // send abort to Server from src peer
-  virtual void privatePubKey(int src_id, const secure::Key& key) = 0;  // send public key to Server from src peer
-  virtual void privatePubKeysExchange(int src_id, int dest_id) = 0;  // send request to exchange public keys with dest peer
+  virtual void privateRequest(ID_t src_id, ID_t dest_id) = 0;  // send request to Server from src peer
+  virtual void privateConfirm(ID_t src_id, ID_t dest_id, bool accept) = 0;  // send confirm to Server from src peer
+  virtual void privateAbort(ID_t src_id, ID_t dest_id) = 0;    // send abort to Server from src peer
+  virtual void privatePubKey(ID_t src_id, const secure::Key& key) = 0;  // send public key to Server from src peer
+  virtual void privatePubKeysExchange(ID_t src_id, ID_t dest_id) = 0;  // send request to exchange public keys with dest peer
 #endif  // SECURE
+  virtual void sendKickRequest(ID_t src_id, ID_t dest_id) = 0;  // send request to kick dest peer by src peer
 };
 
 /* Server API */
@@ -487,6 +508,7 @@ class ServerApi {
 public:
   virtual ~ServerApi() {}
 
+  virtual void kickPeer(ID_t id) = 0;
   virtual void sendHello(int socket) = 0;
   virtual void logoutPeerAtConnectionReset(int socket) = 0;
 
@@ -516,6 +538,7 @@ public:
 
   virtual void setKeyPair(const std::pair<secure::Key, secure::Key>& keypair) = 0;  // set server-side key pair to this adapter
 #endif  // SECURE
+  virtual StatusCode tryKickPeer(const std::string& path, ID_t& id) = 0;
 
   virtual void terminate() = 0;
 };

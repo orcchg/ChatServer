@@ -33,7 +33,7 @@
 
 namespace menu {
 
-bool evaluate(Server* server, char* command);
+bool evaluate(Server* server, const std::string& command);
 void printHelp();
 void printPrompt();
 

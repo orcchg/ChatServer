@@ -69,6 +69,7 @@ public:
 
   void run();
   void stop();
+  void kick(ID_t id);
   void logIncoming();
   void listAllPeers();
 #if SECURE
