@@ -696,126 +696,126 @@ void Client::receiverThread() {
       SYS("Processing response: %zu / %zu", i + 1, total);
       Response& response = responses[i];
 
-    {  // system responses
-      int code = response.codeline.code;
-      if (code == TERMINATE_CODE) {
-        INF("Received terminate code from Server");
-        printf("\e[5;00;31mSystem: Server shutdown\e[m\n");
-        stopThread();
-        interruption = true;
-        break;
-      }
-
-      {  // status code
-        StatusCode status = StatusCode::UNKNOWN;
-        if (util::checkStatus(response.body, status)) {
-          SYS("Received status: %i", static_cast<int>(status));
-          switch (status) {
-            case StatusCode::KICKED:
-              INF("Kicked by administrator");
-              printf("\e[5;00;31mSystem: Kicked by administrator\e[m\n");
-              stopThread();
-              interruption = true;
-              break;
-          }
-          continue;  // received status from Server
+      {  // system responses
+        int code = response.codeline.code;
+        if (code == TERMINATE_CODE) {
+          INF("Received terminate code from Server");
+          printf("\e[5;00;31mSystem: Server shutdown\e[m\n");
+          stopThread();
+          interruption = true;
+          break;
         }
-      }
 
-      {  // system message
-        std::string system = "", payload = "";
-        Path action = Path::UNKNOWN;
-        ID_t id = UNKNOWN_ID;
-        if (util::checkSystemMessage(response.body, &system, &payload, action, id)) {
-          printf("\e[5;00;32mSystem: %s\e[m\n", system.c_str());
-          switch (action) {
-            case Path::LOGOUT:
-              DBG("Peer [%lli] has just logged out", id);
-              if (m_dest_id == id) {
-                m_dest_id = UNKNOWN_ID;
-                if (m_private_secure_chat) {
+        {  // status code
+          StatusCode status = StatusCode::UNKNOWN;
+          if (util::checkStatus(response.body, status)) {
+            SYS("Received status: %i", static_cast<int>(status));
+            switch (status) {
+              case StatusCode::KICKED:
+                INF("Kicked by administrator");
+                printf("\e[5;00;31mSystem: Kicked by administrator\e[m\n");
+                stopThread();
+                interruption = true;
+                break;
+            }
+            continue;  // received status from Server
+          }
+        }
+
+        {  // system message
+          std::string system = "", payload = "";
+          Path action = Path::UNKNOWN;
+          ID_t id = UNKNOWN_ID;
+          if (util::checkSystemMessage(response.body, &system, &payload, action, id)) {
+            printf("\e[5;00;32mSystem: %s\e[m\n", system.c_str());
+            switch (action) {
+              case Path::LOGOUT:
+                DBG("Peer [%lli] has just logged out", id);
+                if (m_dest_id == id) {
+                  m_dest_id = UNKNOWN_ID;
+                  if (m_private_secure_chat) {
 #if SECURE
-                  printf("\e[5;00;34mSystem: peer [%lli] has logged out, private communication has aborted\e[m\n", id);
+                    printf("\e[5;00;34mSystem: peer [%lli] has logged out, private communication has aborted\e[m\n", id);
 #endif  // SECURE
-                  m_private_secure_chat = false;
+                    m_private_secure_chat = false;
+                  }
                 }
+                break;
+            }
+            processSystemPayload(payload);
+            continue;  // received system message from Server
+          }
+        }
+#if SECURE
+        util::HandshakeBundle bundle;
+        auto handshake_type = util::checkPrivateHandshake(response.body, &bundle);
+        if (bundle.dest_id == m_id || handshake_type == PrivateHandshake::PUBKEY) {
+          std::string acceptance;
+          switch (handshake_type) {
+            case PrivateHandshake::REQUEST:
+              printf("\e[5;01;35mPeer [%lli] has requested for private communication\e[m\n", bundle.src_id);
+              continue;
+            case PrivateHandshake::CONFIRM:
+              if (bundle.accept) {
+                acceptance = "confirmed";
+                m_dest_id = bundle.src_id;
+                m_private_secure_chat = true;
+              } else {
+                acceptance = "rejected";
+                m_dest_id = UNKNOWN_ID;
+                m_private_secure_chat = false;
               }
+              printf("\e[5;01;35mPeer [%lli] has \e[m\e[5;01;34m%s\e[m\e[5;01;35m private communication with you\e[m\n", bundle.src_id, acceptance.c_str());
+              continue;
+            case PrivateHandshake::ABORT:
+              printf("\e[5;01;35mPeer [%lli] has aborted private communication with you\e[m\n", bundle.src_id);
+              m_handshakes.erase(bundle.src_id);  // remove previously stored public key
+              if (m_dest_id == bundle.src_id) {
+                m_dest_id = UNKNOWN_ID;
+              }
+              m_private_secure_chat = false;
+              continue;
+            case PrivateHandshake::PUBKEY:
+              {
+                auto unwrapped_json = common::unwrapJsonObject(ITEM_PRIVATE_PUBKEY, response.body, common::PreparseLeniency::STRICT);
+                secure::Key key_unformatted = secure::Key::fromJson(unwrapped_json);
+                secure::Key key(key_unformatted.getId(), common::restoreStrippedInMemoryPEM(key_unformatted.getKey()));
+                printf("\e[5;01;34mReceived public key from peer [%lli]\e[m\n", key.getId());
+                TRC("Public Key: %s", key.getKey().c_str());
+                m_handshakes[key.getId()] = key;  // store public key of another peer
+              }
+              continue;
+            case PrivateHandshake::UNKNOWN:
+            default:
+              // proceed further
               break;
           }
-          processSystemPayload(payload);
-          continue;  // received system message from Server
+        } else if (handshake_type != PrivateHandshake::UNKNOWN) {
+          WRN("This peer [%lli] has received handshake aimed to other peer [%lli]. This could be a Server's fault!", m_id, bundle.dest_id);
         }
-      }
-#if SECURE
-      util::HandshakeBundle bundle;
-      auto handshake_type = util::checkPrivateHandshake(response.body, &bundle);
-      if (bundle.dest_id == m_id || handshake_type == PrivateHandshake::PUBKEY) {
-        std::string acceptance;
-        switch (handshake_type) {
-          case PrivateHandshake::REQUEST:
-            printf("\e[5;01;35mPeer [%lli] has requested for private communication\e[m\n", bundle.src_id);
-            continue;
-          case PrivateHandshake::CONFIRM:
-            if (bundle.accept) {
-              acceptance = "confirmed";
-              m_dest_id = bundle.src_id;
-              m_private_secure_chat = true;
-            } else {
-              acceptance = "rejected";
-              m_dest_id = UNKNOWN_ID;
-              m_private_secure_chat = false;
-            }
-            printf("\e[5;01;35mPeer [%lli] has \e[m\e[5;01;34m%s\e[m\e[5;01;35m private communication with you\e[m\n", bundle.src_id, acceptance.c_str());
-            continue;
-          case PrivateHandshake::ABORT:
-            printf("\e[5;01;35mPeer [%lli] has aborted private communication with you\e[m\n", bundle.src_id);
-            m_handshakes.erase(bundle.src_id);  // remove previously stored public key
-            if (m_dest_id == bundle.src_id) {
-              m_dest_id = UNKNOWN_ID;
-            }
-            m_private_secure_chat = false;
-            continue;
-          case PrivateHandshake::PUBKEY:
-            {
-              auto unwrapped_json = common::unwrapJsonObject(ITEM_PRIVATE_PUBKEY, response.body, common::PreparseLeniency::STRICT);
-              secure::Key key_unformatted = secure::Key::fromJson(unwrapped_json);
-              secure::Key key(key_unformatted.getId(), common::restoreStrippedInMemoryPEM(key_unformatted.getKey()));
-              printf("\e[5;01;34mReceived public key from peer [%lli]\e[m\n", key.getId());
-              TRC("Public Key: %s", key.getKey().c_str());
-              m_handshakes[key.getId()] = key;  // store public key of another peer
-            }
-            continue;
-          case PrivateHandshake::UNKNOWN:
-          default:
-            // proceed further
-            break;
-        }
-      } else if (handshake_type != PrivateHandshake::UNKNOWN) {
-        WRN("This peer [%lli] has received handshake aimed to other peer [%lli]. This could be a Server's fault!", m_id, bundle.dest_id);
-      }
 #endif  // SECURE
-    }
+      }
 
-    // peers' messages
-    try {
-      Message message = Message::fromJson(response.body);
+      // peers' messages
+      try {
+        Message message = Message::fromJson(response.body);
 
 #if SECURE
-      if (message.isEncrypted()) {
-        message.decrypt(*m_asym_cryptor, m_key_pair.second);
-      }
+        if (message.isEncrypted()) {
+          message.decrypt(*m_asym_cryptor, m_key_pair.second);
+        }
 #endif  // SECURE
 
-      std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
-      std::time_t end_time = std::chrono::system_clock::to_time_t(end);
-      std::string timestamp(std::ctime(&end_time));
-      int i1 = timestamp.find_last_of('\n');
-      timestamp = timestamp.substr(0, i1);
+        std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
+        std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+        std::string timestamp(std::ctime(&end_time));
+        int i1 = timestamp.find_last_of('\n');
+        timestamp = timestamp.substr(0, i1);
 
-      printf("\e[5;00;33m%s\e[m :: \e[5;01;37m%s\e[m: %s\n", timestamp.c_str(), message.getLogin().c_str(), message.getMessage().c_str());
-    } catch (ConvertException exception) {
-      WRN("Something doesn't like a message has been received. Skip");
-    }
+        printf("\e[5;00;33m%s\e[m :: \e[5;01;37m%s\e[m: %s\n", timestamp.c_str(), message.getLogin().c_str(), message.getMessage().c_str());
+      } catch (ConvertException exception) {
+        WRN("Something doesn't like a message has been received. Skip");
+      }
 
     }  // for loop ending
 
