@@ -693,7 +693,7 @@ void Client::receiverThread() {
     bool interruption = false;
     size_t total = responses.size();
     for (size_t i = 0; !interruption && i < total; ++i) {
-      SYS("Processing response: %zu / %zu", i + 1, total);
+      VER("Processing response: %zu / %zu", i + 1, total);
       Response& response = responses[i];
 
       {  // system responses
