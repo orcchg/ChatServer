@@ -689,12 +689,20 @@ void Client::receiverThread() {
       break;
     }
 
+    /* process responses step-by-step */
+    bool interruption = false;
+    size_t total = responses.size();
+    for (size_t i = 0; !interruption && i < total; ++i) {
+      SYS("Processing response: %zu / %zu", i + 1, total);
+      Response& response = responses[i];
+
     {  // system responses
       int code = response.codeline.code;
       if (code == TERMINATE_CODE) {
         INF("Received terminate code from Server");
         printf("\e[5;00;31mSystem: Server shutdown\e[m\n");
         stopThread();
+        interruption = true;
         break;
       }
 
@@ -707,6 +715,7 @@ void Client::receiverThread() {
               INF("Kicked by administrator");
               printf("\e[5;00;31mSystem: Kicked by administrator\e[m\n");
               stopThread();
+              interruption = true;
               break;
           }
           continue;  // received status from Server
@@ -807,7 +816,10 @@ void Client::receiverThread() {
     } catch (ConvertException exception) {
       WRN("Something doesn't like a message has been received. Skip");
     }
-  }
+
+    }  // for loop ending
+
+  }  // while loop ending
   end();
 }
 
