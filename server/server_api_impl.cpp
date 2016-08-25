@@ -688,7 +688,9 @@ bool ServerApiImpl::checkForAdmin(ID_t id, const std::string& cert_cipher) const
     if (common::isFileAccessible(FILENAME_ADMIN_CERT)) {
       const std::string& admin_cert = common::readFileToString(FILENAME_ADMIN_CERT);
       result = (admin_cert.compare(cert_plain) == 0);
-      INF("Administrating priviledges has been granted to source peer with ID [%lli]", id);
+      if (result) {
+        INF("Administrating priviledges has been granted to source peer with ID [%lli]", id);
+      }
     } else {
       WRN("Failed to access 'admin_cert.pem' file on Server's side");
     }
