@@ -182,5 +182,14 @@ std::string sendKickRequest_request(const std::string& host, ID_t src_id, ID_t d
   return oss.str();
 }
 
+std::string sendAdminRequest_request(const std::string& host, ID_t src_id, const std::string& cert) {
+  std::ostringstream oss;
+  oss << "POST " D_PATH_ADMIN "?" D_ITEM_SRC_ID "=" << src_id
+      << "&" D_ITEM_CERT "=" << cert
+      << " HTTP/1.1\r\nHost: " << host << "\r\n\r\n";
+  MSG("Request: %s", oss.str().c_str());
+  return oss.str();
+}
+
 }
 

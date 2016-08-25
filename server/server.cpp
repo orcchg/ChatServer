@@ -104,6 +104,7 @@ Server::Server(int port_number)
   m_methods["PUT"]    = Method::PUT;
   m_methods["DELETE"] = Method::DELETE;
 
+  m_paths[PATH_ADMIN]          = Path::ADMIN;
   m_paths[PATH_KICK]           = Path::KICK;
   m_paths[PATH_LOGIN]          = Path::LOGIN;
   m_paths[PATH_REGISTER]       = Path::REGISTER;
@@ -462,6 +463,17 @@ void Server::handleRequest(int socket, ID_t connection_id) {
           {
             ID_t id = UNKNOWN_ID;
             auto status = m_api_impl->tryKickPeer(request.startline.path, id);
+            m_api_impl->sendStatus(socket, status, path, id);
+          }
+          break;
+        }
+        break;
+      case Path::ADMIN:
+        switch (method) {
+          case Method::POST:
+          {
+            ID_t id = UNKNOWN_ID;
+            auto status = m_api_impl->tryBecomeAdmin(request.startline.path, id);
             m_api_impl->sendStatus(socket, status, path, id);
           }
           break;

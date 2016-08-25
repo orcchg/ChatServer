@@ -30,10 +30,12 @@
 #include <sstream>
 #include <utility>
 #include <vector>
+#include <unistd.h>
 #include "all.h"
 #include "common.h"
 #include "database/peer_table_impl.h"
 #if SECURE
+#include "crypting/crypting_util.h"
 #include "crypting/evp_cryptor.h"
 #include "database/keys_table_impl.h"
 #endif  // SECURE
@@ -44,6 +46,7 @@ static const char* CONTENT_LENGTH_HEADER = "Content-Length: ";
 static const char* CONNECTION_CLOSE_HEADER = "Connection: close";
 
 static const char* NULL_PAYLOAD = "";
+static const char* FILENAME_ADMIN_CERT = "admin_cert.pem";
 
 /* Mapping */
 // ----------------------------------------------------------------------------
@@ -92,6 +95,16 @@ void ServerApiImpl::kickPeer(ID_t id) {
     logout(oss.str(), o_id);
   } else {
     WRN("No such peer to kick: %lli", id);
+  }
+}
+
+void ServerApiImpl::gainAdminPriviledges(ID_t id) {
+  TRC("gainAdminPriviledges(%lli)", id);
+  auto it = m_peers.find(id);
+  if (it != m_peers.end()) {
+    it->second.setAdmin(true);
+  } else {
+    WRN("No such peer to obtain administrating priviledges: %lli", id);
   }
 }
 
@@ -569,8 +582,12 @@ void ServerApiImpl::sendToSocket(int socket, const char* buffer, int length) {
 void ServerApiImpl::listAllPeers() const {
   printf("\e[5;00;33m    ***    Logged in peers    ***\e[m\n");
   for (auto& it : m_peers) {
-    printf("Peer[%lli]: login = %s, email = %s, channel = %i, socket = %i\n",
+    printf("Peer[%lli]: login = %s, email = %s, channel = %i, socket = %i  ",
            it.first, it.second.getLogin().c_str(), it.second.getEmail().c_str(), it.second.getChannel(), it.second.getSocket());
+    if (it.second.isAdmin()) {
+      printf("\e[5;00;32m (admin) \e[m");
+    }
+    printf("\n");
   }
 }
 
@@ -653,8 +670,30 @@ void ServerApiImpl::simpleResponse(const std::vector<ID_t>& ids, int code, const
 }
 
 bool ServerApiImpl::checkPermission(ID_t id) const {
-  // TODO: check for admin
-  return true;
+  auto it = m_peers.find(id);
+  return it != m_peers.end() && it->second.isAdmin();
+}
+
+bool ServerApiImpl::checkForAdmin(ID_t id, const std::string& cert_cipher) const {
+  bool result = false;
+#if SECURE
+  bool decrypted = false;
+  std::string cert_plain = secure::good::decryptRSA(m_key_pair.second, cert_cipher, decrypted);
+  if (!decrypted) {
+    WRN("Failed to decrypt certificate: rejected to give administrating priviledges to source peer with ID [%lli]", id);
+  } else {
+    if (common::isFileAccessible(FILENAME_ADMIN_CERT)) {
+      const std::string& admin_cert = common::readFileToString(FILENAME_ADMIN_CERT);
+      result = (admin_cert.compare(cert_plain) == 0);
+      INF("Administrating priviledges has been granted to source peer with ID [%lli]", id);
+    } else {
+      WRN("Failed to access 'admin_cert.pem' file on Server's side");
+    }
+  }
+#else
+  WRN("Administrating for peers is only available on builds with enabled security (-DSECURE=true)");
+#endif  // SECURE
+  return result;
 }
 
 /* Internals */
@@ -1157,12 +1196,12 @@ StatusCode ServerApiImpl::tryKickPeer(const std::string& path, ID_t& id) {
   ID_t src_id = std::stoll(params[0].value.c_str());
   ID_t dest_id = std::stoll(params[1].value.c_str());
   id = src_id;
-  if (!isAuthorized(id)) {
-    ERR("Source peer with id [%lli] is not authorized", id);
+  if (!isAuthorized(src_id)) {
+    ERR("Source peer with id [%lli] is not authorized", src_id);
     return StatusCode::UNAUTHORIZED;
   }
-  if (id == dest_id) {
-    ERR("Same id in query params: src_id [%lli], dest_id [%lli]", id, dest_id);
+  if (src_id == dest_id) {
+    ERR("Same id in query params: src_id [%lli], dest_id [%lli]", src_id, dest_id);
     return StatusCode::INVALID_QUERY;
   }
   if (!isAuthorized(dest_id)) {
@@ -1170,10 +1209,38 @@ StatusCode ServerApiImpl::tryKickPeer(const std::string& path, ID_t& id) {
     return StatusCode::NO_SUCH_PEER;
   }
   if (!checkPermission(src_id)) {
-    ERR("Source peer with id [%lli] has no administrator permissions", id);
+    ERR("Source peer with id [%lli] has no administrator permissions", src_id);
     return StatusCode::PERMISSION_DENIED;
   }
   kickPeer(dest_id);  // kick dest peer by src peer (admin)
+  return StatusCode::SUCCESS;
+}
+
+StatusCode ServerApiImpl::tryBecomeAdmin(const std::string& path, ID_t& id) {
+  TRC("tryBecomeAdmin(%s)", path.c_str());
+  id = UNKNOWN_ID;
+  std::vector<Query> params;
+  m_parser.parsePath(path, &params);
+  for (auto& query : params) {
+    DBG("Query: %s: %s", query.key.c_str(), query.value.c_str());
+  }
+  if (params.size() < 2 || params[0].key.compare(ITEM_SRC_ID) != 0 ||
+      params[1].key.compare(ITEM_CERT) != 0) {
+    ERR("Try become admin failed: wrong query params: %s", path.c_str());
+    return StatusCode::INVALID_QUERY;
+  }
+  ID_t src_id = std::stoll(params[0].value.c_str());
+  const std::string& cert = params[1].value;
+  id = src_id;
+  if (!isAuthorized(src_id)) {
+    ERR("Source peer with id [%lli] is not authorized", src_id);
+    return StatusCode::UNAUTHORIZED;
+  }
+  if (!checkForAdmin(src_id, cert)) {
+    ERR("Rejected to gain administrating priviledges to the source peer with id [%lli]", src_id);
+    return StatusCode::REQUEST_REJECTED;
+  }
+  gainAdminPriviledges(src_id);  // gain administrating priviledges to src peer
   return StatusCode::SUCCESS;
 }
 

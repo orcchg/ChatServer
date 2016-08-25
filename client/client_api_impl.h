@@ -61,6 +61,7 @@ public:
   void privatePubKeysExchange(ID_t src_id, ID_t dest_id) override;
 #endif  // SECURE
   void sendKickRequest(ID_t src_id, ID_t dest_id) override;
+  void sendAdminRequest(ID_t src_id, const std::string& cert) override;
 
 private:
   int m_socket;

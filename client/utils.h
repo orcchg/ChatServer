@@ -75,6 +75,7 @@ enum class Command : int {
   , PRIVATE_PUBKEY_EXCHANGE = 9
 #endif  // SECURE
   , KICK = 10
+  , ADMIN_REQUEST = 11
 };
 
 Command parseCommand(const std::string& command, ID_t& value);

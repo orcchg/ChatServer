@@ -43,6 +43,7 @@ public:
   void setChannel(int channel);
   void setToken(const std::string& input);
   void setSocket(int socket_id);
+  void setAdmin(bool is_admin);
 
   inline ID_t getId() const { return m_id; }
   inline const std::string& getLogin() const { return m_name; }
@@ -50,6 +51,7 @@ public:
   inline int getChannel() const { return m_channel; }
   inline const Token& getToken() const { return m_token; }
   inline int getSocket() const { return m_socket; }
+  inline bool isAdmin() const { return m_is_admin; }
 
 private:
   ID_t m_id;
@@ -58,6 +60,7 @@ private:
   Token m_token;
   int m_channel;
   int m_socket;
+  bool m_is_admin;
 };
 
 }  // namespace server

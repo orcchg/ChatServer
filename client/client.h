@@ -110,6 +110,7 @@ protected:
 
 #if SECURE
   void getKeyPair();
+  std::string obtainAdminCert() const;
 #endif  // SECURE
 };
 

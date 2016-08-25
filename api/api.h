@@ -61,7 +61,7 @@
 
 /* API details */
 // ----------------------------------------------------------------------------
-/* Kick */
+/* Administrating */
 // ----------------------------------------------
 /**
  *  DELETE /kick
@@ -71,7 +71,16 @@
  *  @params:  src_id   :  INT - source peer's id
  *            dest_id  :  INT - destination peer's id
  *
- *  @note:  source peer must have admin priviledges.
+ *  @note:  source peer must have administrating priviledges.
+ */
+
+/**
+ *  POST /admin
+ *
+ *  Request to obtain administrating priviledges by source peer.
+ *
+ *  @params:  src_id   :  INT - source peer's id
+ *            cert     :  TEXT - encrypted administrator certificate
  */
 
 /* Login */
@@ -280,6 +289,7 @@
 // ----------------------------------------------------------------------------
 #define TERMINATE_CODE 99
 
+#define D_ITEM_ADMIN     "admin"
 #define D_ITEM_KICK      "kick"
 #define D_ITEM_LOGIN     "login"
 #define D_ITEM_EMAIL     "email"
@@ -300,6 +310,7 @@
 #define D_ITEM_CHANNEL_NEXT  "channel_next"
 #define D_ITEM_CHANNEL_MOVE  "channel_move"
 #define D_ITEM_CHECK         "check"
+#define D_ITEM_CERT          "cert"
 #define D_ITEM_CODE          "code"
 #define D_ITEM_KEY           "key"
 #define D_ITEM_SYSTEM        "system"
@@ -315,6 +326,7 @@
 #define D_ITEM_PRIVATE_PUBKEY_EXCHANGE "private_pubkey_exchange"
 #endif  // SECURE
 
+#define D_PATH_ADMIN           "/admin"
 #define D_PATH_KICK            "/kick"
 #define D_PATH_LOGIN           "/login"
 #define D_PATH_REGISTER        "/register"
@@ -333,6 +345,7 @@
 #define D_PATH_PRIVATE_PUBKEY_EXCHANGE "/private_pubkey_exchange"
 #endif  // SECURE
 
+extern const char* ITEM_ADMIN;
 extern const char* ITEM_KICK;
 extern const char* ITEM_LOGIN;
 extern const char* ITEM_EMAIL;
@@ -353,6 +366,7 @@ extern const char* ITEM_CHANNEL_PREV;
 extern const char* ITEM_CHANNEL_NEXT;
 extern const char* ITEM_CHANNEL_MOVE;
 extern const char* ITEM_CHECK;
+extern const char* ITEM_CERT;
 extern const char* ITEM_CODE;
 extern const char* ITEM_KEY;
 extern const char* ITEM_SYSTEM;
@@ -368,6 +382,7 @@ extern const char* ITEM_PRIVATE_PUBKEY;
 extern const char* ITEM_PRIVATE_PUBKEY_EXCHANGE;
 #endif  // SECURE
 
+extern const char* PATH_ADMIN;
 extern const char* PATH_KICK;
 extern const char* PATH_LOGIN;
 extern const char* PATH_REGISTER;
@@ -393,6 +408,7 @@ enum class Method : int {
 enum class Path : int {
   UNKNOWN        = -1,
   KICK           = -2,
+  ADMIN          = -3,
   LOGIN          = 0,
   REGISTER       = 1,
   MESSAGE        = 2,
@@ -431,7 +447,8 @@ enum class StatusCode : int {
   PUBLIC_KEY_MISSING = 16,
   PERMISSION_DENIED  = 17,
   KICKED             = 18,
-  FORBIDDEN_MESSAGE  = 19
+  FORBIDDEN_MESSAGE  = 19,
+  REQUEST_REJECTED   = 20
 };
 
 enum class ChannelMove : int {
@@ -498,6 +515,7 @@ public:
   virtual void privatePubKeysExchange(ID_t src_id, ID_t dest_id) = 0;  // send request to exchange public keys with dest peer
 #endif  // SECURE
   virtual void sendKickRequest(ID_t src_id, ID_t dest_id) = 0;  // send request to kick dest peer by src peer
+  virtual void sendAdminRequest(ID_t src_id, const std::string& cert) = 0;  // send request to get administrating priviledges
 };
 
 /* Server API */
@@ -510,6 +528,7 @@ public:
   virtual ~ServerApi() {}
 
   virtual void kickPeer(ID_t id) = 0;
+  virtual void gainAdminPriviledges(ID_t id) = 0;
   virtual void sendHello(int socket) = 0;
   virtual void logoutPeerAtConnectionReset(int socket) = 0;
 
@@ -540,6 +559,7 @@ public:
   virtual void setKeyPair(const std::pair<secure::Key, secure::Key>& keypair) = 0;  // set server-side key pair to this adapter
 #endif  // SECURE
   virtual StatusCode tryKickPeer(const std::string& path, ID_t& id) = 0;
+  virtual StatusCode tryBecomeAdmin(const std::string& path, ID_t& id) = 0;
 
   virtual void terminate() = 0;
 };

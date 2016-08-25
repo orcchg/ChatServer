@@ -68,6 +68,7 @@ public:
   virtual ~ServerApiImpl();
 
   void kickPeer(ID_t id) override;
+  void gainAdminPriviledges(ID_t id) override;
   void sendHello(int socket) override;
   void logoutPeerAtConnectionReset(int socket) override;
 
@@ -100,6 +101,7 @@ public:
   void setKeyPair(const std::pair<secure::Key, secure::Key>& keypair) override;
 #endif  // SECURE
   StatusCode tryKickPeer(const std::string& path, ID_t& id) override;
+  StatusCode tryBecomeAdmin(const std::string& path, ID_t& id) override;
 
   void terminate() override;
 
@@ -142,6 +144,7 @@ private:
   std::ostringstream& prepareSimpleResponse(std::ostringstream& out, int code, const std::string& message) const;
   void simpleResponse(const std::vector<ID_t>& ids, int code, const std::string& message);
   bool checkPermission(ID_t id) const;
+  bool checkForAdmin(ID_t id, const std::string& payload) const;
 #if SECURE
   StatusCode sendPrivateConfirm(const std::string& path, bool i_abort, ID_t& src_id, ID_t& dest_id);
   void storePublicKey(ID_t id, const secure::Key& key);

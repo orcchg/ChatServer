@@ -134,5 +134,10 @@ void ClientApiImpl::sendKickRequest(ID_t src_id, ID_t dest_id) {
   send(m_socket, request.c_str(), request.length(), 0);
 }
 
+void ClientApiImpl::sendAdminRequest(ID_t src_id, const std::string& cert) {
+  std::string request = util::sendAdminRequest_request(m_host, src_id, cert);
+  send(m_socket, request.c_str(), request.length(), 0);
+}
+
 #endif  // SECURE
 

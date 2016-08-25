@@ -133,5 +133,10 @@ void SecureClientApiImpl::sendKickRequest(ID_t src_id, ID_t dest_id) {
   BIO_write(m_bio, request.c_str(), request.length());
 }
 
+void SecureClientApiImpl::sendAdminRequest(ID_t src_id, const std::string& cert) {
+  std::string request = util::sendAdminRequest_request(m_host, src_id, cert);
+  BIO_write(m_bio, request.c_str(), request.length());
+}
+
 #endif  // SECURE
 

@@ -54,6 +54,7 @@ std::string privatePubKey_request(const std::string& host, ID_t src_id, const se
 std::string privatePubKeysExchange_request(const std::string& host, ID_t src_id, ID_t dest_id);
 #endif  // SECURE
 std::string sendKickRequest_request(const std::string& host, ID_t src_id, ID_t dest_id);
+std::string sendAdminRequest_request(const std::string& host, ID_t src_id, const std::string& cert);
 
 }
 

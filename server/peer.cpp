@@ -33,7 +33,13 @@ namespace server {
 Peer Peer::EMPTY(UNKNOWN_ID, "", "");
 
 Peer::Peer(ID_t id, const std::string& name, const std::string& email)
-  : m_id(id), m_name(name), m_email(email), m_channel(DEFAULT_CHANNEL), m_socket(-1), m_token(Token::EMPTY) {
+  : m_id(id)
+  , m_name(name)
+  , m_email(email)
+  , m_token(Token::EMPTY)
+  , m_channel(DEFAULT_CHANNEL)
+  , m_socket(-1)
+  , m_is_admin(false) {
 }
 
 void Peer::setChannel(int channel) {
@@ -46,6 +52,10 @@ void Peer::setToken(const std::string& input) {
 
 void Peer::setSocket(int socket_id) {
   m_socket = socket_id;
+}
+
+void Peer::setAdmin(bool is_admin) {
+  m_is_admin = is_admin;
 }
 
 }  // namespace server

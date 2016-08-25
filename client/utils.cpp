@@ -245,6 +245,9 @@ Command parseCommand(const std::string& command, ID_t& value) {
         break;
 #endif  // SECURE
       case 'x': return Command::KICK;
+#if SECURE
+      case 'a': return Command::ADMIN_REQUEST;
+#endif
     }
   }
   return Command::UNKNOWN;

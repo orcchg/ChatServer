@@ -40,9 +40,12 @@
 
 #if SECURE
 #include "crypting/cryptor.h"
+#include "crypting/crypting_util.h"
 #include "crypting/random_util.h"
 #include "crypting/evp_cryptor.h"
 #endif  // SECURE
+
+static const char* FILENAME_ADMIN_CERT = "admin_cert.pem";
 
 Client::Client(const std::string& config_file)
   : m_id(UNKNOWN_ID), m_name(""), m_email(""), m_auth_token(""), m_channel(0), m_dest_id(UNKNOWN_ID)
@@ -607,6 +610,9 @@ void Client::startChat() {
         printf("\t\e[5;00;37m.pk - store public key remotely (generate if not exists)\e[m\n");
 #endif  // SECURE
         printf("\t\e[5;00;37m.x <id> - send request to kick peer with <id>\e[m\n");
+#if SECURE
+        printf("\t\e[5;00;37m.a <id> - send request to get administrating priviledges\e[m\n");
+#endif  // SECURE
         printf("\t\e[5;00;37m.q - logout\e[m\n");
         continue;
 #if SECURE
@@ -641,6 +647,11 @@ void Client::startChat() {
       case util::Command::KICK:
         m_api_impl->sendKickRequest(m_id, value);
         continue;
+#if SECURE
+      case util::Command::ADMIN_REQUEST:
+        m_api_impl->sendAdminRequest(m_id, obtainAdminCert());
+        continue;
+#endif  // SECURE
       case util::Command::UNKNOWN:
       default:
         // ignore invalid commands, it could be just a message
@@ -711,6 +722,9 @@ void Client::receiverThread() {
           if (util::checkStatus(response.body, status)) {
             SYS("Received status: %i", static_cast<int>(status));
             switch (status) {
+              case StatusCode::PERMISSION_DENIED:
+                printf("\e[5;00;31mSystem: Permission denied\e[m\n");
+                break;
               case StatusCode::KICKED:
                 INF("Kicked by administrator");
                 printf("\e[5;00;31mSystem: Kicked by administrator\e[m\n");
@@ -861,6 +875,12 @@ void Client::enterPassword(std::string& password) {
 
 void Client::getKeyPair() {
   m_key_pair = secure::random::getKeyPair(m_id);
+}
+
+std::string Client::obtainAdminCert() const {
+  const std::string& cert = common::readFileToString(FILENAME_ADMIN_CERT);
+  bool encrypted = false;
+  return secure::good::encryptRSA(m_server_pubkey, cert, encrypted);
 }
 
 #endif  // SECURE

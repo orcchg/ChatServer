@@ -29,6 +29,7 @@
 #include <cstdio>
 #include "api.h"
 
+const char* ITEM_ADMIN    = D_ITEM_ADMIN;
 const char* ITEM_KICK     = D_ITEM_KICK;
 const char* ITEM_LOGIN    = D_ITEM_LOGIN;
 const char* ITEM_EMAIL    = D_ITEM_EMAIL;
@@ -49,6 +50,7 @@ const char* ITEM_CHANNEL_PREV = D_ITEM_CHANNEL_PREV;
 const char* ITEM_CHANNEL_NEXT = D_ITEM_CHANNEL_NEXT;
 const char* ITEM_CHANNEL_MOVE = D_ITEM_CHANNEL_MOVE;
 const char* ITEM_CHECK        = D_ITEM_CHECK;
+const char* ITEM_CERT         = D_ITEM_CERT;
 const char* ITEM_CODE         = D_ITEM_CODE;
 const char* ITEM_KEY          = D_ITEM_KEY;
 const char* ITEM_SYSTEM       = D_ITEM_SYSTEM;
@@ -64,6 +66,7 @@ const char* ITEM_PRIVATE_PUBKEY  = D_ITEM_PRIVATE_PUBKEY;
 const char* ITEM_PRIVATE_PUBKEY_EXCHANGE = D_ITEM_PRIVATE_PUBKEY_EXCHANGE;
 #endif  // SECURE
 
+const char* PATH_ADMIN          = D_PATH_ADMIN;
 const char* PATH_KICK           = D_PATH_KICK;
 const char* PATH_LOGIN          = D_PATH_LOGIN;
 const char* PATH_REGISTER       = D_PATH_REGISTER;
