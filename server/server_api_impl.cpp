@@ -227,6 +227,9 @@ void ServerApiImpl::sendStatus(int socket, StatusCode status, Path action, ID_t 
     case StatusCode::FORBIDDEN_MESSAGE:
       oss << "403 Forbidden message\r\n" << STANDARD_HEADERS << "\r\n";
       break;
+    case StatusCode::REQUEST_REJECTED:
+      oss << "200 Request rejected\r\n" << STANDARD_HEADERS << "\r\n";
+      break;
     case StatusCode::UNKNOWN:
       oss << "500 Internal server error\r\n" << STANDARD_HEADERS << "\r\n";
       break;
