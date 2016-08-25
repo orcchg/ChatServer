@@ -212,7 +212,7 @@ void hex2bin(const std::string& source, unsigned char* target, size_t& target_le
 // ----------------------------------------------------------------------------
 bool isMessageForbidden(const std::string& message) {
   /* Logic to forbid some content in message */
-  if (message.find("HTTP/") != std::string::npos) {
+  if (message.find_first_of("\\") != std::string::npos || message.find("HTTP/") != std::string::npos) {
     WRN("Forbidden substring in message: %s", message.c_str());
     return true;
   }
