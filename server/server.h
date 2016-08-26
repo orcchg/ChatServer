@@ -29,6 +29,8 @@
 #ifndef CHAT_SERVER_SERVER__H__
 #define CHAT_SERVER_SERVER__H__
 
+#include <condition_variable>
+#include <mutex>
 #include <unordered_map>
 #include "all.h"
 #include "api/api.h"
@@ -92,6 +94,8 @@ private:
 #if SECURE
   secure::SymmetricKey m_sym_key;
 #endif  // SECURE
+  std::mutex m_moderator_mutex;
+  std::condition_variable m_moderator_cv;
 
   void runListener();
   void printClientInfo(sockaddr_in& peeraddr);
@@ -99,8 +103,9 @@ private:
   Request getRequest(int socket, bool* is_closed);
   Method getMethod(const std::string& method) const;
   Path getPath(const std::string& path) const;
-  void handleRequest(int socket, ID_t connection_id);
+  void handleRequest(int socket, ID_t connection_id);  // other thread
   void storeRequest(ID_t connection_id, const Request& request);
+  void moderationDaemon();  // other thread
 
 #if SECURE
   void getKeyPair();

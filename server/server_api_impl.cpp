@@ -48,6 +48,8 @@ static const char* CONNECTION_CLOSE_HEADER = "Connection: close";
 static const char* NULL_PAYLOAD = "";
 static const char* FILENAME_ADMIN_CERT = "admin_cert.pem";
 
+static const uint64_t PEER_ACTIVITY_TIMEOUT = 12 * 3600 * 1000;  // 12 hours if inactivity
+
 /* Mapping */
 // ----------------------------------------------------------------------------
 PeerDTO LoginToPeerDTOMapper::map(const LoginForm& form) {
@@ -126,6 +128,7 @@ void ServerApiImpl::sendHello(int socket) {
 }
 
 void ServerApiImpl::logoutPeerAtConnectionReset(int socket) {
+  TRC("logoutPeerAtConnectionReset(%i)", socket);
   for (auto& it : m_peers) {
     if (it.second.getSocket() == socket) {
       INF("Logout peer with ID[%lli] at connection reset", it.first);
@@ -136,6 +139,34 @@ void ServerApiImpl::logoutPeerAtConnectionReset(int socket) {
       break;
     }
   }
+}
+
+void ServerApiImpl::updateLastActivityTimestampOfPeer(ID_t id) {
+  TRC("updateLastActivityTimestampOfPeer(%lli)", id);
+  auto it = m_peers.find(id);
+  if (it != m_peers.end()) {
+    uint64_t timestamp = common::getCurrentTime();
+    it->second.setLastActivityTimestamp(timestamp);
+    DBG("Updated timestamp for peer with ID [%lli]: %zu", id, timestamp);
+  } else {
+    WRN("No such peer to update last activity timestamp: %lli", id);
+  }
+}
+
+int ServerApiImpl::checkActivityAndKick() {
+  TRC("checkActivityAndKick");
+  int kicked = 0;
+  uint64_t current = common::getCurrentTime();
+  for (auto& it : m_peers) {
+    uint64_t timestamp = it.second.getLastActivityTimestamp();
+    uint64_t inactive = current - timestamp;
+    if (inactive > PEER_ACTIVITY_TIMEOUT) {
+      SYS("Moderating: peer with ID [%lli] was inactive for %zu ms, kicking...", it.first, inactive);
+      kickPeer(it.first);
+      ++kicked;
+    }
+  }
+  return kicked;
 }
 
 void ServerApiImpl::sendLoginForm(int socket) {

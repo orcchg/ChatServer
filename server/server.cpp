@@ -38,6 +38,8 @@
 
 #define BASE_CONNECTION_ID 100
 
+static const uint64_t MODERATION_TIMEOUT = 2400;  // in seconds, 40 minutes
+
 /* Connection structure */
 // ----------------------------------------------------------------------------
 Connection Connection::EMPTY = Connection(0, 0, "", 0);
@@ -142,7 +144,9 @@ void Server::run() {
   getKeyPair();
 #endif  // SECURE
   m_launch_timestamp = common::getCurrentTime();  // launch timestamp
+  std::thread m(&Server::moderationDaemon, this);
   std::thread t(&Server::runListener, this);
+  m.detach();
   t.detach();
 
   menu::printHelp();
@@ -157,6 +161,7 @@ void Server::run() {
 
 void Server::stop() {
   m_is_stopped = true;
+  m_moderator_cv.notify_all();
   m_api_impl->terminate();
   close(m_socket);
 }
@@ -314,6 +319,7 @@ void Server::handleRequest(int socket, ID_t connection_id) {
               ID_t id = UNKNOWN_ID;
               auto login_status = m_api_impl->login(socket, request.body, id);
               m_api_impl->sendStatus(socket, login_status, path, id);
+              m_api_impl->updateLastActivityTimestampOfPeer(id);  // set-up activity timestamp
             }
             break;
         }
@@ -328,6 +334,7 @@ void Server::handleRequest(int socket, ID_t connection_id) {
               ID_t id = UNKNOWN_ID;
               auto register_status = m_api_impl->registrate(socket, request.body, id);
               m_api_impl->sendStatus(socket, register_status, path, id);
+              m_api_impl->updateLastActivityTimestampOfPeer(id);  // set-up activity timestamp
             }
             break;
         }
@@ -339,6 +346,7 @@ void Server::handleRequest(int socket, ID_t connection_id) {
               ID_t id = UNKNOWN_ID;
               auto message_status = m_api_impl->message(request.body, id);
               m_api_impl->sendStatus(socket, message_status, path, id);
+              m_api_impl->updateLastActivityTimestampOfPeer(id);  // action during chat
             }
             break;
         }
@@ -362,6 +370,7 @@ void Server::handleRequest(int socket, ID_t connection_id) {
             ID_t id = UNKNOWN_ID;
             auto switch_status = m_api_impl->switchChannel(request.startline.path, id);
             m_api_impl->sendStatus(socket, switch_status, path, id);
+            m_api_impl->updateLastActivityTimestampOfPeer(id);  // action during chat
           }
           break;
         }
@@ -408,6 +417,7 @@ void Server::handleRequest(int socket, ID_t connection_id) {
             ID_t id = UNKNOWN_ID;
             auto status = m_api_impl->privateRequest(request.startline.path, id);
             m_api_impl->sendStatus(socket, status, path, id);
+            m_api_impl->updateLastActivityTimestampOfPeer(id);  // action during chat
           }
           break;
         }
@@ -419,6 +429,7 @@ void Server::handleRequest(int socket, ID_t connection_id) {
             ID_t id = UNKNOWN_ID;
             auto status = m_api_impl->privateConfirm(request.startline.path, id);
             m_api_impl->sendStatus(socket, status, path, id);
+            m_api_impl->updateLastActivityTimestampOfPeer(id);  // action during chat
           }
           break;
         }
@@ -430,6 +441,7 @@ void Server::handleRequest(int socket, ID_t connection_id) {
             ID_t id = UNKNOWN_ID;
             auto status = m_api_impl->privateAbort(request.startline.path, id);
             m_api_impl->sendStatus(socket, status, path, id);
+            m_api_impl->updateLastActivityTimestampOfPeer(id);  // action during chat
           }
           break;
         }
@@ -441,6 +453,7 @@ void Server::handleRequest(int socket, ID_t connection_id) {
             ID_t id = UNKNOWN_ID;
             auto status = m_api_impl->privatePubKey(request.startline.path, request.body, id);
             m_api_impl->sendStatus(socket, status, path, id);
+            m_api_impl->updateLastActivityTimestampOfPeer(id);  // action during chat
           }
           break;
         }
@@ -452,6 +465,7 @@ void Server::handleRequest(int socket, ID_t connection_id) {
             ID_t id = UNKNOWN_ID;
             auto status = m_api_impl->privatePubKeysExchange(request.startline.path, id);
             m_api_impl->sendStatus(socket, status, path, id);
+            m_api_impl->updateLastActivityTimestampOfPeer(id);  // action during chat
           }
           break;
         }
@@ -493,6 +507,21 @@ void Server::storeRequest(ID_t connection_id, const Request& request) {
     db::LogRecord log(connection_id, m_launch_timestamp, timestamp, request.startline.to_string(), oss.str(), request.body);
     m_log_database->addLog(log);
   }
+}
+
+void Server::moderationDaemon() {
+  INF("Moderation Daemon has started");
+  while (!m_is_stopped) {
+    std::unique_lock<std::mutex> latch(m_moderator_mutex);
+    m_moderator_cv.wait_for(latch, std::chrono::seconds(MODERATION_TIMEOUT), [this](){ return this->m_is_stopped; });
+    if (m_is_stopped) {
+      break;
+    }
+    DBG("Moderation Daemon working...");
+    int total = m_api_impl->checkActivityAndKick();
+    DBG("Moderation Daemon, total kicked: %i", total);
+  }
+  INF("Moderation Daemon has finished");
 }
 
 #if SECURE

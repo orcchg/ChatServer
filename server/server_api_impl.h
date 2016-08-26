@@ -71,6 +71,8 @@ public:
   void gainAdminPriviledges(ID_t id) override;
   void sendHello(int socket) override;
   void logoutPeerAtConnectionReset(int socket) override;
+  void updateLastActivityTimestampOfPeer(ID_t id) override;
+  int checkActivityAndKick() override;
 
   /* API */
   // --------------------------------------------

@@ -58,5 +58,9 @@ void Peer::setAdmin(bool is_admin) {
   m_is_admin = is_admin;
 }
 
+void Peer::setLastActivityTimestamp(uint64_t timestamp) {
+  m_last_activity_timestamp = timestamp;
+}
+
 }  // namespace server
 

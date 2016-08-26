@@ -531,6 +531,8 @@ public:
   virtual void gainAdminPriviledges(ID_t id) = 0;
   virtual void sendHello(int socket) = 0;
   virtual void logoutPeerAtConnectionReset(int socket) = 0;
+  virtual void updateLastActivityTimestampOfPeer(ID_t id) = 0;
+  virtual int checkActivityAndKick() = 0;
 
   virtual void sendLoginForm(int socket) = 0;
   virtual void sendRegistrationForm(int socket) = 0;

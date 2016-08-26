@@ -44,6 +44,7 @@ public:
   void setToken(const std::string& input);
   void setSocket(int socket_id);
   void setAdmin(bool is_admin);
+  void setLastActivityTimestamp(uint64_t timestamp);
 
   inline ID_t getId() const { return m_id; }
   inline const std::string& getLogin() const { return m_name; }
@@ -52,6 +53,7 @@ public:
   inline const Token& getToken() const { return m_token; }
   inline int getSocket() const { return m_socket; }
   inline bool isAdmin() const { return m_is_admin; }
+  inline uint64_t getLastActivityTimestamp() const { return m_last_activity_timestamp; }
 
 private:
   ID_t m_id;
@@ -61,6 +63,7 @@ private:
   int m_channel;
   int m_socket;
   bool m_is_admin;
+  uint64_t m_last_activity_timestamp;
 };
 
 }  // namespace server
