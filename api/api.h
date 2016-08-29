@@ -534,6 +534,9 @@ public:
   virtual void updateLastActivityTimestampOfPeer(ID_t id) = 0;
   virtual int checkActivityAndKick() = 0;
 
+  virtual void sendSystemMessage(const std::string& message) = 0;
+  virtual void sendSystemMessage(ID_t id, const std::string& message) = 0;
+
   virtual void sendLoginForm(int socket) = 0;
   virtual void sendRegistrationForm(int socket) = 0;
   virtual void sendStatus(int socket, StatusCode status, Path action, ID_t id) = 0;

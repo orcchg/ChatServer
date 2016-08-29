@@ -185,6 +185,21 @@ void Server::listAllPeers() {
   static_cast<ServerApiImpl*>(m_api_impl)->listAllPeers();
 }
 
+void Server::sendMessage(ID_t id, char* message) {
+  if (message == nullptr) {
+    ERR("Null message not allowed !");
+    return;
+  }
+  std::string str(message);
+  if (id != UNKNOWN_ID) {
+    INF("Sending system message to peer with ID [%lli]: %s", id, str.c_str());
+    m_api_impl->sendSystemMessage(id, str);
+  } else {
+    INF("Broadcasting system message to all logged in peers: %s", str.c_str());
+    m_api_impl->sendSystemMessage(str);
+  }
+}
+
 #if SECURE
 void Server::listPrivateCommunications() {
   static_cast<ServerApiImpl*>(m_api_impl)->listPrivateCommunications();

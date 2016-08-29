@@ -74,6 +74,7 @@ public:
   void kick(ID_t id);
   void logIncoming();
   void listAllPeers();
+  void sendMessage(ID_t id, char* message);
 #if SECURE
   void listPrivateCommunications();
 #endif  // SECURE

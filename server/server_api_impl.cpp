@@ -169,6 +169,25 @@ int ServerApiImpl::checkActivityAndKick() {
   return kicked;
 }
 
+void ServerApiImpl::sendSystemMessage(const std::string& message) {
+  TRC("sendSystemMessage(%s)", message.c_str());
+  for (auto& it : m_peers) {
+    sendSystemMessage(it.second.getSocket(), message);
+  }
+}
+
+void ServerApiImpl::sendSystemMessage(ID_t id, const std::string& message) {
+  TRC("sendSystemMessage(%lli, %s)", id, message.c_str());
+  auto it = m_peers.find(id);
+  if (it != m_peers.end()) {
+    sendSystemMessage(it->second.getSocket(), message);
+  } else {
+    WRN("No such peer to send system message to: %lli", id);
+  }
+}
+
+/* API */
+// ----------------------------------------------------------------------------
 void ServerApiImpl::sendLoginForm(int socket) {
   TRC("sendLoginForm");
   LoginForm form("", "");
@@ -609,6 +628,16 @@ void ServerApiImpl::terminate() {
 void ServerApiImpl::sendToSocket(int socket, const char* buffer, int length) {
   std::lock_guard<std::mutex> latch(m_mutex);
   send(socket, buffer, length, 0);
+}
+
+void ServerApiImpl::sendSystemMessage(int socket, const std::string& message) {
+  std::ostringstream oss, json;
+  json << "{\"" D_ITEM_SYSTEM "\":\"" << message << "\"}";
+  oss << "HTTP/1.1 200 OK\r\n" << STANDARD_HEADERS << "\r\n"
+      << CONTENT_LENGTH_HEADER << json.str().length() << "\r\n\r\n"
+      << json.str();
+  MSG("Response: %s", oss.str().c_str());
+  sendToSocket(socket, oss.str().c_str(), oss.str().length());
 }
 
 /* Internal */

@@ -74,6 +74,9 @@ public:
   void updateLastActivityTimestampOfPeer(ID_t id) override;
   int checkActivityAndKick() override;
 
+  void sendSystemMessage(const std::string& message) override;
+  void sendSystemMessage(ID_t id, const std::string& message) override;
+
   /* API */
   // --------------------------------------------
   void sendLoginForm(int socket) override;
@@ -132,6 +135,7 @@ private:
   std::mutex m_mutex;
 
   void sendToSocket(int socket, const char* buffer, int length);
+  void sendSystemMessage(int socket, const std::string& message);
 
   StatusCode loginPeer(int socket, const LoginForm& form, ID_t& id);
   ID_t registerPeer(int socket, const RegistrationForm& form);
