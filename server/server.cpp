@@ -234,7 +234,7 @@ void Server::runListener() {
 /* Utility */
 // ----------------------------------------------
 void Server::printClientInfo(sockaddr_in& peeraddr) {
-  INF("Connection from IP %d.%d.%d.%d, port %d\n",
+  INF("Connection from IP %d.%d.%d.%d, port %d",
         (ntohl(peeraddr.sin_addr.s_addr) >> 24) & 0xff, // High byte of address
         (ntohl(peeraddr.sin_addr.s_addr) >> 16) & 0xff, // . . .
         (ntohl(peeraddr.sin_addr.s_addr) >> 8) & 0xff,  // . . .
