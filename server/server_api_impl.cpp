@@ -849,9 +849,9 @@ void ServerApiImpl::broadcast(const Message& message) {
   ID_t dest_id = message.getDestId();
   auto it = m_peers.find(dest_id);
   if (dest_id != UNKNOWN_ID) {
-    printf("Sending message to dedicated peer with id [%lli]......     ", dest_id);
+    PRINTR("Sending message to dedicated peer with id [%lli]......     ", dest_id);
     if (dest_id != message.getId() && it != m_peers.end()) {
-      printf("\e[5;00;32mOK\e[m\n");
+      PRINTR("\e[5;00;32mOK\e[m\n");
       std::string json = message.toJson();
       oss << "HTTP/1.1 102 Processing\r\n" << STANDARD_HEADERS << "\r\n"
           << CONTENT_LENGTH_HEADER << json.length() << "\r\n\r\n"
@@ -860,11 +860,11 @@ void ServerApiImpl::broadcast(const Message& message) {
       sendToSocket(it->second.getSocket(), oss.str().c_str(), oss.str().length());
       oss.str("");
     } else if (dest_id == message.getId()) {
-      printf("\e[5;00;33mNot sent: same peer\e[m\n");
+      PRINTR("\e[5;00;33mNot sent: same peer\e[m\n");
     } else if (it == m_peers.end()) {
-      printf("\e[5;00;31mRecepient not found\e[m\n");
+      PRINTR("\e[5;00;31mRecepient not found\e[m\n");
     } else {
-      printf("\e[5;00;31mError\e[m\n");
+      PRINTR("\e[5;00;31mError\e[m\n");
     }
     return;  // do not broadcast dedicated messages
   }
@@ -873,9 +873,9 @@ void ServerApiImpl::broadcast(const Message& message) {
   for (auto& it : m_peers) {
     ID_t id = it.first;
     int channel = it.second.getChannel();
-    printf("Sending message to peer with id [%lli] on channel [%i]......     ", id, channel);
+    PRINTR("Sending message to peer with id [%lli] on channel [%i]......     ", id, channel);
     if (id != message.getId() && channel == message.getChannel()) {
-      printf("\e[5;00;32mOK\e[m\n");
+      PRINTR("\e[5;00;32mOK\e[m\n");
       std::string json = message.toJson();
       oss << "HTTP/1.1 102 Processing\r\n" << STANDARD_HEADERS << "\r\n"
           << CONTENT_LENGTH_HEADER << json.length() << "\r\n\r\n"
@@ -884,11 +884,11 @@ void ServerApiImpl::broadcast(const Message& message) {
       sendToSocket(it.second.getSocket(), oss.str().c_str(), oss.str().length());
       oss.str("");
     } else if (id == message.getId()) {
-      printf("\e[5;00;33mNot sent: same peer\e[m\n");
+      PRINTR("\e[5;00;33mNot sent: same peer\e[m\n");
     } else if (channel != message.getChannel()) {
-      printf("\e[5;00;33mNot sent: another channel [%i]\e[m\n", message.getChannel());
+      PRINTR("\e[5;00;33mNot sent: another channel [%i]\e[m\n", message.getChannel());
     } else {
-      printf("\e[5;00;31mError\e[m\n");
+      PRINTR("\e[5;00;31mError\e[m\n");
     }
   }
 }

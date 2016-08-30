@@ -38,6 +38,8 @@
 #define MESSAGE_SIZE 4096
 #define USER_MESSAGE_MAX_SIZE 1600
 
+void PRINTR(const char* fmt, ...);
+
 namespace common {
 
 enum PreparseLeniency {
