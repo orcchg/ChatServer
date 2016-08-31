@@ -2,6 +2,8 @@
 
 Chat Server written in C++
 
+Checkout on Google Play: https://play.google.com/store/apps/details?id=com.orcchg.chatclient
+
 Key features:
 -------------
 
