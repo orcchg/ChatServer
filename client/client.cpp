@@ -74,7 +74,7 @@ void Client::run() {
   bool is_stopped = false;
   std::vector<Response> responses;
   Response response = getResponse(m_socket, &is_stopped, &responses);
-  if (response.isEmpty()) {
+  if (response == Response::EMPTY) {
     ERR("Received empty response. Connection closed");
     throw ClientException();
   } else {
@@ -235,8 +235,13 @@ Response Client::getResponse(int socket, bool* is_closed, std::vector<Response>*
     *is_closed = true;
     return Response::EMPTY;
   }
-  DBG("Raw response[%i bytes]: %.*s", read_bytes, (int) read_bytes, buffer);
-  return m_parser.parseBufferedResponses(buffer, read_bytes, responses);
+  try {
+    DBG("Raw response[%i bytes]: %.*s", read_bytes, (int) read_bytes, buffer);
+    return m_parser.parseBufferedResponses(buffer, read_bytes, responses);
+  } catch (ParseException exception) {
+    FAT("ParseException on raw response[%i bytes]: %.*s", read_bytes, (int) read_bytes, buffer);
+    return Response::EMPTY;
+  }
 }
 
 /* API invocations */
@@ -263,7 +268,7 @@ void Client::receiveAndprocessListAllPeersResponse(bool withChannel) {
   bool is_closed = false;
   std::vector<Response> responses;
   Response check_response = getResponse(m_socket, &is_closed, &responses);
-  if (is_closed) {
+  if (is_closed || check_response == Response::EMPTY) {
     return;
   }
 
@@ -300,7 +305,7 @@ void Client::checkLoggedIn(const std::string& name) {
   m_api_impl->isLoggedIn(name);
   std::vector<Response> responses;
   Response check_response = getResponse(m_socket, &is_closed, &responses);
-  if (is_closed) {
+  if (is_closed || check_response == Response::EMPTY) {
     return;
   }
 
@@ -329,7 +334,7 @@ void Client::getLoginForm() {
   m_api_impl->getLoginForm();
   std::vector<Response> responses;
   Response login_form_response = getResponse(m_socket, &is_closed, &responses);
-  if (is_closed) {
+  if (is_closed || login_form_response == Response::EMPTY) {
     return;
   }
 
@@ -362,7 +367,7 @@ void Client::tryLogin(LoginForm& form) {
   m_api_impl->sendLoginForm(form);
   std::vector<Response> responses;
   Response code_response = getResponse(m_socket, &is_closed, &responses);
-  if (is_closed) {
+  if (is_closed || code_response == Response::EMPTY) {
     return;
   }
 
@@ -420,7 +425,7 @@ void Client::checkRegistered(const std::string& name) {
   m_api_impl->isRegistered(name);
   std::vector<Response> responses;
   Response check_response = getResponse(m_socket, &is_closed, &responses);
-  if (is_closed) {
+  if (is_closed || check_response == Response::EMPTY) {
     return;
   }
 
@@ -449,7 +454,7 @@ void Client::getRegistrationForm() {
   m_api_impl->getRegistrationForm();
   std::vector<Response> responses;
   Response register_form_response = getResponse(m_socket, &is_closed, &responses);
-  if (is_closed) {
+  if (is_closed || register_form_response == Response::EMPTY) {
     return;
   }
 
@@ -505,7 +510,7 @@ void Client::tryRegister(RegistrationForm& form) {
   m_api_impl->sendRegistrationForm(form);
   std::vector<Response> responses;
   Response code_response = getResponse(m_socket, &is_closed, &responses);
-  if (is_closed) {
+  if (is_closed || code_response == Response::EMPTY) {
     return;
   }
 
@@ -695,7 +700,7 @@ void Client::receiverThread() {
   while (!m_is_stopped) {
     std::vector<Response> responses;
     Response response = getResponse(m_socket, &m_is_stopped, &responses);
-    if (response.isEmpty()) {
+    if (response == Response::EMPTY) {
       DBG("Received empty response. Connection closed");
       break;
     }

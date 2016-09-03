@@ -99,8 +99,6 @@ struct Request {
 
   static Request EMPTY;
 
-  bool isEmpty();
-
   bool operator == (const Request& rhs) const;
   bool operator != (const Request& rhs) const;
 };
@@ -111,8 +109,6 @@ struct Response {
   std::string body;
 
   static Response EMPTY;
-
-  bool isEmpty();
 
   bool operator == (const Response& rhs) const;
   bool operator != (const Response& rhs) const;

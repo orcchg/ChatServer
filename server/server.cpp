@@ -294,8 +294,13 @@ Request Server::getRequest(int socket, bool* is_closed) {
     *is_closed = true;
     return Request::EMPTY;
   }
-  DBG("Raw request[%i bytes]: %.*s", read_bytes, (int) read_bytes, buffer);
-  return m_parser.parseRequest(buffer, read_bytes);
+  try {
+    DBG("Raw request[%i bytes]: %.*s", read_bytes, (int) read_bytes, buffer);
+    return m_parser.parseRequest(buffer, read_bytes);
+  } catch (ParseException exception) {
+    FAT("ParseException on raw request[%i bytes]: %.*s", read_bytes, (int) read_bytes, buffer);
+    return Request::EMPTY;
+  }
 }
 
 void Server::handleRequest(int socket, ID_t connection_id) {
@@ -307,6 +312,11 @@ void Server::handleRequest(int socket, ID_t connection_id) {
       m_api_impl->logoutPeerAtConnectionReset(socket);
       close(socket);
       return;
+    }
+
+    if (request == Request::EMPTY) {
+      ERR("Empty request - ignored");
+      continue;
     }
 
     storeRequest(connection_id, request);  // log incoming request

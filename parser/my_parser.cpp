@@ -342,16 +342,6 @@ Header MyParser::parseHeader(const std::string& header_line) const {
   return header;
 }
 
-/* Check for emptiness */
-// ----------------------------------------------------------------------------
-bool Request::isEmpty() {
-  return startline.version == 0 || startline.method.empty() || startline.path.empty();
-}
-
-bool Response::isEmpty() {
-  return codeline.version == 0 || codeline.code == 0;
-}
-
 /* Trimming */
 // ----------------------------------------------------------------------------
 std::string trim(const std::string& str, const std::string& whitespace) {
