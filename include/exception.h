@@ -30,7 +30,6 @@
 #define CHAT_SERVER_EXCEPTION__H__
 
 struct ClientException {};
-struct ConstructionException {};
 struct ConvertException {};
 struct ParseException {};
 struct RuntimeException {};
