@@ -162,6 +162,7 @@ int ServerApiImpl::checkActivityAndKick() {
     uint64_t inactive = current - timestamp;
     if (inactive > PEER_ACTIVITY_TIMEOUT) {
       SYS("Moderating: peer with ID [%lli] was inactive for %zu ms, kicking...", it.first, inactive);
+      printf("\e[5;01;35mModerating: peer with ID [%lli] was inactive for %zu ms, kicking...\e[m", it.first, inactive);
       kickPeer(it.first);
       ++kicked;
     }
