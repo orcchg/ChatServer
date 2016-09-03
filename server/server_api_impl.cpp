@@ -374,7 +374,7 @@ StatusCode ServerApiImpl::login(int socket, const std::string& json, ID_t& id) {
 #endif  // SECURE
     return loginPeer(socket, form, id);
   } catch (ConvertException e) {
-    ERR("Login failed: invalid form: %s", json.c_str());
+    FAT("Login failed: invalid form: %s", json.c_str());
   }
   return StatusCode::INVALID_FORM;
 }
@@ -398,7 +398,7 @@ StatusCode ServerApiImpl::registrate(int socket, const std::string& json, ID_t& 
       return StatusCode::ALREADY_REGISTERED;
     }
   } catch (ConvertException e) {
-    ERR("Registration failed: invalid form: %s", json.c_str());
+    FAT("Registration failed: invalid form: %s", json.c_str());
   }
   return StatusCode::INVALID_FORM;
 }
@@ -425,7 +425,7 @@ StatusCode ServerApiImpl::message(const std::string& json, ID_t& id) {
     broadcast(message);
     return StatusCode::SUCCESS;
   } catch (ConvertException e) {
-    ERR("Message failed: invalid json: %s", json.c_str());
+    FAT("Message failed: invalid json: %s", json.c_str());
   }
   return StatusCode::INVALID_FORM;
 }
@@ -990,8 +990,13 @@ StatusCode ServerApiImpl::privatePubKey(const std::string& path, const std::stri
   id = std::stoll(params[0].value.c_str());
   if (isAuthorized(id)) {
     auto unwrapped_json = common::unwrapJsonObject(ITEM_PRIVATE_PUBKEY, json, common::PreparseLeniency::STRICT);
-    secure::Key key = secure::Key::fromJson(unwrapped_json);
-    storePublicKey(id, key);
+    try {
+      secure::Key key = secure::Key::fromJson(unwrapped_json);
+      storePublicKey(id, key);
+    } catch (ConvertException e) {
+      FAT("Key failed: invalid json: %s", unwrapped_json.c_str());
+      return StatusCode::INVALID_FORM;
+    }
   } else {
     ERR("Source peer with id [%lli] is not authorized", id);
     return StatusCode::UNAUTHORIZED;
