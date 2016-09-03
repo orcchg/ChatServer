@@ -108,7 +108,8 @@
   #define MSG(fmt, ...)
 #endif
 
-#elif ENABLED_LOGGING
+#else  // ANDROID not defined
+
 /* Basic logging */
 // ----------------------------------------------
   #define PROMPT_SUGGEST "] >>> "
@@ -156,6 +157,7 @@
   #define SYS_SUGGEST COLOR_OPEN SYS_COLOR SYS_STRING __FILE__ COLON LINE PROMPT_SUGGEST
   #define TTY_SUGGEST COLOR_OPEN TTY_COLOR TTY_STRING __FILE__ COLON LINE PROMPT_SUGGEST
 
+#if ENABLED_LOGGING
   #include <iostream>
 
   #define FAT(fmt, ...) printf((FAT_SUGGEST #fmt PROMPT_CLOSE), __LINE__, ##__VA_ARGS__); std::cout << std::flush;
@@ -184,6 +186,7 @@
   #define SYS(fmt, ...)
   #define TTY(fmt, ...)
 
+#endif
 #endif
 
 #endif /* LOGGER_H_ */
