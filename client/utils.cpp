@@ -28,6 +28,7 @@
 
 #include <chrono>
 #include <cstdio>
+#include <cctype>
 #include <sstream>
 #include <iostream>
 #include <regex>
@@ -100,6 +101,27 @@ int selectChannel() {
   int channel = 0;
   std::cin >> channel;
   return channel;
+}
+
+bool checkCheck(const std::string& json, bool& check, Path& action, ID_t& id) {
+  action = Path::UNKNOWN;
+  id = UNKNOWN_ID;
+  rapidjson::Document document;
+  auto prepared_json = common::preparse(json);
+  document.Parse(prepared_json.c_str());
+  bool result = document.IsObject() &&
+      document.HasMember(ITEM_CHECK) && document[ITEM_CHECK].IsInt();
+  if (result) {
+    check = document[ITEM_CHECK].GetInt() != 0;
+    if (document.HasMember(ITEM_ACTION) && document[ITEM_ACTION].IsInt() &&
+        document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64()) {
+      action = static_cast<Path>(document[ITEM_ACTION].GetInt());
+      id = document[ITEM_ID].GetInt64();
+    } else {
+      DBG("Check json has no action and peer's id");
+    }
+  }
+  return result;
 }
 
 bool checkStatus(const std::string& json, StatusCode& status) {
@@ -219,12 +241,14 @@ bool isEmailValid(const std::string& email) {
   /*}*/
 }
 
-Command parseCommand(const std::string& command, ID_t& value) {
+Command parseCommand(const std::string& command, ID_t& value, std::string* payload) {
   if (command.length() > 1 && command[0] == '.') {
     int i1 = command.find_first_of(' ');
-    std::string argument = command.substr(i1 + 1);
-    std::istringstream iss(argument);
-    iss >> value;
+    *payload = command.substr(i1 + 1);
+    std::istringstream iss(*payload);
+    if (std::isdigit((*payload)[0])) {
+      iss >> value;
+    }
     switch (command[1]) {
       case 'd': return Command::DIRECT_MESSAGE;
       case 's': return Command::SWITCH_CHANNEL;
@@ -244,6 +268,7 @@ Command parseCommand(const std::string& command, ID_t& value) {
         }
         break;
 #endif  // SECURE
+      case 'i': return Command::PEER_ID;
       case 'x': return Command::KICK;
 #if SECURE
       case 'a': return Command::ADMIN_REQUEST;

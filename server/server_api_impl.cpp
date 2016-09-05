@@ -557,6 +557,11 @@ StatusCode ServerApiImpl::switchChannel(const std::string& path, ID_t& id) {
 }
 
 // ----------------------------------------------
+bool ServerApiImpl::getPeerId(const std::string& path, ID_t& id) {
+  TRC("getPeerId(%s)", path.c_str());
+  return checkRegistered(path, id);  // same logic
+}
+
 bool ServerApiImpl::checkLoggedIn(const std::string& path, ID_t& id) {
   TRC("checkLoggedIn(%s)", path.c_str());
   std::string symbolic = getSymbolicFromQuery(path);
@@ -850,9 +855,13 @@ void ServerApiImpl::broadcast(const Message& message) {
   ID_t dest_id = message.getDestId();
   auto it = m_peers.find(dest_id);
   if (dest_id != UNKNOWN_ID) {
-    PRINTR("Sending message to dedicated peer with id [%lli]......     ", dest_id);
+#if ENABLED_LOGGING
+    printf("Sending message to dedicated peer with id [%lli]......     ", dest_id);
+#endif
     if (dest_id != message.getId() && it != m_peers.end()) {
-      PRINTR("\e[5;00;32mOK\e[m\n");
+#if ENABLED_LOGGING
+      printf("\e[5;00;32mOK\e[m\n");
+#endif
       std::string json = message.toJson();
       oss << "HTTP/1.1 102 Processing\r\n" << STANDARD_HEADERS << "\r\n"
           << CONTENT_LENGTH_HEADER << json.length() << "\r\n\r\n"
@@ -861,11 +870,17 @@ void ServerApiImpl::broadcast(const Message& message) {
       sendToSocket(it->second.getSocket(), oss.str().c_str(), oss.str().length());
       oss.str("");
     } else if (dest_id == message.getId()) {
-      PRINTR("\e[5;00;33mNot sent: same peer\e[m\n");
+#if ENABLED_LOGGING
+      printf("\e[5;00;33mNot sent: same peer\e[m\n");
+#endif
     } else if (it == m_peers.end()) {
-      PRINTR("\e[5;00;31mRecepient not found\e[m\n");
+#if ENABLED_LOGGING
+      printf("\e[5;00;31mRecepient not found\e[m\n");
+#endif
     } else {
-      PRINTR("\e[5;00;31mError\e[m\n");
+#if ENABLED_LOGGING
+      printf("\e[5;00;31mError\e[m\n");
+#endif
     }
     return;  // do not broadcast dedicated messages
   }
@@ -874,9 +889,13 @@ void ServerApiImpl::broadcast(const Message& message) {
   for (auto& it : m_peers) {
     ID_t id = it.first;
     int channel = it.second.getChannel();
-    PRINTR("Sending message to peer with id [%lli] on channel [%i]......     ", id, channel);
+#if ENABLED_LOGGING
+    printf("Sending message to peer with id [%lli] on channel [%i]......     ", id, channel);
+#endif
     if (id != message.getId() && channel == message.getChannel()) {
-      PRINTR("\e[5;00;32mOK\e[m\n");
+#if ENABLED_LOGGING
+      printf("\e[5;00;32mOK\e[m\n");
+#endif
       std::string json = message.toJson();
       oss << "HTTP/1.1 102 Processing\r\n" << STANDARD_HEADERS << "\r\n"
           << CONTENT_LENGTH_HEADER << json.length() << "\r\n\r\n"
@@ -885,11 +904,17 @@ void ServerApiImpl::broadcast(const Message& message) {
       sendToSocket(it.second.getSocket(), oss.str().c_str(), oss.str().length());
       oss.str("");
     } else if (id == message.getId()) {
-      PRINTR("\e[5;00;33mNot sent: same peer\e[m\n");
+#if ENABLED_LOGGING
+      printf("\e[5;00;33mNot sent: same peer\e[m\n");
+#endif
     } else if (channel != message.getChannel()) {
-      PRINTR("\e[5;00;33mNot sent: another channel [%i]\e[m\n", message.getChannel());
+#if ENABLED_LOGGING
+      printf("\e[5;00;33mNot sent: another channel [%i]\e[m\n", message.getChannel());
+#endif
     } else {
-      PRINTR("\e[5;00;31mError\e[m\n");
+#if ENABLED_LOGGING
+      printf("\e[5;00;31mError\e[m\n");
+#endif
     }
   }
 }

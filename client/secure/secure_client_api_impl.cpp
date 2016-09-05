@@ -79,6 +79,11 @@ void SecureClientApiImpl::switchChannel(ID_t id, int channel) {
   BIO_write(m_bio, request.c_str(), request.length());
 }
 
+void SecureClientApiImpl::getPeerId(const std::string& name) {
+  std::string request = util::getPeerId_request(m_host, name);
+  BIO_write(m_bio, request.c_str(), request.length());
+}
+
 void SecureClientApiImpl::isLoggedIn(const std::string& name) {
   std::string request = util::isLoggedIn_request(m_host, name);
   BIO_write(m_bio, request.c_str(), request.length());

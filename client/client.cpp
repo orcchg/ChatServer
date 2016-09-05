@@ -181,9 +181,17 @@ bool Client::readConfiguration(const std::string& config_file) {
 }
 
 void Client::goToMainMenu() {
-  std::string command, name, channel_str;
+  std::string command, name, pass, channel_str;
   int channel = DEFAULT_CHANNEL;
-  printf("---------- Main ----------\n\n         login\n\n       register\n\n          exit\n\n       ?login    [login | email]\n\n       ?register [login | email]\n\n       list [channel]\n");
+  printf("---------- Main ----------\n\n\
+         login\n\n\
+       register\n\n\
+          exit\n\n\
+       ?peer     [login | email]\n\n\
+       ?login    [login | email]\n\n\
+       ?register [login | email]\n\n\
+       ?auth     [login | email & password]\n\n\
+       list [channel]\n");
   printf("\nEnter command: ");
   while (std::cin >> command) {
     if (command.compare("login") == 0) {
@@ -192,6 +200,10 @@ void Client::goToMainMenu() {
     } else if (command.compare("register") == 0) {
       getRegistrationForm();
       return;
+    } else if (command.compare("?peer") == 0) {
+      std::cin >> name;
+      getPeerId(name);
+      printf("\nEnter command: ");
     } else if (command.compare("?login") == 0) {
       std::cin >> name;
       checkLoggedIn(name);
@@ -199,6 +211,10 @@ void Client::goToMainMenu() {
     } else if (command.compare("?register") == 0) {
       std::cin >> name;
       checkRegistered(name);
+      printf("\nEnter command: ");
+    } else if (command.compare("?auth") == 0) {
+      std::cin >> name >> pass;
+      checkAuth(name, pass);
       printf("\nEnter command: ");
     } else if (command.compare("list") == 0) {
       std::cin >> channel_str;
@@ -296,6 +312,42 @@ void Client::receiveAndprocessListAllPeersResponse(bool withChannel) {
     ERR("List all peers: server's responded with malformed payload");
     throw RuntimeException();
   }
+}
+
+/* Peer */
+// ----------------------------------------------
+void Client::getPeerId(const std::string& name) {
+  bool is_closed = false;
+  m_api_impl->getPeerId(name);
+  std::vector<Response> responses;
+  Response check_response = getResponse(m_socket, &is_closed, &responses);
+  if (is_closed || check_response == Response::EMPTY) {
+    return;
+  }
+
+  rapidjson::Document document;
+  auto json = common::preparse(check_response.body);
+  document.Parse(json.c_str());
+
+  if (document.IsObject() &&
+      document.HasMember(ITEM_CHECK) && document[ITEM_CHECK].IsInt() &&
+      document.HasMember(ITEM_ACTION) && document[ITEM_ACTION].IsInt() &&
+      document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64()) {
+    bool check = document[ITEM_CHECK].GetInt() != 0;
+    ID_t id = document[ITEM_ID].GetInt64();
+    if (check && id != UNKNOWN_ID) {
+      printf("\e[5;00;36mUser with login [%s] is has ID: %lli\e[m\n", name.c_str(), id);
+    } else {
+      printf("\e[5;00;33mUser with login [%s] is not registered\e[m\n", name.c_str());
+    }
+  } else {
+    ERR("Check for logged in: server's responded with invalid form");
+    throw RuntimeException();
+  }
+}
+
+void Client::checkAuth(const std::string& name, const std::string& password) {
+  // TODO: impl
 }
 
 /* Login */
@@ -583,7 +635,8 @@ void Client::startChat() {
   std::cin.ignore();
   while (!m_is_stopped && getline(std::cin, buffer)) {
     ID_t value = 0;
-    util::Command command = util::parseCommand(buffer, value);
+    std::string payload;
+    util::Command command = util::parseCommand(buffer, value, &payload);
     switch (command) {
       case util::Command::DIRECT_MESSAGE:
         printf("\e[5;00;34mSystem: next message will be addressed directly to peer [%lli]\e[m\n", value);
@@ -614,6 +667,7 @@ void Client::startChat() {
         printf("\t\e[5;00;37m.pe <id> - send public key to <id>\e[m\n");
         printf("\t\e[5;00;37m.pk - store public key remotely (generate if not exists)\e[m\n");
 #endif  // SECURE
+        printf("\t\e[5;00;37m.i <login | email> - get peer's id by login or email\e[m\n");
         printf("\t\e[5;00;37m.x <id> - send request to kick peer with <id>\e[m\n");
 #if SECURE
         printf("\t\e[5;00;37m.a <id> - send request to get administrating priviledges\e[m\n");
@@ -647,6 +701,9 @@ void Client::startChat() {
           getKeyPair();  // obtain new key pair
         }
         m_api_impl->privatePubKey(m_id, m_key_pair.first);
+        continue;
+      case util::Command::PEER_ID:
+        m_api_impl->getPeerId(payload);
         continue;
 #endif  // SECURE
       case util::Command::KICK:
@@ -741,6 +798,21 @@ void Client::receiverThread() {
                 break;
             }
             continue;  // received status from Server
+          }
+        }
+
+        {  // check
+          bool check = false;
+          Path action = Path::UNKNOWN;
+          ID_t id = UNKNOWN_ID;
+          if (util::checkCheck(response.body, check, action, id)) {
+            SYS("Received check: action = %i, ID = %lli", static_cast<int>(action), id);
+            switch (action) {
+              case Path::PEER_ID:
+              printf("\e[5;00;32mCheck: peer ID is: %lli\e[m\n", id);
+              break;
+            }
+            continue;  // received check from Server
           }
         }
 

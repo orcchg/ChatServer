@@ -49,6 +49,7 @@ public:
   void sendMessage(const Message& message) override;
   void logout(ID_t id) override;
   void switchChannel(ID_t id, int channel) override;
+  void getPeerId(const std::string& name) override;
   void isLoggedIn(const std::string& name) override;
   void isRegistered(const std::string& name) override;
   void getAllPeers() override;

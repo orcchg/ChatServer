@@ -93,6 +93,7 @@ public:
   StatusCode message(const std::string& json, ID_t& id) override;
   StatusCode logout(const std::string& path, ID_t& id) override;
   StatusCode switchChannel(const std::string& path, ID_t& id) override;
+  bool getPeerId(const std::string& path, ID_t& id) override;
   bool checkLoggedIn(const std::string& path, ID_t& id) override;
   bool checkRegistered(const std::string& path, ID_t& id) override;
   StatusCode getAllPeers(const std::string& path, std::vector<Peer>* peers, int& channel) override;

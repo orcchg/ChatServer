@@ -113,8 +113,10 @@ Server::Server(int port_number)
   m_paths[PATH_MESSAGE]        = Path::MESSAGE;
   m_paths[PATH_LOGOUT]         = Path::LOGOUT;
   m_paths[PATH_SWITCH_CHANNEL] = Path::SWITCH_CHANNEL;
+  m_paths[PATH_PEER_ID]        = Path::PEER_ID;
   m_paths[PATH_IS_LOGGED_IN]   = Path::IS_LOGGED_IN;
   m_paths[PATH_IS_REGISTERED]  = Path::IS_REGISTERED;
+  m_paths[PATH_CHECK_AUTH]     = Path::CHECK_AUTH;
   m_paths[PATH_ALL_PEERS]      = Path::ALL_PEERS;
 #if SECURE
   m_paths[PATH_PRIVATE_REQUEST] = Path::PRIVATE_REQUEST;
@@ -398,6 +400,17 @@ void Server::handleRequest(int socket, ID_t connection_id) {
             m_api_impl->updateLastActivityTimestampOfPeer(id);  // action during chat
           }
           break;
+        }
+        break;
+      case Path::PEER_ID:
+        switch (method) {
+          case Method::GET:
+            {
+              ID_t id = UNKNOWN_ID;
+              auto check = m_api_impl->getPeerId(request.startline.path, id);
+              m_api_impl->sendCheck(socket, check, path, id);
+            }
+            break;
         }
         break;
       case Path::IS_LOGGED_IN:

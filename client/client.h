@@ -87,6 +87,9 @@ protected:
   void listAllPeers(int channel);
   void receiveAndprocessListAllPeersResponse(bool withChannel);
 
+  void getPeerId(const std::string& name);
+  void checkAuth(const std::string& name, const std::string& password);
+
   void checkLoggedIn(const std::string& name);
   void getLoginForm();
   void fillLoginForm(LoginForm* form);

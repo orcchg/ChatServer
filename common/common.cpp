@@ -40,14 +40,14 @@
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
 
-void PRINTR(const char* format, ...) {
+/*void PRINTR(const char* format, ...) {
 #if ENABLED_LOGGING
   va_list argptr;
   va_start(argptr, format);
   printf(format, argptr);
   va_end(argptr);
 #endif  // ENABLED_LOGGING
-}
+}*/
 
 namespace common {
 

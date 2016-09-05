@@ -53,6 +53,7 @@ std::string enterSymbolic(const char* title, secure::ICryptor* cryptor);
 std::string enterSymbolic(const char* title, secure::ICryptor* cryptor, bool hide);
 #endif  // SECURE
 int selectChannel();
+bool checkCheck(const std::string& json, bool& check, Path& action, ID_t& id);
 bool checkStatus(const std::string& json, StatusCode& status);
 bool checkSystemMessage(const std::string& json, std::string* system, std::string* payload, Path& action, ID_t& id);
 #if SECURE
@@ -74,11 +75,12 @@ enum class Command : int {
   , PRIVATE_PUBKEY = 8
   , PRIVATE_PUBKEY_EXCHANGE = 9
 #endif  // SECURE
-  , KICK = 10
-  , ADMIN_REQUEST = 11
+  , PEER_ID = 10
+  , KICK = 11
+  , ADMIN_REQUEST = 12
 };
 
-Command parseCommand(const std::string& command, ID_t& value);
+Command parseCommand(const std::string& command, ID_t& value, std::string* payload);
 
 }
 

@@ -78,6 +78,11 @@ void ClientApiImpl::switchChannel(ID_t id, int channel) {
   send(m_socket, request.c_str(), request.length(), 0);
 }
 
+void ClientApiImpl::getPeerId(const std::string& name) {
+  std::string request = util::getPeerId_request(m_host, name);
+  send(m_socket, request.c_str(), request.length(), 0);
+}
+
 void ClientApiImpl::isLoggedIn(const std::string& name) {
   std::string request = util::isLoggedIn_request(m_host, name);
   send(m_socket, request.c_str(), request.length(), 0);

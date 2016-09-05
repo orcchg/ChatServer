@@ -73,8 +73,10 @@ const char* PATH_REGISTER       = D_PATH_REGISTER;
 const char* PATH_MESSAGE        = D_PATH_MESSAGE;
 const char* PATH_LOGOUT         = D_PATH_LOGOUT;
 const char* PATH_SWITCH_CHANNEL = D_PATH_SWITCH_CHANNEL;
+const char* PATH_PEER_ID        = D_PATH_PEER_ID;
 const char* PATH_IS_LOGGED_IN   = D_PATH_IS_LOGGED_IN;
 const char* PATH_IS_REGISTERED  = D_PATH_IS_REGISTERED;
+const char* PATH_CHECK_AUTH     = D_PATH_CHECK_AUTH;
 const char* PATH_ALL_PEERS      = D_PATH_ALL_PEERS;
 
 #if SECURE

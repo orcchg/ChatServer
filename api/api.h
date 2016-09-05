@@ -50,8 +50,10 @@
  *  POST  /message - send message
  *  PUT   /switch_channel?id=N&channel=K - switch to another channel
  *
+ *  GET   /peer_id?login=str       - receive peer's id (login or email)
  *  GET   /is_logged_in?login=str  - checks whether user is logged in (login or email)
  *  GET   /is_registered?login=str - checks whether user is registered (login or email)
+ *  GET   /check_auth?login=str&password=str&encrypted=N - checks whether credentials are valid (login or email)
  *
  *  GET   /all_peers           - get list of all logged in peers
  *  GET   /all_peers?channel=K - get list of all logged in peers on channel
@@ -120,6 +122,7 @@
  *  @note:  @system_body is sent to the rest logged in peers.
  */
 
+
 /* Registration */
 // ----------------------------------------------
 /**
@@ -177,6 +180,16 @@
 /* Check for peer */
 // ----------------------------------------------
 /**
+ *  GET /peer_id
+ *
+ *  Receives peer's id.
+ *
+ *  @params: login    : TEXT - peer's login or email
+ *
+ *  @response_body:  {"check":INT,"action":INT,"id":INT}
+ */
+
+/**
  *  GET /is_logged_in
  *
  *  Check whether peer is logged in.
@@ -192,6 +205,18 @@
  *  Check whether peer is registered.
  *
  *  @params: login    : TEXT - peer's login or email
+ *
+ *  @response_body:  {"check":INT,"action":INT,"id":INT}
+ */
+
+/**
+ *  GET /check_auth
+ *
+ *  Check whether credentials are valid.
+ *
+ *  @params: login      : TEXT - peer's login or email
+ *           password   : TEXT - peer's password (hash)
+ *           encrypted  : INT  - is password encrypted with Server's public key [OPTIONAL]
  *
  *  @response_body:  {"check":INT,"action":INT,"id":INT}
  */
@@ -333,8 +358,10 @@
 #define D_PATH_MESSAGE         "/message"
 #define D_PATH_LOGOUT          "/logout"
 #define D_PATH_SWITCH_CHANNEL  "/switch_channel"
+#define D_PATH_PEER_ID         "/peer_id"
 #define D_PATH_IS_LOGGED_IN    "/is_logged_in"
 #define D_PATH_IS_REGISTERED   "/is_registered"
+#define D_PATH_CHECK_AUTH      "/check_auth"
 #define D_PATH_ALL_PEERS       "/all_peers"
 
 #if SECURE
@@ -389,8 +416,10 @@ extern const char* PATH_REGISTER;
 extern const char* PATH_MESSAGE;
 extern const char* PATH_LOGOUT;
 extern const char* PATH_SWITCH_CHANNEL;
+extern const char* PATH_PEER_ID;
 extern const char* PATH_IS_LOGGED_IN;
 extern const char* PATH_IS_REGISTERED;
+extern const char* PATH_CHECK_AUTH;
 extern const char* PATH_ALL_PEERS;
 
 #if SECURE
@@ -414,15 +443,17 @@ enum class Path : int {
   MESSAGE        = 2,
   LOGOUT         = 3,
   SWITCH_CHANNEL = 4,
-  IS_LOGGED_IN   = 5,
-  IS_REGISTERED  = 6,
-  ALL_PEERS      = 7
+  PEER_ID        = 5,
+  IS_LOGGED_IN   = 6,
+  IS_REGISTERED  = 7,
+  CHECK_AUTH     = 8,
+  ALL_PEERS      = 9
 #if SECURE
-  , PRIVATE_REQUEST   = 8
-  , PRIVATE_CONFIRM   = 9
-  , PRIVATE_ABORT     = 10
-  , PRIVATE_PUBKEY    = 11
-  , PRIVATE_PUBKEY_EXCHANGE = 12
+  , PRIVATE_REQUEST   = 10
+  , PRIVATE_CONFIRM   = 11
+  , PRIVATE_ABORT     = 12
+  , PRIVATE_PUBKEY    = 13
+  , PRIVATE_PUBKEY_EXCHANGE = 14
 #endif  // SECURE
 };
 
@@ -503,6 +534,7 @@ public:
   virtual void sendMessage(const Message& message) = 0;
   virtual void logout(ID_t id) = 0;
   virtual void switchChannel(ID_t id, int channel) = 0;
+  virtual void getPeerId(const std::string& name) = 0;
   virtual void isLoggedIn(const std::string& name) = 0;
   virtual void isRegistered(const std::string& name) = 0;
   virtual void getAllPeers() = 0;
@@ -551,6 +583,7 @@ public:
   virtual StatusCode message(const std::string& json, ID_t& id) = 0;
   virtual StatusCode logout(const std::string& path, ID_t& id) = 0;
   virtual StatusCode switchChannel(const std::string& path, ID_t& id) = 0;
+  virtual bool getPeerId(const std::string& path, ID_t& id) = 0;
   virtual bool checkLoggedIn(const std::string& path, ID_t& id) = 0;
   virtual bool checkRegistered(const std::string& path, ID_t& id) = 0;
   virtual StatusCode getAllPeers(const std::string& path, std::vector<Peer>* peers, int& channel) = 0;
