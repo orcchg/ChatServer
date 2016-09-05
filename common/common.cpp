@@ -30,6 +30,7 @@
 #include <chrono>
 #include <exception>
 #include <fstream>
+#include <cctype>
 #include <cstdlib>
 #include <stdarg.h>
 #include <sstream>
@@ -178,6 +179,14 @@ void split(const std::string& input, char delimiter, std::vector<std::string>* o
     output->push_back(item);
     TRC("Split token: %s", item.c_str());
   }
+}
+
+bool isNumber(const std::string& str, ID_t& id) {
+  id = UNKNOWN_ID;
+  if (str.empty() || ((!isdigit(str[0])) && (str[0] != '-') && (str[0] != '+'))) return false;
+  char* p = nullptr;
+  id = strtoll(str.c_str(), &p, 10);
+  return (*p == '\0');
 }
 
 // ----------------------------------------------------------------------------

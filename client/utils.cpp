@@ -246,7 +246,8 @@ Command parseCommand(const std::string& command, ID_t& value, std::string* paylo
     int i1 = command.find_first_of(' ');
     *payload = command.substr(i1 + 1);
     std::istringstream iss(*payload);
-    if (std::isdigit((*payload)[0])) {
+    ID_t id = UNKNOWN_ID;
+    if (common::isNumber(*payload, id)) {
       iss >> value;
     }
     switch (command[1]) {

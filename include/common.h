@@ -60,6 +60,7 @@ std::string restoreStrippedInMemoryPEM(const std::string& pem);
 std::string unwrapJsonObject(const char* field, const std::string& json, PreparseLeniency leniency = PreparseLeniency::DISABLED);
 
 void split(const std::string& input, char delimiter, std::vector<std::string>* output);
+bool isNumber(const std::string& str, ID_t& id);
 
 std::string bin2hex(unsigned char* src, size_t size);
 void hex2bin(const std::string& source, unsigned char* target, size_t& target_length);
