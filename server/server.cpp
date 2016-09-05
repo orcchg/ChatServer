@@ -435,6 +435,17 @@ void Server::handleRequest(int socket, ID_t connection_id) {
             break;
         }
         break;
+      case Path::CHECK_AUTH:
+        switch (method) {
+          case Method::GET:
+            {
+              ID_t id = UNKNOWN_ID;
+              auto check = m_api_impl->checkAuth(request.startline.path, id);
+              m_api_impl->sendCheck(socket, check, path, id);
+            }
+            break;
+        }
+        break;
       case Path::ALL_PEERS:
         switch (method) {
           case Method::GET:

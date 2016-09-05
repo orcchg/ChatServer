@@ -94,6 +94,11 @@ void SecureClientApiImpl::isRegistered(const std::string& name) {
   BIO_write(m_bio, request.c_str(), request.length());
 }
 
+void SecureClientApiImpl::checkAuth(const std::string& name, const std::string& password, bool encrypted) {
+  std::string request = util::checkAuth_request(m_host, name, password, encrypted);
+  BIO_write(m_bio, request.c_str(), request.length());
+}
+
 void SecureClientApiImpl::getAllPeers() {
   std::string request = util::getAllPeers_request(m_host);
   BIO_write(m_bio, request.c_str(), request.length());

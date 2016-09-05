@@ -537,6 +537,7 @@ public:
   virtual void getPeerId(const std::string& name) = 0;
   virtual void isLoggedIn(const std::string& name) = 0;
   virtual void isRegistered(const std::string& name) = 0;
+  virtual void checkAuth(const std::string& name, const std::string& password, bool encrypted) = 0;
   virtual void getAllPeers() = 0;
   virtual void getAllPeers(int channel) = 0;
 #if SECURE
@@ -564,7 +565,7 @@ public:
   virtual void sendHello(int socket) = 0;
   virtual void logoutPeerAtConnectionReset(int socket) = 0;
   virtual void updateLastActivityTimestampOfPeer(ID_t id) = 0;
-  virtual int checkActivityAndKick() = 0;
+  virtual int  checkActivityAndKick() = 0;
 
   virtual void sendSystemMessage(const std::string& message) = 0;
   virtual void sendSystemMessage(ID_t id, const std::string& message) = 0;
@@ -586,6 +587,7 @@ public:
   virtual bool getPeerId(const std::string& path, ID_t& id) = 0;
   virtual bool checkLoggedIn(const std::string& path, ID_t& id) = 0;
   virtual bool checkRegistered(const std::string& path, ID_t& id) = 0;
+  virtual bool checkAuth(const std::string& path, ID_t& id) = 0;
   virtual StatusCode getAllPeers(const std::string& path, std::vector<Peer>* peers, int& channel) = 0;
 #if SECURE
   virtual StatusCode privateRequest(const std::string& path, ID_t& id) = 0;  // forward request to dest peer

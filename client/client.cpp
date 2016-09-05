@@ -341,13 +341,48 @@ void Client::getPeerId(const std::string& name) {
       printf("\e[5;00;33mUser with login [%s] is not registered\e[m\n", name.c_str());
     }
   } else {
-    ERR("Check for logged in: server's responded with invalid form");
+    ERR("Check get peer id: server's responded with invalid form");
     throw RuntimeException();
   }
 }
 
-void Client::checkAuth(const std::string& name, const std::string& password) {
-  // TODO: impl
+void Client::checkAuth(const std::string& name, std::string& password) {
+  TRC("checkAuth(%s, %s)", name.c_str(), password.c_str());
+  bool encrypted = false;
+#if SECURE
+  password = m_cryptor->encrypt(password);  // hash password
+  DBG("Hash password: %s", password.c_str());
+  password = secure::good::encryptRSA(m_server_pubkey, password, encrypted);  // encrypt
+  DBG("Cipher password: %s", password.c_str());
+#endif  // SECURE
+  m_api_impl->checkAuth(name, password, encrypted);
+
+  bool is_closed = false;
+  std::vector<Response> responses;
+  Response check_response = getResponse(m_socket, &is_closed, &responses);
+  if (is_closed || check_response == Response::EMPTY) {
+    return;
+  }
+
+  rapidjson::Document document;
+  auto json = common::preparse(check_response.body);
+  document.Parse(json.c_str());
+
+  if (document.IsObject() &&
+      document.HasMember(ITEM_CHECK) && document[ITEM_CHECK].IsInt() &&
+      document.HasMember(ITEM_ACTION) && document[ITEM_ACTION].IsInt() &&
+      document.HasMember(ITEM_ID) && document[ITEM_ID].IsInt64()) {
+    bool check = document[ITEM_CHECK].GetInt() != 0;
+    ID_t id = document[ITEM_ID].GetInt64();
+    if (check && id != UNKNOWN_ID) {
+      printf("\e[5;00;36mCheck Auth succeeded: correct credentials, peer [%s] has ID: %lli\e[m\n", name.c_str(), id);
+    } else {
+      printf("\e[5;00;33mCheck Auth failed: invalid credentials for peer [%s]\e[m\n", name.c_str());
+    }
+  } else {
+    ERR("Check auth: server's responded with invalid form");
+    throw RuntimeException();
+  }
 }
 
 /* Login */
@@ -640,11 +675,13 @@ void Client::startChat() {
     switch (command) {
       case util::Command::DIRECT_MESSAGE:
         printf("\e[5;00;34mSystem: next message will be addressed directly to peer [%lli]\e[m\n", value);
+#if SECURE
         if (m_private_secure_chat && m_dest_id != value) {
           printf("\e[5;00;33mSystem: private communication from current peer [%lli] has aborted\e[m\n", m_id);
           m_api_impl->privateAbort(m_id, m_dest_id);
           m_private_secure_chat = false;
         }
+#endif  // SECURE
         m_dest_id = value;
         continue;
       case util::Command::SWITCH_CHANNEL:
@@ -809,8 +846,15 @@ void Client::receiverThread() {
             SYS("Received check: action = %i, ID = %lli", static_cast<int>(action), id);
             switch (action) {
               case Path::PEER_ID:
-              printf("\e[5;00;32mCheck: peer ID is: %lli\e[m\n", id);
-              break;
+                printf("\e[5;00;32mCheck: peer ID is: %lli\e[m\n", id);
+                break;
+              case Path::CHECK_AUTH:
+                if (check) {
+                  printf("\e[5;00;32mCheck Auth: peer ID is: %lli\e[m\n", id);
+                } else {
+                  printf("\e[5;00;31mCheck Auth: wrong credentials\e[m\n");
+                }
+                break;
             }
             continue;  // received check from Server
           }

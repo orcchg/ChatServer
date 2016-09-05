@@ -93,6 +93,11 @@ void ClientApiImpl::isRegistered(const std::string& name) {
   send(m_socket, request.c_str(), request.length(), 0);
 }
 
+void ClientApiImpl::checkAuth(const std::string& name, const std::string& password, bool encrypted) {
+  std::string request = util::checkAuth_request(m_host, name, password, encrypted);
+  send(m_socket, request.c_str(), request.length(), 0);
+}
+
 void ClientApiImpl::getAllPeers() {
   std::string request = util::getAllPeers_request(m_host);
   send(m_socket, request.c_str(), request.length(), 0);
@@ -132,6 +137,8 @@ void ClientApiImpl::privatePubKeysExchange(ID_t src_id, ID_t dest_id) {
   send(m_socket, request.c_str(), request.length(), 0);
 }
 
+#endif  // SECURE
+
 /* Administrating */
 // ----------------------------------------------------------------------------
 void ClientApiImpl::sendKickRequest(ID_t src_id, ID_t dest_id) {
@@ -143,6 +150,4 @@ void ClientApiImpl::sendAdminRequest(ID_t src_id, const std::string& cert) {
   std::string request = util::sendAdminRequest_request(m_host, src_id, cert);
   send(m_socket, request.c_str(), request.length(), 0);
 }
-
-#endif  // SECURE
 

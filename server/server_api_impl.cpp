@@ -582,6 +582,58 @@ bool ServerApiImpl::checkRegistered(const std::string& path, ID_t& id) {
   return id != UNKNOWN_ID;
 }
 
+bool ServerApiImpl::checkAuth(const std::string& path, ID_t& id) {
+  TRC("checkAuth(%s)", path.c_str());
+  bool result = false;
+  std::vector<Query> params;
+  m_parser.parsePath(path, &params);
+  for (auto& query : params) {
+    DBG("Query: %s: %s", query.key.c_str(), query.value.c_str());
+  }
+  if (params.size() < 2 || params[0].key.compare(ITEM_LOGIN) != 0 ||
+      params[1].key.compare(ITEM_PASSWORD) != 0) {
+    ERR("Check auth in failed: wrong query params: %s", path.c_str());
+    return result;
+  }
+
+  std::string symbolic = params[0].value;
+  std::string password = params[1].value;
+  if (symbolic.empty() || password.empty()) {
+    return result;  // wrong query
+  }
+  PeerDTO peer = getPeerFromDatabase(symbolic, id);
+
+  ID_t value = UNKNOWN_ID;
+  bool encrypted = false;
+  if (params.size() == 3 && params[2].key.compare(ITEM_ENCRYPTED) == 0 &&
+      common::isNumber(params[2].value, value)) {
+    value = std::stoll(params[2].value);
+    encrypted = value != UNKNOWN_ID;
+  }
+#if SECURE
+  if (encrypted) {
+    DBG("Password is encrypted, decrypting...");
+    bool decrypted = false;
+    password = secure::good::decryptRSA(m_key_pair.second, password, decrypted);
+    SYS("Decrypted password[%i]: %s", !decrypted, password.c_str());
+  } else {
+    DBG("Password is not encrypted");
+  }
+#endif  // SECURE
+
+  if (id != UNKNOWN_ID) {
+    if (authenticate(peer.getPassword(), password)) {
+      INF("Authentication succeeded: correct credentials");
+      result = true;
+    } else {
+      ERR("Authentication failed: wrong password");
+    }
+  } else {
+    WRN("Peer with login | email ["%s"] not registered!", symbolic.c_str());
+  }
+  return result;
+}
+
 // ----------------------------------------------
 StatusCode ServerApiImpl::getAllPeers(const std::string& path, std::vector<Peer>* peers, int& channel) {
   TRC("getAllPeers(%s)", path.c_str());
@@ -684,7 +736,7 @@ std::string ServerApiImpl::getSymbolicFromQuery(const std::string& path) const {
     DBG("Query: %s: %s", query.key.c_str(), query.value.c_str());
   }
   if (params.size() < 1 || params[0].key.compare(ITEM_LOGIN) != 0) {
-    ERR("Check logged in failed: wrong query params: %s", path.c_str());
+    ERR("Check symbolic from query failed: wrong query params: %s", path.c_str());
     return "";  // simplified status
   }
   return params[0].value;
@@ -1274,6 +1326,8 @@ void ServerApiImpl::eraseAllPendingHandshakes(ID_t id) {
   DBG("Erased %i handshakes", total);
 }
 
+#endif  // SECURE
+
 /* Administrating */
 // ----------------------------------------------------------------------------
 StatusCode ServerApiImpl::tryKickPeer(const std::string& path, ID_t& id) {
@@ -1339,6 +1393,4 @@ StatusCode ServerApiImpl::tryBecomeAdmin(const std::string& path, ID_t& id) {
   gainAdminPriviledges(src_id);  // gain administrating priviledges to src peer
   return StatusCode::SUCCESS;
 }
-
-#endif  // SECURE
 

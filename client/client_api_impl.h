@@ -52,6 +52,7 @@ public:
   void getPeerId(const std::string& name) override;
   void isLoggedIn(const std::string& name) override;
   void isRegistered(const std::string& name) override;
+  void checkAuth(const std::string& name, const std::string& password, bool encrypted) override;
   void getAllPeers() override;
   void getAllPeers(int channel) override;
 #if SECURE

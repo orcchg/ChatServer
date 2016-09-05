@@ -32,6 +32,21 @@
 
 namespace test {
 
+TEST(CommonUtils, IsNumber) {
+  std::string integer = "1000";
+  ID_t id = UNKNOWN_ID;
+  EXPECT_TRUE(common::isNumber(integer, id));
+  EXPECT_EQ(1000, id);
+}
+
+
+TEST(CommonUtils, NotNumber) {
+  std::string nan = "100z";
+  ID_t id = UNKNOWN_ID;
+  EXPECT_FALSE(common::isNumber(nan, id));
+  EXPECT_EQ(100, id);
+}
+
 TEST(RestoreStrippedPEM, PublicInMemory1) {
   std::string pem_stripped = "-----BEGIN RSA PUBLIC KEY-----MIIBCgKCAQEA5wz5fNXVx5FMs74hJPdHrZ1NnvD8o2I5EsHwY2Tmd4FqbkfiASavjS5pglWYu10x0GHkJj1jHxU3yGqrnHchMW0zd0FmolVoc6Grutzryt0ekteCwsB4eP23dfZhWRvUTCi0Mr94ui+8ejmTMT/db3Yg54fXK6ctPd5DnzojKm/h4n+z5r7xyRMQbQb8EUpn7cBqRGzD+kGadtEuiFwRQFyMOOWyhtQ0PpsyNNJTCNJsc8w3+gOGi11mfOYRZjaHINkUI4yJUincacUJOLQQK2jQH4mBH0P5Wq6b/mGcxz17yZDvnwZZF3k82XDYsMYLEglKIzl1QXKua/dtEm0D+QIDAQAB-----END RSA PUBLIC KEY-----";
 
