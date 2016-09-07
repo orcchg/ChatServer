@@ -38,11 +38,15 @@ TARGET_LINK_LIBRARIES( client api common my_parser ${CRYPTOR} )
 if( SECURE )
     INCLUDE_DIRECTORIES( ${SOURCE_DIR} )
     SET( SECURE_SOURCE_DIR ${SOURCE_DIR}/secure )
+if( USE_BORINGSSL )
+    SET( SECURE_SOURCES )
+else()
     SET( SECURE_SOURCES
         ${SECURE_SOURCE_DIR}/secure_client.cpp
         ${SECURE_SOURCE_DIR}/secure_client_api_impl.cpp
         ${SECURE_SOURCE_DIR}/run_secure_client.cpp
     )
+endif()
     ADD_EXECUTABLE( s_client ${SECURE_SOURCES} ${SOURCES} )
     TARGET_LINK_LIBRARIES( s_client api common my_parser ${CRYPTOR} ${OPENSSL_LIBS} )
 endif()

@@ -110,7 +110,11 @@ int envelopeSeal(
    * of times (one for each public key provided in the pub_key array). In
    * this example the array size is just one. This operation also
    * generates an IV and places it in iv. */
+#if USE_BORINGSSL
+  if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), encrypted_key, encrypted_key_len, iv, pub_key, 1)) {
+#else
   if (1 != EVP_SealInit(ctx, EVP_aes_256_cbc(), encrypted_key, encrypted_key_len, iv, pub_key, 1)) {
+#endif  // USE_BORINGSSL
     ERR("Seal init");
     handleErrors();
   }
@@ -118,7 +122,11 @@ int envelopeSeal(
   /* Provide the message to be encrypted, and obtain the encrypted output.
    * EVP_SealUpdate can be called multiple times if necessary
    */
+#if USE_BORINGSSL
+  if (1 != EVP_EncryptUpdate(ctx, ciphertext, &len, plaintext, plaintext_len)) {
+#else
   if (1 != EVP_SealUpdate(ctx, ciphertext, &len, plaintext, plaintext_len)) {
+#endif  // USE_BORINGSSL
     ERR("Seal update");
     handleErrors();
   }
@@ -128,7 +136,11 @@ int envelopeSeal(
   /* Finalise the encryption. Further ciphertext bytes may be written at
    * this stage.
    */
+#if USE_BORINGSSL
+  if (1 != EVP_EncryptFinal_ex(ctx, ciphertext + len, &len)) {
+#else
   if (1 != EVP_SealFinal(ctx, ciphertext + len, &len)) {
+#endif
     ERR("Seal final");
     handleErrors();
   }
@@ -161,7 +173,11 @@ int envelopeOpen(
   /* Initialise the decryption operation. The asymmetric private key is
    * provided and priv_key, whilst the encrypted session key is held in
    * encrypted_key */
+#if USE_BORINGSSL
+  if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), encrypted_key, encrypted_key_len, iv, priv_key)) {
+#else
   if (1 != EVP_OpenInit(ctx, EVP_aes_256_cbc(), encrypted_key, encrypted_key_len, iv, priv_key)) {
+#endif  // USE_BORINGSSL
     ERR("Open init");
     handleErrors();
   }
@@ -169,7 +185,11 @@ int envelopeOpen(
   /* Provide the message to be decrypted, and obtain the plaintext output.
    * EVP_OpenUpdate can be called multiple times if necessary
    */
+#if USE_BORINGSSL
+  if (1 != EVP_DecryptUpdate(ctx, plaintext, &len, ciphertext, ciphertext_len)) {
+#else
   if (1 != EVP_OpenUpdate(ctx, plaintext, &len, ciphertext, ciphertext_len)) {
+#endif  // USE_BORINGSSL
     ERR("Open update");
     handleErrors();
   }
@@ -179,7 +199,11 @@ int envelopeOpen(
   /* Finalise the decryption. Further plaintext bytes may be written at
    * this stage.
    */
+#if USE_BORINGSSL
+  if (1 != EVP_DecryptFinal_ex(ctx, plaintext + len, &len)) {
+#else
   if (1 != EVP_OpenFinal(ctx, plaintext + len, &len)) {
+#endif  // USE_BORINGSSL
     ERR("Open final");
     handleErrors();
   }
