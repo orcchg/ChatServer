@@ -4,3 +4,6 @@
 [submodule "boringssl"]
 	path = boringssl
 	url = https://github.com/google/boringssl
+[submodule "boringssl-compat"]
+	path = boringssl-compat
+	url = https://github.com/SlimRoms/android_external_sony_boringssl-compat
