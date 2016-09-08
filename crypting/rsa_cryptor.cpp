@@ -108,17 +108,10 @@ int RSACryptorRaw::doEncrypt(const std::string& source, unsigned char** cipher) 
   int cipher_len = 0;
 
   EVP_CIPHER_CTX* rsa_enc_ctx = EVP_CIPHER_CTX_new();
-#if USE_BORINGSSL
-  EVP_EncryptInit_ex(rsa_enc_ctx, EVP_aes_256_cbc(), &m_ek, &m_ek_len, m_iv, &m_keypair, 1);
-  EVP_EncryptUpdate(rsa_enc_ctx, *cipher, &block_len, (unsigned char*) source.c_str(), source.length());
-  cipher_len += block_len;
-  EVP_EncryptFinal_ex(rsa_enc_ctx, *cipher + cipher_len, &block_len);
-#else
   EVP_SealInit(rsa_enc_ctx, EVP_aes_256_cbc(), &m_ek, &m_ek_len, m_iv, &m_keypair, 1);
   EVP_SealUpdate(rsa_enc_ctx, *cipher, &block_len, (unsigned char*) source.c_str(), source.length());
   cipher_len += block_len;
   EVP_SealFinal(rsa_enc_ctx, *cipher + cipher_len, &block_len);
-#endif  // USE_BORINGSSL
   cipher_len += block_len;
   EVP_CIPHER_CTX_free(rsa_enc_ctx);
   INF("RSA Cipher length: %i", cipher_len);
@@ -131,17 +124,10 @@ int RSACryptorRaw::doDecrypt(unsigned char* cipher, int cipher_len, unsigned cha
   int plain_len = 0;
 
   EVP_CIPHER_CTX* rsa_dec_ctx = EVP_CIPHER_CTX_new();
-#if USE_BORINGSSL
-  EVP_DecryptInit_ex(rsa_dec_ctx, EVP_aes_256_cbc(), m_ek, m_ek_len, m_iv, m_keypair);
-  EVP_DecryptUpdate(rsa_dec_ctx, *plain, &block_len, cipher, cipher_len);
-  plain_len += block_len;
-  EVP_DecryptFinal_ex(rsa_dec_ctx, *plain + plain_len, &block_len);
-#else
   EVP_OpenInit(rsa_dec_ctx, EVP_aes_256_cbc(), m_ek, m_ek_len, m_iv, m_keypair);
   EVP_OpenUpdate(rsa_dec_ctx, *plain, &block_len, cipher, cipher_len);
   plain_len += block_len;
   EVP_OpenFinal(rsa_dec_ctx, *plain + plain_len, &block_len);
-#endif  // USE_BORINGSSL
   plain_len += block_len;
   EVP_CIPHER_CTX_free(rsa_dec_ctx);
   INF("RSA Plain length: %i", plain_len);

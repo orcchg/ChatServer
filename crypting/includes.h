@@ -31,16 +31,6 @@
 
 #if SECURE
 
-#if USE_BORINGSSL
-#include "boringssl/include/openssl/aes.h"
-#include "boringssl/include/openssl/conf.h"
-#include "boringssl/include/openssl/err.h"
-#include "boringssl/include/openssl/evp.h"
-#include "boringssl/include/openssl/pem.h"
-#include "boringssl/include/openssl/rand.h"
-#include "boringssl/include/openssl/rsa.h"
-#include "boringssl/include/openssl/sha.h"
-#else
 #include <openssl/aes.h>
 #include <openssl/conf.h>
 #include <openssl/err.h>
@@ -49,7 +39,6 @@
 #include <openssl/rand.h>
 #include <openssl/rsa.h>
 #include <openssl/sha.h>
-#endif  // USE_BORINGSSL
 
 // symmetric key in bytes
 #define KEY_LENGTH SHA256_DIGEST_LENGTH
