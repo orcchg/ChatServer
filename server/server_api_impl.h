@@ -71,7 +71,7 @@ public:
   void gainAdminPriviledges(ID_t id) override;
   void sendHello(int socket) override;
   void logoutPeerAtConnectionReset(int socket) override;
-  void updateLastActivityTimestampOfPeer(ID_t id) override;
+  void updateLastActivityTimestampOfPeer(ID_t id, Path action) override;
   int checkActivityAndKick() override;
 
   void sendSystemMessage(const std::string& message) override;

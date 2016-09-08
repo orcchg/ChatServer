@@ -30,6 +30,7 @@
 #define CHAT_SERVER_PEER__H__
 
 #include <string>
+#include "api/api.h"
 #include "api/structures.h"
 #include "api/types.h"
 
@@ -44,6 +45,7 @@ public:
   void setToken(const std::string& input);
   void setSocket(int socket_id);
   void setAdmin(bool is_admin);
+  void setLastAction(Path action);
   void setLastActivityTimestamp(uint64_t timestamp);
 
   inline ID_t getId() const { return m_id; }
@@ -53,6 +55,7 @@ public:
   inline const Token& getToken() const { return m_token; }
   inline int getSocket() const { return m_socket; }
   inline bool isAdmin() const { return m_is_admin; }
+  inline Path getLastAction() const { return m_last_action; }
   inline uint64_t getLastActivityTimestamp() const { return m_last_activity_timestamp; }
 
 private:
@@ -63,6 +66,7 @@ private:
   int m_channel;
   int m_socket;
   bool m_is_admin;
+  Path m_last_action;
   uint64_t m_last_activity_timestamp;
 };
 

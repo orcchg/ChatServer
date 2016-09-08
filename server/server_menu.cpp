@@ -108,6 +108,7 @@ bool evaluate(Server* server, const std::string& command) {
 }
 
 void printHelp() {
+  printf("\e[5;00;33m\t***    Chat Server " D_VERSION "    ***\t\e[m\n");
   printf("Commands:\n\t%s - print this help \
                    \n\t%s - force logout peer with <id> \
                    \n\t%s - enable / disable incoming requests logging \

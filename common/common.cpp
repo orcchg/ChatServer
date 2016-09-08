@@ -52,6 +52,11 @@
 
 namespace common {
 
+typedef std::chrono::duration<uint64_t, std::milli> millis_t;
+typedef std::chrono::duration<uint64_t> seconds_t;
+typedef std::chrono::duration<uint64_t, std::ratio<60>> minutes_t;
+typedef std::chrono::duration<uint64_t, std::ratio<3600>> hours_t;
+
 uint64_t getCurrentTime() {
   auto now = std::chrono::system_clock::now();
   auto duration = now.time_since_epoch();
@@ -59,6 +64,33 @@ uint64_t getCurrentTime() {
   return millis;
 }
 
+void timestampToReadable(uint64_t timestamp, char* date_time, char* time_ago) {
+  millis_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+  millis_t millis(timestamp);
+  std::chrono::system_clock::time_point epoch;
+  std::chrono::system_clock::time_point elapsed(millis);
+
+  std::time_t elapsed_time = std::chrono::system_clock::to_time_t(elapsed);
+  std::string elapsed_timestamp(std::ctime(&elapsed_time));
+  int i1 = elapsed_timestamp.find_last_of('\n');
+  elapsed_timestamp = elapsed_timestamp.substr(0, i1);
+  memcpy(date_time, elapsed_timestamp.c_str(), 64);
+
+  millis_t delta = now - millis;
+
+  seconds_t seconds = std::chrono::duration_cast<seconds_t>(delta);
+  minutes_t minutes = std::chrono::duration_cast<minutes_t>(delta);
+  hours_t hours = std::chrono::duration_cast<hours_t>(delta);
+
+  seconds %= 3600;
+  minutes %= 60;
+
+  std::ostringstream oss;
+  oss << hours.count() << "h " << minutes.count() << "m " << seconds.count() << "s ago ";
+  memcpy(time_ago, oss.str().c_str(), 64);
+}
+
+// ----------------------------------------------------------------------------
 std::string createFilenameWithId(ID_t id, const std::string& filename) {
   std::ostringstream oss;
   oss << "id_" << id << "_" << filename;

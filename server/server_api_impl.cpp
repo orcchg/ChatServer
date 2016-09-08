@@ -141,11 +141,12 @@ void ServerApiImpl::logoutPeerAtConnectionReset(int socket) {
   }
 }
 
-void ServerApiImpl::updateLastActivityTimestampOfPeer(ID_t id) {
+void ServerApiImpl::updateLastActivityTimestampOfPeer(ID_t id, Path action) {
   TRC("updateLastActivityTimestampOfPeer(%lli)", id);
   auto it = m_peers.find(id);
   if (it != m_peers.end()) {
     uint64_t timestamp = common::getCurrentTime();
+    it->second.setLastAction(action);
     it->second.setLastActivityTimestamp(timestamp);
     DBG("Updated timestamp for peer with ID [%lli]: %zu", id, timestamp);
   } else {
@@ -703,8 +704,15 @@ void ServerApiImpl::sendSystemMessage(int socket, const std::string& message) {
 void ServerApiImpl::listAllPeers() const {
   printf("\e[5;00;33m    ***    Logged in peers    ***\e[m\n");
   for (auto& it : m_peers) {
-    printf("Peer[%lli]: login = %s, email = %s, channel = %i, socket = %i  ",
-           it.first, it.second.getLogin().c_str(), it.second.getEmail().c_str(), it.second.getChannel(), it.second.getSocket());
+    char date_time[64];
+    char time_ago[64];
+    memset(date_time, '\0', 64);
+    memset(time_ago, '\0', 64);
+    uint64_t timestamp = it.second.getLastActivityTimestamp();
+    common::timestampToReadable(timestamp, date_time, time_ago);
+    printf("Peer[%lli]: login = %s, email = %s, channel = %i, socket = %i, la = %i, lats = %s (%zu) %s  ",
+           it.first, it.second.getLogin().c_str(), it.second.getEmail().c_str(), it.second.getChannel(),
+           it.second.getSocket(), static_cast<int>(it.second.getLastAction()), date_time, timestamp, time_ago);
     if (it.second.isAdmin()) {
       printf("\e[5;00;32m (admin) \e[m");
     }

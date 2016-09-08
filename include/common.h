@@ -49,6 +49,7 @@ enum PreparseLeniency {
 };
 
 uint64_t getCurrentTime();
+void timestampToReadable(uint64_t timestamp, char* date_time, char* time_ago);
 
 std::string createFilenameWithId(ID_t id, const std::string& filename);
 bool isFileAccessible(const std::string& filename);
