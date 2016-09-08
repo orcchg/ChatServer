@@ -1,0 +1,140 @@
+[ RUN      ] CryptingUtilTest.FixedMessage
+ DBG in [/home/maxim/Software/Projects/ChatServer/crypting/random_util.cpp:65] >>> "Generating key pair...  Input pattern: [eHKxZIQLtE8iEJhznalL3933hLvHrWqVm9QLRqgJ4p1J6gIrH1DI9GMoZF6RkuuW3LpT9VmEIlVOQlGh]"
+ DBG in [/home/maxim/Software/Projects/ChatServer/test/crypting/crypting_util_test.cpp:90] >>> "Message: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna est. Maecenas quis mi at est blandit tempor. Nullam ut quam porttitor, convallis nisl vitae, pulvinar quam. In hac habitasse platea dictumst. Aenean vehicula mauris odio, eu mattis augue tristique in. Morbi nec magna sit amet elit tempor sagittis. Suspendisse id tempor velit. Suspendisse nec velit orci. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus commodo ullamcorper convallis. Nunc congue lobortis dictum."
+ TRC in [/home/maxim/Software/Projects/ChatServer/crypting/rsa_cryptor.cpp:192] >>> "encrypt(Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna est. Maecenas quis mi at est blandit tempor. Nullam ut quam porttitor, convallis nisl vitae, pulvinar quam. In hac habitasse platea dictumst. Aenean vehicula mauris odio, eu mattis augue tristique in. Morbi nec magna sit amet elit tempor sagittis. Suspendisse id tempor velit. Suspendisse nec velit orci. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus commodo ullamcorper convallis. Nunc congue lobortis dictum.)"
+ DBG in [/home/maxim/Software/Projects/ChatServer/crypting/rsa_cryptor.cpp:195] >>> "-----BEGIN RSA PUBLIC KEY-----
+MIIBCgKCAQEAu6IMY5EtDmgl4o5bhBVofoFCBGzZcfNMKW94vJeADb8YRWlUfcFu
+Pk7L0az9QVZoyN5mq2f2OlAIB39yHQTy0izqL130WdSmUrwEkZBLdp8hlEEN804a
+DXFfyzNq7zgyttkC5AzMs4je4uECEADH3yZa7Q0HDmZB+oDxFU82S4r4+A0SMYS+
+vVbiVNRoNfqydU9Hswwv85Zd29BFALe/0ebFVBoGSMw71bcrBlxJf7A/DCWGejRZ
+rUwmReWD9bNQwnATYEl3t2UTwXxGQjPFr1i5pUoS9tc/1bNQKU08W+41Hwo6i6qW
+QGx6DeIk084x7Y8JSAVEenvR2TSogkPTMwIDAQAB
+-----END RSA PUBLIC KEY-----
+"
+ INF in [/home/maxim/Software/Projects/ChatServer/crypting/rsa_cryptor.cpp:120] >>> "RSA Cipher length: 656"
+ TTY in [/home/maxim/Software/Projects/ChatServer/crypting/rsa_cryptor.cpp:121] >>> "RSA Cipher[656]: ���z@ʗ�)�|�o/�
+        ��kܓ�͢�����"
+ SYS in [/home/maxim/Software/Projects/ChatServer/api/structures.cpp:328] >>> "Encrypted message[1]: 256:680bb8cf6ee1e23a458d2970e91d0f3695b21eefed5a31dbdf700d8f7947cee39970791c473e6fd82af5b6cde6f6fbdb64e2f478db482d513ddf106629a10f4f6180e29b0d5759ce1acfceda89aa4dfd913e7407a67bfe10c965c16942a6116eb5fb8466a9b49b1d7965adafd1ffb19ba3f16d20f8d697f616d7143d86a9f7773b2f3f6ece6f386331a4bba9c987b4cc6a4c3cc4ee8f4d2d749093b5a35cba099a4faeaef43b69ae12bdec5d21d82dab4ccd283b76db169db292fdceab21b2bcc6da7ffd3c73bdd9d6f6c4793a1168e0ef3eb3bfeb953c64b7799ed4a5f3d95606a525e3a6beec5562284b852f7b6f565fb2dc02ee35ccc1d13a3c5905ec47d9:16:1e12f0e032dc3db5193be30322e47e87:656:b7ddc87a40ca97dd0f29ea7cc26f2ff40c1ffe038c6bdc93bfcda28ce498e693000a2d0e80360f6db58b68b3efd0a83f9d1e519c69d1b05b7b64df5feff26347fb53c2cc9b028d96b313d4d6cbd59aea9f934800f244fb0c918f282944947b848b0038afdc4761cfea2a64e4448734ba99f02f84b5f655805312c5a881f4a19dcc8393c32338dc5d2188e5eb84420f1681c55c9d8247a77167f67b6a3ab65065e8d5dea3a0076a79087ef6f411d1deba26cdd6bd191839e019e0c09d261d30e0374493e9bebf604028f21b31d8f95231fe7ab0a7058294268301acb5cc5af75e9424aec3d7096cf2f507b93f0e6d8a40546dc5bc7b59324913a45c9ecfe10927e3b1a60c5bad37180721a4ee04695591091559a73cb832a015753fc79ecd1eab8b8d0f08a10b35a5619db42c81639d012fe900428eb0bb1f859dbaae5a51fae7c789dad30ac24938237461f762a67fe087bb80b347cdbf99e8cfa7cab537036c40add5e140716654a6cab174fc71a1dc31b2504d4a816d13ecffe10bee129c6165a38a383db6ee1bddacf50216247da9217ca046430d5429eb96275c179974119fa2d444f3e6a79c57e3e9c28d15271d702fd8fd56eca73bf663a2ad369b63cf785a30522e71f40ea831882bc499aa995b69208d67b0fc73aa1fe3c1a2b4de7574630d0d23778d204819dc165398f362c62e99bff7b83546eb1db9dd2faf639493da98a847f14ff397941ea6280a41e1c2efe42ef23134c65bf51a15d1f1dbf63d84be1d5ebe1a36954ef389efcbbf1d20438a7cf06eb24754364180e6bf068efeaf0b431b8b61bcb3e6303969c6f400cabc8eb87efb1922733d67f311f81f59bbf121629718b51bc947b751c59a605f601ce084436d020bc5aa4874764a6f2fdc7ec330084a97cad9e8d33ac8ada20f"
+ TRC in [/home/maxim/Software/Projects/ChatServer/common/common.cpp:180] >>> "Split token: 256"
+ TRC in [/home/maxim/Software/Projects/ChatServer/common/common.cpp:180] >>> "Split token: 680bb8cf6ee1e23a458d2970e91d0f3695b21eefed5a31dbdf700d8f7947cee39970791c473e6fd82af5b6cde6f6fbdb64e2f478db482d513ddf106629a10f4f6180e29b0d5759ce1acfceda89aa4dfd913e7407a67bfe10c965c16942a6116eb5fb8466a9b49b1d7965adafd1ffb19ba3f16d20f8d697f616d7143d86a9f7773b2f3f6ece6f386331a4bba9c987b4cc6a4c3cc4ee8f4d2d749093b5a35cba099a4faeaef43b69ae12bdec5d21d82dab4ccd283b76db169db292fdceab21b2bcc6da7ffd3c73bdd9d6f6c4793a1168e0ef3eb3bfeb953c64b7799ed4a5f3d95606a525e3a6beec5562284b852f7b6f565fb2dc02ee35ccc1d13a3c5905ec47d9"
+ TRC in [/home/maxim/Software/Projects/ChatServer/common/common.cpp:180] >>> "Split token: 16"
+ TRC in [/home/maxim/Software/Projects/ChatServer/common/common.cpp:180] >>> "Split token: 1e12f0e032dc3db5193be30322e47e87"
+ TRC in [/home/maxim/Software/Projects/ChatServer/common/common.cpp:180] >>> "Split token: 656"
+ TRC in [/home/maxim/Software/Projects/ChatServer/common/common.cpp:180] >>> "Split token: b7ddc87a40ca97dd0f29ea7cc26f2ff40c1ffe038c6bdc93bfcda28ce498e693000a2d0e80360f6db58b68b3efd0a83f9d1e519c69d1b05b7b64df5feff26347fb53c2cc9b028d96b313d4d6cbd59aea9f934800f244fb0c918f282944947b848b0038afdc4761cfea2a64e4448734ba99f02f84b5f655805312c5a881f4a19dcc8393c32338dc5d2188e5eb84420f1681c55c9d8247a77167f67b6a3ab65065e8d5dea3a0076a79087ef6f411d1deba26cdd6bd191839e019e0c09d261d30e0374493e9bebf604028f21b31d8f95231fe7ab0a7058294268301acb5cc5af75e9424aec3d7096cf2f507b93f0e6d8a40546dc5bc7b59324913a45c9ecfe10927e3b1a60c5bad37180721a4ee04695591091559a73cb832a015753fc79ecd1eab8b8d0f08a10b35a5619db42c81639d012fe900428eb0bb1f859dbaae5a51fae7c789dad30ac24938237461f762a67fe087bb80b347cdbf99e8cfa7cab537036c40add5e140716654a6cab174fc71a1dc31b2504d4a816d13ecffe10bee129c6165a38a383db6ee1bddacf50216247da9217ca046430d5429eb96275c179974119fa2d444f3e6a79c57e3e9c28d15271d702fd8fd56eca73bf663a2ad369b63cf785a30522e71f40ea831882bc499aa995b69208d67b0fc73aa1fe3c1a2b4de7574630d0d23778d204819dc165398f362c62e99bff7b83546eb1db9dd2faf639493da98a847f14ff397941ea6280a41e1c2efe42ef23134c65bf51a15d1f1dbf63d84be1d5ebe1a36954ef389efcbbf1d20438a7cf06eb24754364180e6bf068efeaf0b431b8b61bcb3e6303969c6f400cabc8eb87efb1922733d67f311f81f59bbf121629718b51bc947b751c59a605f601ce084436d020bc5aa4874764a6f2fdc7ec330084a97cad9e8d33ac8ada20f"
+ TTY in [/home/maxim/Software/Projects/ChatServer/crypting/crypting_util.cpp:195] >>> "Values: EK [256:680bb8cf6ee1e23a458d2970e91d0f3695b21eefed5a31dbdf700d8f7947cee39970791c473e6fd82af5b6cde6f6fbdb64e2f478db482d513ddf106629a10f4f6180e29b0d5759ce1acfceda89aa4dfd913e7407a67bfe10c965c16942a6116eb5fb8466a9b49b1d7965adafd1ffb19ba3f16d20f8d697f616d7143d86a9f7773b2f3f6ece6f386331a4bba9c987b4cc6a4c3cc4ee8f4d2d749093b5a35cba099a4faeaef43b69ae12bdec5d21d82dab4ccd283b76db169db292fdceab21b2bcc6da7ffd3c73bdd9d6f6c4793a1168e0ef3eb3bfeb953c64b7799ed4a5f3d95606a525e3a6beec5562284b852f7b6f565fb2dc02ee35ccc1d13a3c5905ec47d9], IV [16:1e12f0e032dc3db5193be30322e47e87], cipher [656:b7ddc87a40ca97dd0f29ea7cc26f2ff40c1ffe038c6bdc93bfcda28ce498e693000a2d0e80360f6db58b68b3efd0a83f9d1e519c69d1b05b7b64df5feff26347fb53c2cc9b028d96b313d4d6cbd59aea9f934800f244fb0c918f282944947b848b0038afdc4761cfea2a64e4448734ba99f02f84b5f655805312c5a881f4a19dcc8393c32338dc5d2188e5eb84420f1681c55c9d8247a77167f67b6a3ab65065e8d5dea3a0076a79087ef6f411d1deba26cdd6bd191839e019e0c09d261d30e0374493e9bebf604028f21b31d8f95231fe7ab0a7058294268301acb5cc5af75e9424aec3d7096cf2f507b93f0e6d8a40546dc5bc7b59324913a45c9ecfe10927e3b1a60c5bad37180721a4ee04695591091559a73cb832a015753fc79ecd1eab8b8d0f08a10b35a5619db42c81639d012fe900428eb0bb1f859dbaae5a51fae7c789dad30ac24938237461f762a67fe087bb80b347cdbf99e8cfa7cab537036c40add5e140716654a6cab174fc71a1dc31b2504d4a816d13ecffe10bee129c6165a38a383db6ee1bddacf50216247da9217ca046430d5429eb96275c179974119fa2d444f3e6a79c57e3e9c28d15271d702fd8fd56eca73bf663a2ad369b63cf785a30522e71f40ea831882bc499aa995b69208d67b0fc73aa1fe3c1a2b4de7574630d0d23778d204819dc165398f362c62e99bff7b83546eb1db9dd2faf639493da98a847f14ff397941ea6280a41e1c2efe42ef23134c65bf51a15d1f1dbf63d84be1d5ebe1a36954ef389efcbbf1d20438a7cf06eb24754364180e6bf068efeaf0b431b8b61bcb3e6303969c6f400cabc8eb87efb1922733d67f311f81f59bbf121629718b51bc947b751c59a605f601ce084436d020bc5aa4874764a6f2fdc7ec330084a97cad9e8d33ac8ada20f]"
+ TRC in [/home/maxim/Software/Projects/ChatServer/crypting/rsa_cryptor.cpp:226] >>> "decrypt(b7ddc87a40ca97dd0f29ea7cc26f2ff40c1ffe038c6bdc93bfcda28ce498e693000a2d0e80360f6db58b68b3efd0a83f9d1e519c69d1b05b7b64df5feff26347fb53c2cc9b028d96b313d4d6cbd59aea9f934800f244fb0c918f282944947b848b0038afdc4761cfea2a64e4448734ba99f02f84b5f655805312c5a881f4a19dcc8393c32338dc5d2188e5eb84420f1681c55c9d8247a77167f67b6a3ab65065e8d5dea3a0076a79087ef6f411d1deba26cdd6bd191839e019e0c09d261d30e0374493e9bebf604028f21b31d8f95231fe7ab0a7058294268301acb5cc5af75e9424aec3d7096cf2f507b93f0e6d8a40546dc5bc7b59324913a45c9ecfe10927e3b1a60c5bad37180721a4ee04695591091559a73cb832a015753fc79ecd1eab8b8d0f08a10b35a5619db42c81639d012fe900428eb0bb1f859dbaae5a51fae7c789dad30ac24938237461f762a67fe087bb80b347cdbf99e8cfa7cab537036c40add5e140716654a6cab174fc71a1dc31b2504d4a816d13ecffe10bee129c6165a38a383db6ee1bddacf50216247da9217ca046430d5429eb96275c179974119fa2d444f3e6a79c57e3e9c28d15271d702fd8fd56eca73bf663a2ad369b63cf785a30522e71f40ea831882bc499aa995b69208d67b0fc73aa1fe3c1a2b4de7574630d0d23778d204819dc165398f362c62e99bff7b83546eb1db9dd2faf639493da98a847f14ff397941ea6280a41e1c2efe42ef23134c65bf51a15d1f1dbf63d84be1d5ebe1a36954ef389efcbbf1d20438a7cf06eb24754364180e6bf068efeaf0b431b8b61bcb3e6303969c6f400cabc8eb87efb1922733d67f311f81f59bbf121629718b51bc947b751c59a605f601ce084436d020bc5aa4874764a6f2fdc7ec330084a97cad9e8d33ac8ada20f)"
+ DBG in [/home/maxim/Software/Projects/ChatServer/crypting/rsa_cryptor.cpp:229] >>> "-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEAu6IMY5EtDmgl4o5bhBVofoFCBGzZcfNMKW94vJeADb8YRWlU
+fcFuPk7L0az9QVZoyN5mq2f2OlAIB39yHQTy0izqL130WdSmUrwEkZBLdp8hlEEN
+804aDXFfyzNq7zgyttkC5AzMs4je4uECEADH3yZa7Q0HDmZB+oDxFU82S4r4+A0S
+MYS+vVbiVNRoNfqydU9Hswwv85Zd29BFALe/0ebFVBoGSMw71bcrBlxJf7A/DCWG
+ejRZrUwmReWD9bNQwnATYEl3t2UTwXxGQjPFr1i5pUoS9tc/1bNQKU08W+41Hwo6
+i6qWQGx6DeIk084x7Y8JSAVEenvR2TSogkPTMwIDAQABAoIBAQCMihQ9f7//yoKV
+74sco+xg1PBd4Cn+7/1cC+KjX9bKdRf45awjhX7NrLd9ldUb210hF3RPbs8/XjKl
+axBOLCa0xm+iiv07S8xIrAu//BSKBSdhpFiOpTFeYE0gJqMyCyXxTxqbNfsdfqdz
+yJWC5xLOUixI4jkmz/EbcPkivPIuIeF8iybKCOZfV5K2KV742NuFwQhEM12D1SOI
+1ihLgadDf5VDuPlTtuXY2wALMJAYgIUPdQtynTto81F4SEBWztekpZpB453tMMjE
+w0fvTeSdqXu3e9+fBgEDN2xblRqtvi9zY2kMJzX0Ggdu9bULoJuRX1ztReat1xBz
+i6fxtUABAoGBAN67IjWuzPcdsfit8hq5fEN3JFzEZkPe3ix/tjCD6LSc+9P/MyeN
+1jjWTAmjZ5/58GnlKrmKguLyCMDVAg4hv3MwetDvnEe9EHo7GijmcmB9rCnrON4I
+4/XG7okVuYUOCyxzRxvCBbZeITMEpHTZqLOUlZhf9kHlZcCeuixHmWyzAoGBANeo
+01A3tIX+x10QYAXhqw1fep14hF6b9xHUSo3NshMwtb6U6TjID2lh4Ccx+Nvfx7Ba
+vpT9f9N8mt9fZgCDb3N/SAopQuIfTU8mMfxippcINpvngOYFHi2jqynFzSzGlMep
+U9PGjirW3NLWhe1iK0wFjw+20ChcsPHMhbCk/D+BAoGAOuBkzqQCcmBbJ01z7jSR
+8JOR/SO9lLtZJ5Iq6vAzl2rX9tZDA3Wu5x9ewj17qwI61wNJI/rFVpB8V9z2yh2J
+qj1qecidGymTLXxqEd245mDSHdKcGbVn7RRFAd/IRq/LrFhct622LNr9E6tqfaj7
+u1zPnpPfWNP27dAHjqTunZkCgYEAsYH1hOaFAXHHORO8Zbrs51H6g9jp41Gu2I8L
+WpK/i0ohnh/Fo4YQIWZ9cOWR97DHFaJrkgjiCPpcI5XLSIrm1oMikbKKqcKoCIjg
+xeORSWlqQYMYtrvprhk0TmrQSZWeaoU2SW76H8rA8g2/KLgP+T/uFDoeNcqtnikA
+tXfnZIECgYBLHb3QOqcIbzjP/PiwW5UwcjPOmG57DBKgcbVWT6lLIUyGGpyuEpMO
+0LJOykOo8RvGZh11sx1bUASxsBXg4wTAlSNAn2nYAeAYsYekTHJ32+XX5b26sDuD
+p/BmVswHgE6U7ZHd2Lhf8nGT+I7O4chuSeiFckgVgj5tl0LNFasewg==
+-----END RSA PRIVATE KEY-----
+"
+ INF in [/home/maxim/Software/Projects/ChatServer/crypting/rsa_cryptor.cpp:136] >>> "RSA Plain length: 642"
+ TTY in [/home/maxim/Software/Projects/ChatServer/crypting/rsa_cryptor.cpp:137] >>> "RSA Plain[642]: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna est. Maecenas quis mi at est blandit tempor. Nullam ut quam porttitor, convallis nisl vitae, pulvinar quam. In hac habitasse platea dictumst. Aenean vehicula mauris odio, eu mattis augue tristique in. Morbi nec magna sit amet elit tempor sagittis. Suspendisse id tempor velit. Suspendisse nec velit orci. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus commodo ullamcorper convallis. Nunc congue lobortis dictum."
+ SYS in [/home/maxim/Software/Projects/ChatServer/api/structures.cpp:337] >>> "Decrypted message[0]: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus scelerisque felis odio, eu hendrerit eros laoreet at. Fusce ac rutrum nisl, quis feugiat tortor. Vestibulum non urna est. Maecenas quis mi at est blandit tempor. Nullam ut quam porttitor, convallis nisl vitae, pulvinar quam. In hac habitasse platea dictumst. Aenean vehicula mauris odio, eu mattis augue tristique in. Morbi nec magna sit amet elit tempor sagittis. Suspendisse id tempor velit. Suspendisse nec velit orci. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus commodo ullamcorper convallis. Nunc congue lobortis dictum."
+*** Error in `./test/test_all': double free or corruption (fasttop): 0x0000000001bf61f0 ***
+======= Backtrace: =========
+/lib/x86_64-linux-gnu/libc.so.6(+0x77725)[0x7fe877765725]
+/lib/x86_64-linux-gnu/libc.so.6(+0x7ff4a)[0x7fe87776df4a]
+/lib/x86_64-linux-gnu/libc.so.6(cfree+0x4c)[0x7fe877771abc]
+/usr/local/lib/libcrypto.so.1.1(EVP_PKEY_free+0x6c)[0x7fe8789fcd5c]
+/home/maxim/Software/Projects/ChatServer/build/crypting/libcryptor.so(_ZN6secure13RSACryptorRawD1Ev+0x1b)[0x7fe8786a37fb]
+./test/test_all(_ZN4test34CryptingUtilTest_FixedMessage_Test8TestBodyEv+0x414)[0x435d24]
+./test/test_all(_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc+0x43)[0x4611a3]
+./test/test_all[0x457547]
+./test/test_all[0x457875]
+./test/test_all[0x457aad]
+./test/test_all[0x4589d1]
+./test/test_all(_ZN7testing8UnitTest3RunEv+0x7e)[0x458dce]
+./test/test_all(main+0x1f)[0x42acbf]
+/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xf0)[0x7fe87770e830]
+./test/test_all(_start+0x29)[0x42af99]
+======= Memory map: ========
+00400000-0047d000 r-xp 00000000 08:01 13376298                           /home/maxim/Software/Projects/ChatServer/build/test/test_all
+0067d000-0067e000 r--p 0007d000 08:01 13376298                           /home/maxim/Software/Projects/ChatServer/build/test/test_all
+0067e000-0067f000 rw-p 0007e000 08:01 13376298                           /home/maxim/Software/Projects/ChatServer/build/test/test_all
+0067f000-00680000 rw-p 00000000 00:00 0 
+01bb6000-01c09000 rw-p 00000000 00:00 0                                  [heap]
+7fe870000000-7fe870021000 rw-p 00000000 00:00 0 
+7fe870021000-7fe874000000 ---p 00000000 00:00 0 
+7fe8771e1000-7fe8772e9000 r-xp 00000000 08:01 24648537                   /lib/x86_64-linux-gnu/libm-2.23.so
+7fe8772e9000-7fe8774e8000 ---p 00108000 08:01 24648537                   /lib/x86_64-linux-gnu/libm-2.23.so
+7fe8774e8000-7fe8774e9000 r--p 00107000 08:01 24648537                   /lib/x86_64-linux-gnu/libm-2.23.so
+7fe8774e9000-7fe8774ea000 rw-p 00108000 08:01 24648537                   /lib/x86_64-linux-gnu/libm-2.23.so
+7fe8774ea000-7fe8774ed000 r-xp 00000000 08:01 24648546                   /lib/x86_64-linux-gnu/libdl-2.23.so
+7fe8774ed000-7fe8776ec000 ---p 00003000 08:01 24648546                   /lib/x86_64-linux-gnu/libdl-2.23.so
+7fe8776ec000-7fe8776ed000 r--p 00002000 08:01 24648546                   /lib/x86_64-linux-gnu/libdl-2.23.so
+7fe8776ed000-7fe8776ee000 rw-p 00003000 08:01 24648546                   /lib/x86_64-linux-gnu/libdl-2.23.so
+7fe8776ee000-7fe8778ae000 r-xp 00000000 08:01 24648545                   /lib/x86_64-linux-gnu/libc-2.23.so
+7fe8778ae000-7fe877aad000 ---p 001c0000 08:01 24648545                   /lib/x86_64-linux-gnu/libc-2.23.so
+7fe877aad000-7fe877ab1000 r--p 001bf000 08:01 24648545                   /lib/x86_64-linux-gnu/libc-2.23.so
+7fe877ab1000-7fe877ab3000 rw-p 001c3000 08:01 24648545                   /lib/x86_64-linux-gnu/libc-2.23.so
+7fe877ab3000-7fe877ab7000 rw-p 00000000 00:00 0 
+7fe877ab7000-7fe877acd000 r-xp 00000000 08:01 24641562                   /lib/x86_64-linux-gnu/libgcc_s.so.1
+7fe877acd000-7fe877ccc000 ---p 00016000 08:01 24641562                   /lib/x86_64-linux-gnu/libgcc_s.so.1
+7fe877ccc000-7fe877ccd000 rw-p 00015000 08:01 24641562                   /lib/x86_64-linux-gnu/libgcc_s.so.1
+7fe877ccd000-7fe877e3f000 r-xp 00000000 08:01 35921144                   /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.21
+7fe877e3f000-7fe87803f000 ---p 00172000 08:01 35921144                   /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.21
+7fe87803f000-7fe878049000 r--p 00172000 08:01 35921144                   /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.21
+7fe878049000-7fe87804b000 rw-p 0017c000 08:01 35921144                   /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.21
+7fe87804b000-7fe87804f000 rw-p 00000000 00:00 0 
+7fe87804f000-7fe878066000 r-xp 00000000 08:01 13376305                   /home/maxim/Software/Projects/ChatServer/build/api/libapi.so
+7fe878066000-7fe878265000 ---p 00017000 08:01 13376305                   /home/maxim/Software/Projects/ChatServer/build/api/libapi.so
+7fe878265000-7fe878266000 r--p 00016000 08:01 13376305                   /home/maxim/Software/Projects/ChatServer/build/api/libapi.so
+7fe878266000-7fe878267000 rw-p 00017000 08:01 13376305                   /home/maxim/Software/Projects/ChatServer/build/api/libapi.so
+7fe878267000-7fe87827e000 r-xp 00000000 08:01 13376315                   /home/maxim/Software/Projects/ChatServer/build/common/libcommon.so
+7fe87827e000-7fe87847d000 ---p 00017000 08:01 13376315                   /home/maxim/Software/Projects/ChatServer/build/common/libcommon.so
+7fe87847d000-7fe87847e000 r--p 00016000 08:01 13376315                   /home/maxim/Software/Projects/ChatServer/build/common/libcommon.so
+7fe87847e000-7fe87847f000 rw-p 00017000 08:01 13376315                   /home/maxim/Software/Projects/ChatServer/build/common/libcommon.so
+7fe87847f000-7fe878497000 r-xp 00000000 08:01 24648544                   /lib/x86_64-linux-gnu/libpthread-2.23.so
+7fe878497000-7fe878696000 ---p 00018000 08:01 24648544                   /lib/x86_64-linux-gnu/libpthread-2.23.so
+7fe878696000-7fe878697000 r--p 00017000 08:01 24648544                   /lib/x86_64-linux-gnu/libpthread-2.23.so
+7fe878697000-7fe878698000 rw-p 00018000 08:01 24648544                   /lib/x86_64-linux-gnu/libpthread-2.23.so
+7fe878698000-7fe87869c000 rw-p 00000000 00:00 0 
+7fe87869c000-7fe8786ad000 r-xp 00000000 08:01 13376294                   /home/maxim/Software/Projects/ChatServer/build/crypting/libcryptor.so
+7fe8786ad000-7fe8788ac000 ---p 00011000 08:01 13376294                   /home/maxim/Software/Projects/ChatServer/build/crypting/libcryptor.so
+7fe8788ac000-7fe8788ad000 r--p 00010000 08:01 13376294                   /home/maxim/Software/Projects/ChatServer/build/crypting/libcryptor.so
+7fe8788ad000-7fe8788ae000 rw-p 00011000 08:01 13376294                   /home/maxim/Software/Projects/ChatServer/build/crypting/libcryptor.so
+7fe8788ae000-7fe878b03000 r-xp 00000000 08:01 36313856                   /usr/local/lib/libcrypto.so.1.1
+7fe878b03000-7fe878d03000 ---p 00255000 08:01 36313856                   /usr/local/lib/libcrypto.so.1.1
+7fe878d03000-7fe878d20000 r--p 00255000 08:01 36313856                   /usr/local/lib/libcrypto.so.1.1
+7fe878d20000-7fe878d2b000 rw-p 00272000 08:01 36313856                   /usr/local/lib/libcrypto.so.1.1
+7fe878d2b000-7fe878d2e000 rw-p 00000000 00:00 0 
+7fe878d2e000-7fe878d3d000 r-xp 00000000 08:01 13376304                   /home/maxim/Software/Projects/ChatServer/build/parser/libmy_parser.so
+7fe878d3d000-7fe878f3c000 ---p 0000f000 08:01 13376304                   /home/maxim/Software/Projects/ChatServer/build/parser/libmy_parser.so
+7fe878f3c000-7fe878f3d000 r--p 0000e000 08:01 13376304                   /home/maxim/Software/Projects/ChatServer/build/parser/libmy_parser.so
+7fe878f3d000-7fe878f3e000 rw-p 0000f000 08:01 13376304                   /home/maxim/Software/Projects/ChatServer/build/parser/libmy_parser.so
+7fe878f3e000-7fe878f64000 r-xp 00000000 08:01 24648541                   /lib/x86_64-linux-gnu/ld-2.23.so
+7fe87913a000-7fe879142000 rw-p 00000000 00:00 0 
+7fe87915f000-7fe879163000 rw-p 00000000 00:00 0 
+7fe879163000-7fe879164000 r--p 00025000 08:01 24648541                   /lib/x86_64-linux-gnu/ld-2.23.so
+7fe879164000-7fe879165000 rw-p 00026000 08:01 24648541                   /lib/x86_64-linux-gnu/ld-2.23.so
+7fe879165000-7fe879166000 rw-p 00000000 00:00 0 
+7ffd3c133000-7ffd3c154000 rw-p 00000000 00:00 0                          [stack]
+7ffd3c1ed000-7ffd3c1ef000 r--p 00000000 00:00 0                          [vvar]
+7ffd3c1ef000-7ffd3c1f1000 r-xp 00000000 00:00 0                          [vdso]
+ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0                  [vsyscall]
+Aborted (core dumped)
+
