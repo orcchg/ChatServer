@@ -635,6 +635,15 @@ bool ServerApiImpl::checkAuth(const std::string& path, ID_t& id) {
   return result;
 }
 
+bool ServerApiImpl::kickByAuth(const std::string& path, ID_t& id) {
+  TRC("kickByAuth(%s)", path.c_str());
+  bool result = checkAuth(path, id);
+  if (result) {
+    kickPeer(id);
+  }
+  return result;
+}
+
 // ----------------------------------------------
 StatusCode ServerApiImpl::getAllPeers(const std::string& path, std::vector<Peer>* peers, int& channel) {
   TRC("getAllPeers(%s)", path.c_str());

@@ -362,6 +362,7 @@
 #define D_PATH_IS_LOGGED_IN    "/is_logged_in"
 #define D_PATH_IS_REGISTERED   "/is_registered"
 #define D_PATH_CHECK_AUTH      "/check_auth"
+#define D_PATH_KICK_BY_AUTH    "/kick_by_auth"
 #define D_PATH_ALL_PEERS       "/all_peers"
 
 #if SECURE
@@ -420,6 +421,7 @@ extern const char* PATH_PEER_ID;
 extern const char* PATH_IS_LOGGED_IN;
 extern const char* PATH_IS_REGISTERED;
 extern const char* PATH_CHECK_AUTH;
+extern const char* PATH_KICK_BY_AUTH;
 extern const char* PATH_ALL_PEERS;
 
 #if SECURE
@@ -447,13 +449,14 @@ enum class Path : int {
   IS_LOGGED_IN   = 6,
   IS_REGISTERED  = 7,
   CHECK_AUTH     = 8,
-  ALL_PEERS      = 9
+  KICK_BY_AUTH   = 9,
+  ALL_PEERS      = 10
 #if SECURE
-  , PRIVATE_REQUEST   = 10
-  , PRIVATE_CONFIRM   = 11
-  , PRIVATE_ABORT     = 12
-  , PRIVATE_PUBKEY    = 13
-  , PRIVATE_PUBKEY_EXCHANGE = 14
+  , PRIVATE_REQUEST   = 11
+  , PRIVATE_CONFIRM   = 12
+  , PRIVATE_ABORT     = 13
+  , PRIVATE_PUBKEY    = 14
+  , PRIVATE_PUBKEY_EXCHANGE = 15
 #endif  // SECURE
 };
 
@@ -538,6 +541,7 @@ public:
   virtual void isLoggedIn(const std::string& name) = 0;
   virtual void isRegistered(const std::string& name) = 0;
   virtual void checkAuth(const std::string& name, const std::string& password, bool encrypted) = 0;
+  virtual void kickByAuth(const std::string& name, const std::string& password, bool encrypted) = 0;
   virtual void getAllPeers() = 0;
   virtual void getAllPeers(int channel) = 0;
 #if SECURE
@@ -588,6 +592,7 @@ public:
   virtual bool checkLoggedIn(const std::string& path, ID_t& id) = 0;
   virtual bool checkRegistered(const std::string& path, ID_t& id) = 0;
   virtual bool checkAuth(const std::string& path, ID_t& id) = 0;
+  virtual bool kickByAuth(const std::string& path, ID_t& id) = 0;
   virtual StatusCode getAllPeers(const std::string& path, std::vector<Peer>* peers, int& channel) = 0;
 #if SECURE
   virtual StatusCode privateRequest(const std::string& path, ID_t& id) = 0;  // forward request to dest peer

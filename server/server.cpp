@@ -117,6 +117,7 @@ Server::Server(int port_number)
   m_paths[PATH_IS_LOGGED_IN]   = Path::IS_LOGGED_IN;
   m_paths[PATH_IS_REGISTERED]  = Path::IS_REGISTERED;
   m_paths[PATH_CHECK_AUTH]     = Path::CHECK_AUTH;
+  m_paths[PATH_KICK_BY_AUTH]   = Path::KICK_BY_AUTH;
   m_paths[PATH_ALL_PEERS]      = Path::ALL_PEERS;
 #if SECURE
   m_paths[PATH_PRIVATE_REQUEST] = Path::PRIVATE_REQUEST;
@@ -444,6 +445,17 @@ void Server::handleRequest(int socket, ID_t connection_id) {
               m_api_impl->sendCheck(socket, check, path, id);
             }
             break;
+        }
+        break;
+      case Path::KICK_BY_AUTH:
+        switch (method) {
+          case Method::GET:
+           {
+             ID_t id = UNKNOWN_ID;
+             auto check = m_api_impl->kickByAuth(request.startline.path, id);
+             m_api_impl->sendCheck(socket, check, path, id);
+           }
+           break;
         }
         break;
       case Path::ALL_PEERS:

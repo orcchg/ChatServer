@@ -122,6 +122,16 @@ std::string checkAuth_request(const std::string& host, const std::string& name, 
   return oss.str();
 }
 
+std::string kickByAuth_request(const std::string& host, const std::string& name, const std::string& password, bool encrypted) {
+  std::ostringstream oss;
+  oss << "GET " D_PATH_KICK_BY_AUTH "?" D_ITEM_LOGIN "=" << name
+      << "&" D_ITEM_PASSWORD "=" << password
+      << "&" D_ITEM_ENCRYPTED "=" << (encrypted ? 1 : 0)
+      << " HTTP/1.1\r\nHost: " << host << "\r\n\r\n";
+  MSG("Request: %s", oss.str().c_str());
+  return oss.str();
+}
+
 std::string getAllPeers_request(const std::string& host) {
   std::ostringstream oss;
   oss << "GET " D_PATH_ALL_PEERS << " HTTP/1.1\r\nHost: " << host << "\r\n\r\n";

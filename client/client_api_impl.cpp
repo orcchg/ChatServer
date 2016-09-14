@@ -98,6 +98,11 @@ void ClientApiImpl::checkAuth(const std::string& name, const std::string& passwo
   send(m_socket, request.c_str(), request.length(), 0);
 }
 
+void ClientApiImpl::kickByAuth(const std::string& name, const std::string& password, bool encrypted) {
+  std::string request = util::kickByAuth_request(m_host, name, password, encrypted);
+  send(m_socket, request.c_str(), request.length(), 0);
+}
+
 void ClientApiImpl::getAllPeers() {
   std::string request = util::getAllPeers_request(m_host);
   send(m_socket, request.c_str(), request.length(), 0);

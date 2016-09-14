@@ -97,6 +97,7 @@ public:
   bool checkLoggedIn(const std::string& path, ID_t& id) override;
   bool checkRegistered(const std::string& path, ID_t& id) override;
   bool checkAuth(const std::string& path, ID_t& id) override;
+  bool kickByAuth(const std::string& path, ID_t& id) override;
   StatusCode getAllPeers(const std::string& path, std::vector<Peer>* peers, int& channel) override;
 #if SECURE
   StatusCode privateRequest(const std::string& path, ID_t& id) override;

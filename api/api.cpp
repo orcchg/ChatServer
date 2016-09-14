@@ -77,6 +77,7 @@ const char* PATH_PEER_ID        = D_PATH_PEER_ID;
 const char* PATH_IS_LOGGED_IN   = D_PATH_IS_LOGGED_IN;
 const char* PATH_IS_REGISTERED  = D_PATH_IS_REGISTERED;
 const char* PATH_CHECK_AUTH     = D_PATH_CHECK_AUTH;
+const char* PATH_KICK_BY_AUTH   = D_PATH_KICK_BY_AUTH;
 const char* PATH_ALL_PEERS      = D_PATH_ALL_PEERS;
 
 #if SECURE
