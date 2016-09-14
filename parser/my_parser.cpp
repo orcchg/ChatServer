@@ -69,8 +69,7 @@ Request MyParser::parseRequest(const char* http, int nbytes) const {
   // headers
   std::string header_line;
   std::vector<Header> headers;
-  while (true) {
-    std::getline(iss, header_line);
+  while (std::getline(iss, header_line)) {
     if (isHeader(header_line)) {
       Header header = parseHeader(header_line);
       headers.push_back(header);
@@ -121,8 +120,7 @@ Response MyParser::parseResponse(const char* http, int nbytes) const {
   // headers
   std::string header_line;
   std::vector<Header> headers;
-  while (true) {
-    std::getline(iss, header_line);
+  while (std::getline(iss, header_line)) {
     if (isHeader(header_line)) {
       Header header = parseHeader(header_line);
       headers.push_back(header);
