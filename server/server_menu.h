@@ -26,8 +26,8 @@
  *   Only the original author - Maxim Alov - has right to do any of the above actions.
  */
 
-#ifndef CHAR_SERVER_SERVER_MENU__H__
-#define CHAR_SERVER_SERVER_MENU__H__
+#ifndef CHAT_SERVER_SERVER_MENU__H__
+#define CHAT_SERVER_SERVER_MENU__H__
 
 #include "server.h"
 
@@ -39,5 +39,5 @@ void printPrompt();
 
 }
 
-#endif  // CHAR_SERVER_SERVER_MENU__H__
+#endif  // CHAT_SERVER_SERVER_MENU__H__
 
