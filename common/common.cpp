@@ -32,6 +32,7 @@
 #include <fstream>
 #include <cctype>
 #include <cstdlib>
+#include <cstring>
 #include <stdarg.h>
 #include <sstream>
 #include <sys/stat.h>
@@ -88,6 +89,16 @@ void timestampToReadable(uint64_t timestamp, char* date_time, char* time_ago) {
   std::ostringstream oss;
   oss << hours.count() << "h " << minutes.count() << "m " << seconds.count() << "s ago ";
   memcpy(time_ago, oss.str().c_str(), 64);
+}
+
+void printReadableTimestampNow() {
+  char date_time[64];
+  char time_ago[64];
+  memset(date_time, '\0', 64);
+  memset(time_ago, '\0', 64);
+  uint64_t timestamp = getCurrentTime();
+  common::timestampToReadable(timestamp, date_time, time_ago);
+  VER("Timestamp: %s, %s", date_time, time_ago);
 }
 
 // ----------------------------------------------------------------------------
