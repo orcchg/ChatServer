@@ -299,6 +299,7 @@ Request Server::getRequest(int socket, bool* is_closed) {
   }
   try {
     DBG("Raw request[%i bytes]: %.*s", read_bytes, (int) read_bytes, buffer);
+    common::printReadableTimestampNow();
     return m_parser.parseRequest(buffer, read_bytes);
   } catch (ParseException exception) {
     FAT("ParseException on raw request[%i bytes]: %.*s", read_bytes, (int) read_bytes, buffer);
