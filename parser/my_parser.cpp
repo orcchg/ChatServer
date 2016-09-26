@@ -28,6 +28,7 @@
 
 #include <algorithm>
 #include <sstream>
+#include <climits>
 #include <cstdlib>
 #include <cstring>
 #include "logger.h"
@@ -146,14 +147,23 @@ Response MyParser::parseResponse(const char* http, int nbytes) const {
 }
 
 static char* anyOfRequest(char* input) {
-  char* ptr = nullptr;
+  int i1 = INT_MAX, i2 = INT_MAX, i3 = INT_MAX, i4 = INT_MAX;
+  char* ptr1 = nullptr, *ptr2 = nullptr, *ptr3 = nullptr, *ptr4 = nullptr;
 
-  ptr = strstr(input, "GET /");     if (ptr != nullptr) { return ptr; }
-  ptr = strstr(input, "POST /");    if (ptr != nullptr) { return ptr; }
-  ptr = strstr(input, "PUT /");     if (ptr != nullptr) { return ptr; }
-  ptr = strstr(input, "DELETE /");  if (ptr != nullptr) { return ptr; }
+  ptr1 = strstr(input, "GET /");     if (ptr1 != nullptr) { i1 = ptr1 - input; }
+  ptr2 = strstr(input, "POST /");    if (ptr2 != nullptr) { i2 = ptr2 - input; }
+  ptr3 = strstr(input, "PUT /");     if (ptr3 != nullptr) { i3 = ptr3 - input; }
+  ptr4 = strstr(input, "DELETE /");  if (ptr4 != nullptr) { i4 = ptr4 - input; }
 
-  return ptr;
+  std::vector<FatPtr> ptrs;
+  ptrs.emplace_back(i1, ptr1);
+  ptrs.emplace_back(i2, ptr2);
+  ptrs.emplace_back(i3, ptr3);
+  ptrs.emplace_back(i4, ptr4);
+  std::sort(ptrs.begin(), ptrs.end());
+  //for (auto& item : ptrs) { INF("%i %p", item.position, item.ptr); }
+
+  return ptrs[0].ptr;  // ptr with minimal position
 }
 
 Request MyParser::parseBufferedRequests(char* http, int nbytes, std::vector<Request>* requests) const {

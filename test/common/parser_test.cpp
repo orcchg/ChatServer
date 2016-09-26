@@ -54,7 +54,7 @@ TEST(ParserTest, BufferedRequest) {
   EXPECT_EQ(third, requests[2]);
 }
 
-TEST(ParserTest, DISABLED_BufferedRequest2) {
+TEST(ParserTest, BufferedRequest2) {
   const char* http = "POST /login HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n{\"login\":\"maxim\",\"password\":\"4d90851d4c4cf9b4b3b1823\",\"encrypted\":1}DELETE /logout?id=1000 HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\nPOST /message HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n{\"id\":1000,\"login\":\"maxim\",\"email\":\"maxim@ya.ru\",\"channel\":0,\"dest_id\":0,\"timestamp\":1472102149645,\"size\":5,\"encrypted\":0,\"message\":\"hello\"}";
 
   MyParser parser;
@@ -73,6 +73,43 @@ TEST(ParserTest, DISABLED_BufferedRequest2) {
   const char* third_http = "POST /message HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n{\"id\":1000,\"login\":\"maxim\",\"email\":\"maxim@ya.ru\",\"channel\":0,\"dest_id\":0,\"timestamp\":1472102149645,\"size\":5,\"encrypted\":0,\"message\":\"hello\"}";
   Request third = parser.parseRequest(third_http, 0);
   EXPECT_EQ(third, requests[2]);
+}
+
+TEST(ParserTest, BufferedRequest3) {
+  const char* http = "POST /login HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n{\"login\":\"maxim\",\"password\":\"4d90851d4c4cf9b4b3b1823\",\"encrypted\":1}DELETE /logout?id=1000 HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\nPOST /message HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n{\"id\":1000,\"login\":\"maxim\",\"email\":\"maxim@ya.ru\",\"channel\":0,\"dest_id\":0,\"timestamp\":1472102149645,\"size\":5,\"encrypted\":0,\"message\":\"hello\"}GET /login HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\nPUT /switch_channel?id=1000&channel=500 HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\nPOST /register HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n{\"login\":\"maxim\",\"email\":\"maxim@ya.ru\",\"password\":\"4d90851d4c4cf9b4b3b1823\",\"encrypted\":1}GET /register HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n";
+
+  MyParser parser;
+  std::vector<Request> requests;
+  parser.parseBufferedRequests((char*) http, 0, &requests);
+  EXPECT_EQ(7, requests.size());
+
+  const char* first_http = "POST /login HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n{\"login\":\"maxim\",\"password\":\"4d90851d4c4cf9b4b3b1823\",\"encrypted\":1}";
+  Request first = parser.parseRequest(first_http, 0);
+  EXPECT_EQ(first, requests[0]);
+
+  const char* second_http = "DELETE /logout?id=1000 HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n";
+  Request second = parser.parseRequest(second_http, 0);
+  EXPECT_EQ(second, requests[1]);
+
+  const char* third_http = "POST /message HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n{\"id\":1000,\"login\":\"maxim\",\"email\":\"maxim@ya.ru\",\"channel\":0,\"dest_id\":0,\"timestamp\":1472102149645,\"size\":5,\"encrypted\":0,\"message\":\"hello\"}";
+  Request third = parser.parseRequest(third_http, 0);
+  EXPECT_EQ(third, requests[2]);
+
+  const char* fourth_http = "GET /login HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n";
+  Request fourth = parser.parseRequest(fourth_http, 0);
+  EXPECT_EQ(fourth, requests[3]);
+
+  const char* fifth_http = "PUT /switch_channel?id=1000&channel=500 HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n";
+  Request fifth = parser.parseRequest(fifth_http, 0);
+  EXPECT_EQ(fifth, requests[4]);
+
+  const char* sixth_http = "POST /register HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n{\"login\":\"maxim\",\"email\":\"maxim@ya.ru\",\"password\":\"4d90851d4c4cf9b4b3b1823\",\"encrypted\":1}";
+  Request sixth = parser.parseRequest(sixth_http, 0);
+  EXPECT_EQ(sixth, requests[5]);
+
+  const char* seventh_http = "GET /register HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n";
+  Request seventh = parser.parseRequest(seventh_http, 0);
+  EXPECT_EQ(seventh, requests[6]);
 }
 
 TEST(ParserTest, BufferedResponse) {

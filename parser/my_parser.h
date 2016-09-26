@@ -34,6 +34,21 @@
 #include <vector>
 #include "exception.h"
 
+struct FatPtr {
+  int position;
+  char* ptr;
+
+  FatPtr() : position(-1), ptr(nullptr) {}
+  FatPtr(int position, char* ptr) : position(position), ptr(ptr) {}
+
+  inline bool operator <  (const FatPtr& rhs) const { return position <  rhs.position; }
+  inline bool operator <= (const FatPtr& rhs) const { return position <= rhs.position; }
+  inline bool operator >  (const FatPtr& rhs) const { return position >  rhs.position; }
+  inline bool operator >= (const FatPtr& rhs) const { return position >= rhs.position; }
+  inline bool operator == (const FatPtr& rhs) const { return position == rhs.position; }
+  inline bool operator != (const FatPtr& rhs) const { return position != rhs.position; }
+};
+
 struct Query {
   std::string key;
   std::string value;
