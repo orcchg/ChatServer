@@ -31,15 +31,28 @@
 
 #include "client/client.h"
 
+#define MONKEY_DELAY 1000  // ms
+#define MONKEY_NAME "monkey"
+#define MONKEY_SUFFIX "0"
+#define MONKEY_EMAIL "monkey@server.ru"
+#define MONKEY_PASSWORD "showmethemoney"
+
 namespace monkey {
 
 class Monkey : public Client {
 public:
-  Monkey(const std::string& config_file);
+  Monkey(const std::string& config_file, const std::string& suffix = MONKEY_SUFFIX, int delay = MONKEY_DELAY);
   virtual ~Monkey();
 
 protected:
+  int m_delay;
+
   void goToMainMenu() override;
+
+  void startChat() override;
+
+  void receiverThread() override;
+  void monkeyThread();
 };
 
 }  // namespace monkey

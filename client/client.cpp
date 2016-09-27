@@ -387,13 +387,14 @@ void Client::checkAuth(const std::string& name, std::string& password) {
 
 /* Login */
 // ----------------------------------------------
-void Client::checkLoggedIn(const std::string& name) {
+bool Client::checkLoggedIn(const std::string& name) {
+  bool answer = false;
   bool is_closed = false;
   m_api_impl->isLoggedIn(name);
   std::vector<Response> responses;
   Response check_response = getResponse(m_socket, &is_closed, &responses);
   if (is_closed || check_response == Response::EMPTY) {
-    return;
+    return answer;
   }
 
   rapidjson::Document document;
@@ -407,6 +408,7 @@ void Client::checkLoggedIn(const std::string& name) {
     bool check = document[ITEM_CHECK].GetInt() != 0;
     if (check) {
       printf("\e[5;00;36mUser with login [%s] is logged in\e[m\n", name.c_str());
+      answer = true;
     } else {
       printf("\e[5;00;33mUser with login [%s] is not logged in\e[m\n", name.c_str());
     }
@@ -414,6 +416,7 @@ void Client::checkLoggedIn(const std::string& name) {
     ERR("Check for logged in: server's responded with invalid form");
     throw RuntimeException();
   }
+  return answer;
 }
 
 void Client::getLoginForm() {
@@ -507,13 +510,14 @@ void Client::onLogin() {
 
 /* Registration */
 // ----------------------------------------------
-void Client::checkRegistered(const std::string& name) {
+bool Client::checkRegistered(const std::string& name) {
+  bool answer = false;
   bool is_closed = false;
   m_api_impl->isRegistered(name);
   std::vector<Response> responses;
   Response check_response = getResponse(m_socket, &is_closed, &responses);
   if (is_closed || check_response == Response::EMPTY) {
-    return;
+    return answer;
   }
 
   rapidjson::Document document;
@@ -527,6 +531,7 @@ void Client::checkRegistered(const std::string& name) {
     bool check = document[ITEM_CHECK].GetInt() != 0;
     if (check) {
       printf("\e[5;00;36mUser with login [%s] is registered\e[m\n", name.c_str());
+      answer = true;
     } else {
       printf("\e[5;00;33mUser with login [%s] is not registered\e[m\n", name.c_str());
     }
@@ -534,6 +539,7 @@ void Client::checkRegistered(const std::string& name) {
     ERR("Check for register: server's responded with invalid form");
     throw RuntimeException();
   }
+  return answer;
 }
 
 void Client::getRegistrationForm() {

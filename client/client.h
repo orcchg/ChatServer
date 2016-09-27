@@ -90,13 +90,13 @@ protected:
   void getPeerId(const std::string& name);
   void checkAuth(const std::string& name, std::string& password);
 
-  void checkLoggedIn(const std::string& name);
+  bool checkLoggedIn(const std::string& name);
   void getLoginForm();
   void fillLoginForm(LoginForm* form);
   void tryLogin(LoginForm& form);
   void onLogin();
 
-  void checkRegistered(const std::string& name);
+  bool checkRegistered(const std::string& name);
   void getRegistrationForm();
   void fillRegistrationForm(RegistrationForm* form);
   void tryRegister(RegistrationForm& form);
@@ -105,9 +105,9 @@ protected:
   void onWrongPassword(LoginForm& form);
   void onAlreadyLoggedIn();
   void onAlreadyRegistered();
-  void startChat();
+  virtual void startChat();
 
-  void receiverThread();
+  virtual void receiverThread();
   void processSystemPayload(const std::string& payload);
   void enterPassword(std::string& password);
 
