@@ -32,6 +32,7 @@
 #include "client/client.h"
 
 #define MONKEY_DELAY 1000  // ms
+#define MONKEY_MESSAGE "Hello, I'm a Monkey!"
 #define MONKEY_NAME "monkey"
 #define MONKEY_SUFFIX "0"
 #define MONKEY_EMAIL "monkey@server.ru"
@@ -41,11 +42,16 @@ namespace monkey {
 
 class Monkey : public Client {
 public:
-  Monkey(const std::string& config_file, const std::string& suffix = MONKEY_SUFFIX, int delay = MONKEY_DELAY);
+  Monkey(
+      const std::string& config_file,
+      const std::string& message = MONKEY_MESSAGE,
+      const std::string& suffix = MONKEY_SUFFIX,
+      int delay = MONKEY_DELAY);
   virtual ~Monkey();
 
 protected:
   int m_delay;
+  std::string m_message;
 
   void goToMainMenu() override;
 

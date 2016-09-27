@@ -27,14 +27,26 @@
  */
 
 #include <cstring>
+#include <gflags/gflags.h>
 #include "api/api.h"
 #include "client/utils.h"
 #include "monkey.h"
 
+DEFINE_int32(delay, 1000, "Delay between sequential messages");
+DEFINE_string(suffix, MONKEY_SUFFIX, "Suffix for Monkey client name");
+DEFINE_string(config_file, "../client/local.cfg", "Path to configuration file");
+DEFINE_string(message, MONKEY_MESSAGE, "Default message");
+
 namespace monkey {
 
-Monkey::Monkey(const std::string& config_file, const std::string& suffix, int delay)
-  : Client(config_file), m_delay(delay) {
+Monkey::Monkey(
+    const std::string& config_file,
+    const std::string& message,
+    const std::string& suffix,
+    int delay)
+  : Client(config_file)
+  , m_delay(delay)
+  , m_message(message) {
   m_name.append(MONKEY_NAME).append("_").append(suffix);
   m_email.append(MONKEY_EMAIL).append("_").append(suffix);
   INF("Created monkey with name: %s and email: %s", m_name.c_str(), m_email.c_str());
@@ -94,13 +106,11 @@ void Monkey::receiverThread() {
 
 void Monkey::monkeyThread() {
   while (!m_is_stopped) {
-    std::string buffer = "Hello, World!";
-
     // composing message
     uint64_t timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     Message message = Message::Builder(m_id)
         .setLogin(m_name).setEmail(m_email).setChannel(m_channel).setDestId(m_dest_id)
-        .setTimestamp(timestamp).setSize(buffer.length()).setEncrypted(false).setMessage(buffer).build();
+        .setTimestamp(timestamp).setSize(m_message.length()).setEncrypted(false).setMessage(m_message).build();
 
     // sending message
     m_api_impl->sendMessage(message);
@@ -114,18 +124,17 @@ void Monkey::monkeyThread() {
 /* Main */
 // ----------------------------------------------------------------------------
 int main(int argc, char** argv) {
+  gflags::ParseCommandLineFlags(&argc, &argv, true);
+
   // read configuration
-  std::string config_file = "../client/local.cfg";
-  if (argc >= 2) {
-    char buffer[256];
-    memset(buffer, 0, 256);
-    strncpy(buffer, argv[1], strlen(argv[1]));
-    config_file = std::string(buffer);
-  }
+  int delay = FLAGS_delay;
+  std::string message = FLAGS_message;
+  std::string suffix = FLAGS_suffix;
+  std::string config_file = FLAGS_config_file;
   DBG("Configuration from file: %s", config_file.c_str());
 
   // start monkey
-  monkey::Monkey monkey(config_file);
+  monkey::Monkey monkey(config_file, message, suffix, delay);
   monkey.init();
   monkey.run();
   return 0;

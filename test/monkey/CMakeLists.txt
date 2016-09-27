@@ -35,5 +35,5 @@ SET( SOURCES
     ${SOURCE_DIR}/monkey.cpp
 )
 ADD_EXECUTABLE( ${TARGET} ${SOURCES} )
-TARGET_LINK_LIBRARIES( ${TARGET} ${OPENSSL_LIBS} api common my_parser ${CRYPTOR} )
+TARGET_LINK_LIBRARIES( ${TARGET} ${OPENSSL_LIBS} api common gflags my_parser ${CRYPTOR} )
 
