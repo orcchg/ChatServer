@@ -7,3 +7,6 @@
 [submodule "boringssl-compat"]
 	path = boringssl-compat
 	url = https://github.com/SlimRoms/android_external_sony_boringssl-compat
+[submodule "gflags"]
+	path = gflags
+	url = https://github.com/gflags/gflags.git
