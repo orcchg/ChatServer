@@ -331,239 +331,239 @@ void Server::handleRequest(int socket, ID_t connection_id) {
       VER("Processing request: %zu / %zu", i + 1, total);
       Request& request = requests[i];
 
-    storeRequest(connection_id, request);  // log incoming request
+      storeRequest(connection_id, request);  // log incoming request
 
-    Method method = getMethod(request.startline.method);
-    if (method == Method::UNKNOWN) {
-      ERR("Invalid method: %s", request.startline.method.c_str());
-      continue;
-    }
+      Method method = getMethod(request.startline.method);
+      if (method == Method::UNKNOWN) {
+        ERR("Invalid method: %s", request.startline.method.c_str());
+        continue;
+      }
 
-    Path path = getPath(request.startline.path);
-    if (path == Path::UNKNOWN) {
-      ERR("Invalid path: %s", request.startline.path.c_str());
-      continue;
-    }
+      Path path = getPath(request.startline.path);
+      if (path == Path::UNKNOWN) {
+        ERR("Invalid path: %s", request.startline.path.c_str());
+        continue;
+      }
 
-    switch (path) {
-      case Path::LOGIN:
-        switch (method) {
-          case Method::GET:
-            m_api_impl->sendLoginForm(socket);
-            break;
-          case Method::POST:
+      switch (path) {
+        case Path::LOGIN:
+          switch (method) {
+            case Method::GET:
+              m_api_impl->sendLoginForm(socket);
+              break;
+            case Method::POST:
+              {
+                ID_t id = UNKNOWN_ID;
+                auto login_status = m_api_impl->login(socket, request.body, id);
+                m_api_impl->sendStatus(socket, login_status, path, id);
+                m_api_impl->updateLastActivityTimestampOfPeer(id, path);  // set-up activity timestamp
+              }
+              break;
+          }
+          break;
+        case Path::REGISTER:
+          switch (method) {
+            case Method::GET:
+              m_api_impl->sendRegistrationForm(socket);
+              break;
+            case Method::POST:
+              {
+                ID_t id = UNKNOWN_ID;
+                auto register_status = m_api_impl->registrate(socket, request.body, id);
+                m_api_impl->sendStatus(socket, register_status, path, id);
+                m_api_impl->updateLastActivityTimestampOfPeer(id, path);  // set-up activity timestamp
+              }
+              break;
+          }
+          break;
+        case Path::MESSAGE:
+          switch (method) {
+            case Method::POST:
+              {
+                ID_t id = UNKNOWN_ID;
+                auto message_status = m_api_impl->message(request.body, id);
+                m_api_impl->sendStatus(socket, message_status, path, id);
+                m_api_impl->updateLastActivityTimestampOfPeer(id, path);  // action during chat
+              }
+              break;
+          }
+          break;
+        case Path::LOGOUT:
+          switch (method) {
+            case Method::DELETE:
             {
               ID_t id = UNKNOWN_ID;
-              auto login_status = m_api_impl->login(socket, request.body, id);
-              m_api_impl->sendStatus(socket, login_status, path, id);
-              m_api_impl->updateLastActivityTimestampOfPeer(id, path);  // set-up activity timestamp
+              auto logout_status = m_api_impl->logout(request.startline.path, id);
+              m_api_impl->sendStatus(socket, logout_status, path, id);
+              close(socket);  // shutdown peer socket
+              return;  // terminate current peer thread
             }
-            break;
-        }
-        break;
-      case Path::REGISTER:
-        switch (method) {
-          case Method::GET:
-            m_api_impl->sendRegistrationForm(socket);
-            break;
-          case Method::POST:
+          }
+          break;
+        case Path::SWITCH_CHANNEL:
+          switch (method) {
+            case Method::PUT:
             {
               ID_t id = UNKNOWN_ID;
-              auto register_status = m_api_impl->registrate(socket, request.body, id);
-              m_api_impl->sendStatus(socket, register_status, path, id);
-              m_api_impl->updateLastActivityTimestampOfPeer(id, path);  // set-up activity timestamp
-            }
-            break;
-        }
-        break;
-      case Path::MESSAGE:
-        switch (method) {
-          case Method::POST:
-            {
-              ID_t id = UNKNOWN_ID;
-              auto message_status = m_api_impl->message(request.body, id);
-              m_api_impl->sendStatus(socket, message_status, path, id);
+              auto switch_status = m_api_impl->switchChannel(request.startline.path, id);
+              m_api_impl->sendStatus(socket, switch_status, path, id);
               m_api_impl->updateLastActivityTimestampOfPeer(id, path);  // action during chat
             }
             break;
-        }
-        break;
-      case Path::LOGOUT:
-        switch (method) {
-          case Method::DELETE:
-          {
-            ID_t id = UNKNOWN_ID;
-            auto logout_status = m_api_impl->logout(request.startline.path, id);
-            m_api_impl->sendStatus(socket, logout_status, path, id);
-            close(socket);  // shutdown peer socket
-            return;  // terminate current peer thread
-          }
-        }
-        break;
-      case Path::SWITCH_CHANNEL:
-        switch (method) {
-          case Method::PUT:
-          {
-            ID_t id = UNKNOWN_ID;
-            auto switch_status = m_api_impl->switchChannel(request.startline.path, id);
-            m_api_impl->sendStatus(socket, switch_status, path, id);
-            m_api_impl->updateLastActivityTimestampOfPeer(id, path);  // action during chat
           }
           break;
-        }
-        break;
-      case Path::PEER_ID:
-        switch (method) {
-          case Method::GET:
-            {
-              ID_t id = UNKNOWN_ID;
-              auto check = m_api_impl->getPeerId(request.startline.path, id);
-              m_api_impl->sendCheck(socket, check, path, id);
-            }
-            break;
-        }
-        break;
-      case Path::IS_LOGGED_IN:
-        switch (method) {
-          case Method::GET:
-            {
-              ID_t id = UNKNOWN_ID;
-              auto login_check = m_api_impl->checkLoggedIn(request.startline.path, id);
-              m_api_impl->sendCheck(socket, login_check, path, id);
-            }
-            break;
-        }
-        break;
-      case Path::IS_REGISTERED:
-        switch (method) {
-          case Method::GET:
-            {
-              ID_t id = UNKNOWN_ID;
-              auto register_check = m_api_impl->checkRegistered(request.startline.path, id);
-              m_api_impl->sendCheck(socket, register_check, path, id);
-            }
-            break;
-        }
-        break;
-      case Path::CHECK_AUTH:
-        switch (method) {
-          case Method::GET:
-            {
-              ID_t id = UNKNOWN_ID;
-              auto check = m_api_impl->checkAuth(request.startline.path, id);
-              m_api_impl->sendCheck(socket, check, path, id);
-            }
-            break;
-        }
-        break;
-      case Path::KICK_BY_AUTH:
-        switch (method) {
-          case Method::GET:
-           {
-             ID_t id = UNKNOWN_ID;
-             auto check = m_api_impl->kickByAuth(request.startline.path, id);
-             m_api_impl->sendCheck(socket, check, path, id);
-           }
-           break;
-        }
-        break;
-      case Path::ALL_PEERS:
-        switch (method) {
-          case Method::GET:
-          {
-            std::vector<Peer> peers;
-            int channel = WRONG_CHANNEL;
-            auto get_all_status = m_api_impl->getAllPeers(request.startline.path, &peers, channel);
-            m_api_impl->sendPeers(socket, get_all_status, peers, channel);
+        case Path::PEER_ID:
+          switch (method) {
+            case Method::GET:
+              {
+                ID_t id = UNKNOWN_ID;
+                auto check = m_api_impl->getPeerId(request.startline.path, id);
+                m_api_impl->sendCheck(socket, check, path, id);
+              }
+              break;
           }
           break;
-        }
-        break;
+        case Path::IS_LOGGED_IN:
+          switch (method) {
+            case Method::GET:
+              {
+                ID_t id = UNKNOWN_ID;
+                auto login_check = m_api_impl->checkLoggedIn(request.startline.path, id);
+                m_api_impl->sendCheck(socket, login_check, path, id);
+              }
+              break;
+          }
+          break;
+        case Path::IS_REGISTERED:
+          switch (method) {
+            case Method::GET:
+              {
+                ID_t id = UNKNOWN_ID;
+                auto register_check = m_api_impl->checkRegistered(request.startline.path, id);
+                m_api_impl->sendCheck(socket, register_check, path, id);
+              }
+              break;
+          }
+          break;
+        case Path::CHECK_AUTH:
+          switch (method) {
+            case Method::GET:
+              {
+                ID_t id = UNKNOWN_ID;
+                auto check = m_api_impl->checkAuth(request.startline.path, id);
+                m_api_impl->sendCheck(socket, check, path, id);
+              }
+              break;
+          }
+          break;
+        case Path::KICK_BY_AUTH:
+          switch (method) {
+            case Method::GET:
+             {
+               ID_t id = UNKNOWN_ID;
+               auto check = m_api_impl->kickByAuth(request.startline.path, id);
+               m_api_impl->sendCheck(socket, check, path, id);
+             }
+             break;
+          }
+          break;
+        case Path::ALL_PEERS:
+          switch (method) {
+            case Method::GET:
+            {
+              std::vector<Peer> peers;
+              int channel = WRONG_CHANNEL;
+              auto get_all_status = m_api_impl->getAllPeers(request.startline.path, &peers, channel);
+              m_api_impl->sendPeers(socket, get_all_status, peers, channel);
+            }
+            break;
+          }
+          break;
 #if SECURE
-      case Path::PRIVATE_REQUEST:
-        switch (method) {
-          case Method::POST:
-          {
-            ID_t id = UNKNOWN_ID;
-            auto status = m_api_impl->privateRequest(request.startline.path, id);
-            m_api_impl->sendStatus(socket, status, path, id);
-            m_api_impl->updateLastActivityTimestampOfPeer(id, path);  // action during chat
+        case Path::PRIVATE_REQUEST:
+          switch (method) {
+            case Method::POST:
+            {
+              ID_t id = UNKNOWN_ID;
+              auto status = m_api_impl->privateRequest(request.startline.path, id);
+              m_api_impl->sendStatus(socket, status, path, id);
+              m_api_impl->updateLastActivityTimestampOfPeer(id, path);  // action during chat
+            }
+            break;
           }
           break;
-        }
-        break;
-      case Path::PRIVATE_CONFIRM:
-        switch (method) {
-          case Method::POST:
-          {
-            ID_t id = UNKNOWN_ID;
-            auto status = m_api_impl->privateConfirm(request.startline.path, id);
-            m_api_impl->sendStatus(socket, status, path, id);
-            m_api_impl->updateLastActivityTimestampOfPeer(id, path);  // action during chat
+        case Path::PRIVATE_CONFIRM:
+          switch (method) {
+            case Method::POST:
+            {
+              ID_t id = UNKNOWN_ID;
+              auto status = m_api_impl->privateConfirm(request.startline.path, id);
+              m_api_impl->sendStatus(socket, status, path, id);
+              m_api_impl->updateLastActivityTimestampOfPeer(id, path);  // action during chat
+            }
+            break;
           }
           break;
-        }
-        break;
-      case Path::PRIVATE_ABORT:
-        switch (method) {
-          case Method::DELETE:
-          {
-            ID_t id = UNKNOWN_ID;
-            auto status = m_api_impl->privateAbort(request.startline.path, id);
-            m_api_impl->sendStatus(socket, status, path, id);
-            m_api_impl->updateLastActivityTimestampOfPeer(id, path);  // action during chat
+        case Path::PRIVATE_ABORT:
+          switch (method) {
+            case Method::DELETE:
+            {
+              ID_t id = UNKNOWN_ID;
+              auto status = m_api_impl->privateAbort(request.startline.path, id);
+              m_api_impl->sendStatus(socket, status, path, id);
+              m_api_impl->updateLastActivityTimestampOfPeer(id, path);  // action during chat
+            }
+            break;
           }
           break;
-        }
-        break;
-      case Path::PRIVATE_PUBKEY:
-        switch (method) {
-          case Method::POST:
-          {
-            ID_t id = UNKNOWN_ID;
-            auto status = m_api_impl->privatePubKey(request.startline.path, request.body, id);
-            m_api_impl->sendStatus(socket, status, path, id);
-            m_api_impl->updateLastActivityTimestampOfPeer(id, path);  // action during chat
+        case Path::PRIVATE_PUBKEY:
+          switch (method) {
+            case Method::POST:
+            {
+              ID_t id = UNKNOWN_ID;
+              auto status = m_api_impl->privatePubKey(request.startline.path, request.body, id);
+              m_api_impl->sendStatus(socket, status, path, id);
+              m_api_impl->updateLastActivityTimestampOfPeer(id, path);  // action during chat
+            }
+            break;
           }
           break;
-        }
-        break;
-      case Path::PRIVATE_PUBKEY_EXCHANGE:
-        switch (method) {
-          case Method::POST:
-          {
-            ID_t id = UNKNOWN_ID;
-            auto status = m_api_impl->privatePubKeysExchange(request.startline.path, id);
-            m_api_impl->sendStatus(socket, status, path, id);
-            m_api_impl->updateLastActivityTimestampOfPeer(id, path);  // action during chat
+        case Path::PRIVATE_PUBKEY_EXCHANGE:
+          switch (method) {
+            case Method::POST:
+            {
+              ID_t id = UNKNOWN_ID;
+              auto status = m_api_impl->privatePubKeysExchange(request.startline.path, id);
+              m_api_impl->sendStatus(socket, status, path, id);
+              m_api_impl->updateLastActivityTimestampOfPeer(id, path);  // action during chat
+            }
+            break;
           }
           break;
-        }
-        break;
 #endif  // SECURE
-      case Path::KICK:
-        switch (method) {
-          case Method::DELETE:
-          {
-            ID_t id = UNKNOWN_ID;
-            auto status = m_api_impl->tryKickPeer(request.startline.path, id);
-            m_api_impl->sendStatus(socket, status, path, id);
+        case Path::KICK:
+          switch (method) {
+            case Method::DELETE:
+            {
+              ID_t id = UNKNOWN_ID;
+              auto status = m_api_impl->tryKickPeer(request.startline.path, id);
+              m_api_impl->sendStatus(socket, status, path, id);
+            }
+            break;
           }
           break;
-        }
-        break;
-      case Path::ADMIN:
-        switch (method) {
-          case Method::POST:
-          {
-            ID_t id = UNKNOWN_ID;
-            auto status = m_api_impl->tryBecomeAdmin(request.startline.path, id);
-            m_api_impl->sendStatus(socket, status, path, id);
+        case Path::ADMIN:
+          switch (method) {
+            case Method::POST:
+            {
+              ID_t id = UNKNOWN_ID;
+              auto status = m_api_impl->tryBecomeAdmin(request.startline.path, id);
+              m_api_impl->sendStatus(socket, status, path, id);
+            }
+            break;
           }
           break;
-        }
-        break;
-    }
+      }
     }  // for loop ending
 
   }  // while loop ending
