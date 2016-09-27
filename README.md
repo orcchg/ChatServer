@@ -22,8 +22,9 @@ Key features:
 ---------------------
 
 - SQLite
-- OpenSSL
+- OpenSSL, BoringSSL
 - RapidJSON
+- googletest, gflags
 
 Build:
 ------
