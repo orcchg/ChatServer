@@ -33,17 +33,34 @@
 
 namespace test {
 
+/* Request */
+// ----------------------------------------------
+TEST(ParserTest, SingleRequest) {
+  const char* http = "POST /login HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n{\"login\":\"maxim\",\"password\":\"4d90851d4c4cf9b4b3b1823\",\"encrypted\":1}";
+
+  MyParser parser;
+  std::vector<Request> requests;
+  Request request = parser.parseBufferedRequests((char*) http, 0, &requests);
+  EXPECT_EQ(1, requests.size());
+
+  const char* first_http = "POST /login HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n{\"login\":\"maxim\",\"password\":\"4d90851d4c4cf9b4b3b1823\",\"encrypted\":1}";
+  Request first = parser.parseRequest(first_http, 0);
+  EXPECT_EQ(first, requests[0]);
+  EXPECT_EQ(first, request);
+}
+
 TEST(ParserTest, BufferedRequest) {
   const char* http = "POST /login HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n{\"login\":\"maxim\",\"password\":\"4d90851d4c4cf9b4b3b1823\",\"encrypted\":1}POST /message HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n{\"id\":1000,\"login\":\"maxim\",\"email\":\"maxim@ya.ru\",\"channel\":0,\"dest_id\":0,\"timestamp\":1472102149645,\"size\":5,\"encrypted\":0,\"message\":\"hello\"}DELETE /logout?id=1000 HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n";
 
   MyParser parser;
   std::vector<Request> requests;
-  parser.parseBufferedRequests((char*) http, 0, &requests);
+  Request request = parser.parseBufferedRequests((char*) http, 0, &requests);
   EXPECT_EQ(3, requests.size());
 
   const char* first_http = "POST /login HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n{\"login\":\"maxim\",\"password\":\"4d90851d4c4cf9b4b3b1823\",\"encrypted\":1}";
   Request first = parser.parseRequest(first_http, 0);
   EXPECT_EQ(first, requests[0]);
+  EXPECT_EQ(first, request);
 
   const char* second_http = "POST /message HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n{\"id\":1000,\"login\":\"maxim\",\"email\":\"maxim@ya.ru\",\"channel\":0,\"dest_id\":0,\"timestamp\":1472102149645,\"size\":5,\"encrypted\":0,\"message\":\"hello\"}";
   Request second = parser.parseRequest(second_http, 0);
@@ -59,12 +76,13 @@ TEST(ParserTest, BufferedRequest2) {
 
   MyParser parser;
   std::vector<Request> requests;
-  parser.parseBufferedRequests((char*) http, 0, &requests);
+  Request request = parser.parseBufferedRequests((char*) http, 0, &requests);
   EXPECT_EQ(3, requests.size());
 
   const char* first_http = "POST /login HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n{\"login\":\"maxim\",\"password\":\"4d90851d4c4cf9b4b3b1823\",\"encrypted\":1}";
   Request first = parser.parseRequest(first_http, 0);
   EXPECT_EQ(first, requests[0]);
+  EXPECT_EQ(first, request);
 
   const char* second_http = "DELETE /logout?id=1000 HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n";
   Request second = parser.parseRequest(second_http, 0);
@@ -80,12 +98,13 @@ TEST(ParserTest, BufferedRequest3) {
 
   MyParser parser;
   std::vector<Request> requests;
-  parser.parseBufferedRequests((char*) http, 0, &requests);
+  Request request = parser.parseBufferedRequests((char*) http, 0, &requests);
   EXPECT_EQ(7, requests.size());
 
   const char* first_http = "POST /login HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n{\"login\":\"maxim\",\"password\":\"4d90851d4c4cf9b4b3b1823\",\"encrypted\":1}";
   Request first = parser.parseRequest(first_http, 0);
   EXPECT_EQ(first, requests[0]);
+  EXPECT_EQ(first, request);
 
   const char* second_http = "DELETE /logout?id=1000 HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n";
   Request second = parser.parseRequest(second_http, 0);
@@ -112,17 +131,34 @@ TEST(ParserTest, BufferedRequest3) {
   EXPECT_EQ(seventh, requests[6]);
 }
 
+/* Response */
+// ----------------------------------------------
+TEST(ParserTest, SingleResponse) {
+  const char* http = "HTTP/1.1 200 Logged Out\r\nServer: ChatServer-1.4-DEBUG\r\nContent-Type: application/json\r\nContent-Length: 103\r\n\r\n{\"system\":\"oleg has logged out\",\"action\":3,\"id\":1001,\"payload\":\"login=oleg&email=oleg@ya.ru&channel=0\"}";
+
+  MyParser parser;
+  std::vector<Response> responses;
+  Response response = parser.parseBufferedResponses((char*) http, 0, &responses);
+  EXPECT_EQ(1, responses.size());
+
+  const char* first_http = "HTTP/1.1 200 Logged Out\r\nServer: ChatServer-1.4-DEBUG\r\nContent-Type: application/json\r\nContent-Length: 103\r\n\r\n{\"system\":\"oleg has logged out\",\"action\":3,\"id\":1001,\"payload\":\"login=oleg&email=oleg@ya.ru&channel=0\"}";
+  Response first = parser.parseResponse(first_http, 0);
+  EXPECT_EQ(first, responses[0]);
+  EXPECT_EQ(first, response);
+}
+
 TEST(ParserTest, BufferedResponse) {
   const char* http = "HTTP/1.1 200 Logged Out\r\nServer: ChatServer-1.4-DEBUG\r\nContent-Type: application/json\r\nContent-Length: 103\r\n\r\n{\"system\":\"oleg has logged out\",\"action\":3,\"id\":1001,\"payload\":\"login=oleg&email=oleg@ya.ru&channel=0\"}HTTP/1.1 200 OK\r\nServer: ChatServer-1.4-DEBUG\r\nContent-Type: application/json\r\nContent-Length: 120\r\n\r\n{\"code\":0,\"action\":-2,\"id\":1000,\"token\":\"e7462a4f5295b5001cdb93eb3d6c65775910324ce38faacdf9e19403f4a3ca43\",\"payload\":\"\"}";
 
   MyParser parser;
   std::vector<Response> responses;
-  parser.parseBufferedResponses((char*) http, 0, &responses);
+  Response response = parser.parseBufferedResponses((char*) http, 0, &responses);
   EXPECT_EQ(2, responses.size());
 
   const char* first_http = "HTTP/1.1 200 Logged Out\r\nServer: ChatServer-1.4-DEBUG\r\nContent-Type: application/json\r\nContent-Length: 103\r\n\r\n{\"system\":\"oleg has logged out\",\"action\":3,\"id\":1001,\"payload\":\"login=oleg&email=oleg@ya.ru&channel=0\"}";
   Response first = parser.parseResponse(first_http, 0);
   EXPECT_EQ(first, responses[0]);
+  EXPECT_EQ(first, response);
 
   const char* second_http = "HTTP/1.1 200 OK\r\nServer: ChatServer-1.4-DEBUG\r\nContent-Type: application/json\r\nContent-Length: 120\r\n\r\n{\"code\":0,\"action\":-2,\"id\":1000,\"token\":\"e7462a4f5295b5001cdb93eb3d6c65775910324ce38faacdf9e19403f4a3ca43\",\"payload\":\"\"}";
   Response second = parser.parseResponse(second_http, 0);

@@ -285,7 +285,7 @@ Path Server::getPath(const std::string& path) const {
 
 /* Process request */
 // ----------------------------------------------
-Request Server::getRequest(int socket, bool* is_closed) {
+Request Server::getRequest(int socket, bool* is_closed, std::vector<Request>* requests) {
   char buffer[MESSAGE_SIZE];
   memset(buffer, 0, MESSAGE_SIZE);
   int read_bytes = recv(socket, buffer, MESSAGE_SIZE, 0);
@@ -300,7 +300,7 @@ Request Server::getRequest(int socket, bool* is_closed) {
   try {
     DBG("Raw request[%i bytes]: %.*s", read_bytes, (int) read_bytes, buffer);
     common::printReadableTimestampNow();
-    return m_parser.parseRequest(buffer, read_bytes);
+    return m_parser.parseBufferedRequests(buffer, read_bytes, requests);
   } catch (ParseException exception) {
     FAT("ParseException on raw request[%i bytes]: %.*s", read_bytes, (int) read_bytes, buffer);
     return Request::EMPTY;
@@ -310,7 +310,8 @@ Request Server::getRequest(int socket, bool* is_closed) {
 void Server::handleRequest(int socket, ID_t connection_id) {
   while (!m_is_stopped) {
     bool is_closed = false;
-    Request request = getRequest(socket, &is_closed);
+    std::vector<Request> requests;
+    Request request = getRequest(socket, &is_closed, &requests);
     if (is_closed) {
       DBG("Stopping peer thread...");
       m_api_impl->logoutPeerAtConnectionReset(socket);
@@ -322,6 +323,13 @@ void Server::handleRequest(int socket, ID_t connection_id) {
       ERR("Empty request - ignored");
       continue;
     }
+
+    /* process requests step-by-step */
+    bool interruption = false;
+    size_t total = requests.size();
+    for (size_t i = 0; !interruption && i < total; ++i) {
+      VER("Processing request: %zu / %zu", i + 1, total);
+      Request& request = requests[i];
 
     storeRequest(connection_id, request);  // log incoming request
 
@@ -556,7 +564,9 @@ void Server::handleRequest(int socket, ID_t connection_id) {
         }
         break;
     }
-  }
+    }  // for loop ending
+
+  }  // while loop ending
 }
 
 void Server::storeRequest(ID_t connection_id, const Request& request) {

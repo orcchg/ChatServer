@@ -32,6 +32,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <unordered_map>
+#include <vector>
 #include "all.h"
 #include "api/api.h"
 #include "database/log_table.h"
@@ -101,7 +102,7 @@ private:
   void runListener();
   void printClientInfo(sockaddr_in& peeraddr);
   Connection storeClientInfo(sockaddr_in& peeraddr);
-  Request getRequest(int socket, bool* is_closed);
+  Request getRequest(int socket, bool* is_closed, std::vector<Request>* requests);
   Method getMethod(const std::string& method) const;
   Path getPath(const std::string& path) const;
   void handleRequest(int socket, ID_t connection_id);  // other thread
