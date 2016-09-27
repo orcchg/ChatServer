@@ -24,16 +24,16 @@
 #   advertising, commercial distribution, promotion, marketing, publishing in media, etc.).
 #   Only the original author - Maxim Alov - has right to do any of the above actions.
 
-ADD_SUBDIRECTORY( common )
-ADD_SUBDIRECTORY( crypting )
-ADD_SUBDIRECTORY( monkey )
-
-SET( TARGET test_all )
-SET( TESTS common_test cryptor_test )
+SET( TARGET monkey )
+SET( CLIENT_SOURCE_DIR ${PROJECT_SOURCE_DIR}/client )
 SET( SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR} )
 SET( SOURCES
-    ${SOURCE_DIR}/testall.cpp
+    ${CLIENT_SOURCE_DIR}/client.cpp
+    ${CLIENT_SOURCE_DIR}/client_api_impl.cpp
+    ${CLIENT_SOURCE_DIR}/request_prepare.cpp
+    ${CLIENT_SOURCE_DIR}/utils.cpp
+    ${SOURCE_DIR}/monkey.cpp
 )
 ADD_EXECUTABLE( ${TARGET} ${SOURCES} )
-TARGET_LINK_LIBRARIES( ${TARGET} ${OPENSSL_LIBS} ${CRYPTOR} api common database gtest my_parser sqlite ${TESTS} )
+TARGET_LINK_LIBRARIES( ${TARGET} ${OPENSSL_LIBS} api common my_parser ${CRYPTOR} )
 
