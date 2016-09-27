@@ -50,7 +50,7 @@ public:
   virtual ~Client();
 
   virtual void init();
-  void run();
+  virtual void run();
 
 protected:
   ID_t m_id;
@@ -79,7 +79,7 @@ protected:
   bool readConfiguration(const std::string& config_file);
   virtual Response getResponse(int socket, bool* is_closed, std::vector<Response>* responses);
 
-  void goToMainMenu();
+  virtual void goToMainMenu();
   void stopThread();
   virtual void end();
 
