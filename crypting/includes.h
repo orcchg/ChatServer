@@ -31,14 +31,7 @@
 
 #if SECURE
 
-#include <openssl/aes.h>
-#include <openssl/conf.h>
-#include <openssl/err.h>
-#include <openssl/evp.h>
-#include <openssl/pem.h>
-#include <openssl/rand.h>
-#include <openssl/rsa.h>
-#include <openssl/sha.h>
+#include "boringssl-compat/boringssl_compat.h"
 
 // symmetric key in bytes
 #define KEY_LENGTH SHA256_DIGEST_LENGTH

@@ -32,7 +32,11 @@
 #if SECURE
 #include "crypting/aes_cryptor_test.cpp"
 #include "crypting/evp_cryptor_test.cpp"
+#if USE_BORINGSSL
+  // omit rsa_cryptor_test
+#else
 #include "crypting/rsa_cryptor_test.cpp"
+#endif  // USE_BORINGSSL
 #include "crypting/crypting_util_test.cpp"
 #endif  // SECURE
 

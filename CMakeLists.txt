@@ -39,6 +39,9 @@ if( CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX )
     SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3 -pthread" )
 endif()
 
+# -----------------------------------------------------------------------------
+# --------------------------- Configuration -----------------------------------
+# -----------------------------------------------------------------------------
 if( DEBUG )
     MESSAGE( STATUS "Build configuration: DEBUG" )
     ADD_DEFINITIONS( -DENABLED_LOGGING=1 )
@@ -49,27 +52,48 @@ else()
     ADD_DEFINITIONS( -DD_VERSION="${D_VERSION}-RELEASE" )
 endif()
 
+# -----------------------------------------------------------------------------
+# ----------------------------- Security --------------------------------------
+# -----------------------------------------------------------------------------
+SET( OPENSSL_LIBS )
+SET( CRYPTOR )
 if( SECURE )
     MESSAGE( STATUS "Security enabled" )
-    FIND_LIBRARY( CRYPTO_LIB NAMES crypto )
-    FIND_LIBRARY( SSL_LIB NAMES ssl )
-    SET( OPENSSL_LIBS ${CRYPTO_LIB} ${SSL_LIB} )
+    if ( WITH_BORINGSSL )
+        MESSAGE( STATUS "Using BoringSSL" )
+        INCLUDE_DIRECTORIES( boringssl/include )
+        SET( BUILD_SHARED_LIBS TRUE )
+        ADD_DEFINITIONS( -DUSE_BORINGSSL=1 )
+        ADD_SUBDIRECTORY( boringssl )
+        ADD_SUBDIRECTORY( boringssl-compat )
+        SET( CRYPTO_LIB ${CMAKE_CURRENT_BINARY_DIR}/boringssl/crypto/libcrypto.so )
+        SET( SSL_LIB ${CMAKE_CURRENT_BINARY_DIR}/boringssl/ssl/libssl.so )
+        SET( OPENSSL_LIBS ${CRYPTO_LIB} ${SSL_LIB} sslcompat )
+    else()
+        MESSAGE( STATUS "Using OpenSSL" )
+        FIND_LIBRARY( CRYPTO_LIB NAMES crypto )
+        FIND_LIBRARY( SSL_LIB NAMES ssl )
+        SET( OPENSSL_LIBS ${CRYPTO_LIB} ${SSL_LIB} )
+    endif()
     SET( CRYPTOR cryptor )
     ADD_DEFINITIONS( -DSECURE=1 )
     ADD_SUBDIRECTORY( crypting )
 else()
     MESSAGE( STATUS "Security disabled" )
-    SET( OPENSSL_LIBS )
-    SET( CRYPTOR )
     ADD_DEFINITIONS( -DSECURE=0 )
 endif()
 
+# -----------------------------------------------------------------------------
+# ------------------------------- Tests ---------------------------------------
+# -----------------------------------------------------------------------------
 if( WITH_TEST )
     MESSAGE( STATUS "Build with tests" )
     ADD_SUBDIRECTORY( googletest )
     ADD_SUBDIRECTORY( test )
 endif()
 
+# -----------------------------------------------------------------------------
+# -------------------------- Project modules ----------------------------------
 # -----------------------------------------------------------------------------
 ADD_SUBDIRECTORY( api )
 ADD_SUBDIRECTORY( client )
