@@ -49,6 +49,20 @@ TEST(ParserTest, SingleRequest) {
   EXPECT_EQ(first, request);
 }
 
+TEST(ParserTest, ProblematicRequest) {
+  const char* http = "OPTIONS sip:nm SIP/2.0\r\nVia: SIP/2.0/TCP nm;branch=foo\r\nFrom: <sip:nm@nm>;tag=root\r\nTo: <sip:nm2@nm2>\r\nCall-ID: 50000\r\nCSeq: 42 OPTIONS\r\nMax-Forwards: 70\r\nContent-Length: 0\r\nContact: <sip:nm@nm>\r\nAccept: application/sdp\r\n\r\n";
+
+  MyParser parser;
+  std::vector<Request> requests;
+  try {
+    Request request = parser.parseBufferedRequests((char*) http, 0, &requests);
+  } catch (ParseException e) {
+    EXPECT_TRUE(true);
+    return;
+  }
+  EXPECT_TRUE(false);
+}
+
 TEST(ParserTest, BufferedRequest) {
   const char* http = "POST /login HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n{\"login\":\"maxim\",\"password\":\"4d90851d4c4cf9b4b3b1823\",\"encrypted\":1}POST /message HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n{\"id\":1000,\"login\":\"maxim\",\"email\":\"maxim@ya.ru\",\"channel\":0,\"dest_id\":0,\"timestamp\":1472102149645,\"size\":5,\"encrypted\":0,\"message\":\"hello\"}DELETE /logout?id=1000 HTTP/1.1\r\nHost: 127.0.0.1:9000\r\n\r\n";
 

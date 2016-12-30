@@ -304,7 +304,7 @@ StartLine MyParser::parseStartLine(const std::string& start_line) const {
   reduce(start_line);
   StartLine startline;
   int i1 = start_line.find_first_of(" ");
-  int i2 = start_line.find_first_of("HTTP", i1 + 1);
+  int i2 = start_line.find("HTTP", i1 + 1);
   if (i1 == std::string::npos || i2 == std::string::npos) {
     ERR("Parse error: invalid start line: %s", start_line.c_str());
     throw ParseException();
