@@ -1,0 +1,71 @@
+"Raw request[223 bytes]: OPTIONS sip:nm SIP/2.0
+Via: SIP/2.0/TCP nm;branch=foo
+From: <sip:nm@nm>;tag=root
+To: <sip:nm2@nm2>
+Call-ID: 50000
+CSeq: 42 OPTIONS
+Max-Forwards: 70
+Content-Length: 0
+Contact: <sip:nm@nm>
+Accept: application/sdp
+
+"
+ VER in [/home/alov/Development/ChatServer/common/common.cpp:101] >>> "Timestamp: Sun Nov 13 04:06:47 2016, 0h 0m 0s ago "
+ TRC in [/home/alov/Development/ChatServer/parser/my_parser.cpp:57] >>> "parseRequest[223](OPTIONS sip:nm SIP/2.0
+Via: SIP/2.0/TCP nm;branch=foo
+From: <sip:nm@nm>;tag=root
+To: <sip:nm2@nm2>
+Call-ID: 50000
+CSeq: 42 OPTIONS
+Max-Forwards: 70
+Content-Length: 0
+Contact: <sip:nm@nm>
+Accept: application/sdp
+
+)"
+terminate called after throwing an instance of 'std::out_of_range'
+  what():  basic_string::substr
+./launch.sh: line 4: 32608 Aborted                 (core dumped) ./server 9000
+./chat_server.sh: line 5: 32606 Aborted                 (core dumped) nohup ./chatclient_privacy_policy_server
+
+
+
+--------------------------
+ TRC in [/home/alov/Development/ChatServer/server/server_api_impl.cpp:114] >>> "sendHello"
+ MSG in [/home/alov/Development/ChatServer/server/server_api_impl.cpp:126] >>> "Response: HTTP/1.1 200 OK
+Server: ChatServer-1.6.4-DEBUG
+Content-Type: application/json
+Content-Length: 480
+
+{"system":"Server greetings you!","payload":"private_pubkey=-----BEGIN RSA PUBLIC KEY-----MIIBCgKCAQEAxrns5XdaiXP6rUHP8/ph5hTTfK0AFAMugnbRPUWbMeN2jXnVzVAameOl1BZnNPBcUsDn4F3pzt0nqifQJ/ZC6dvFECBwEo6Gq+zocOD5m4fikvRYoQNL4jffsKoJr4yzH6zElMgsOe0ZXibha0EG8eNHsevlbDhJ2Q8jUhic1vbrEC1BVj6lQ1WcdgCYzWFZQQqNum3PNN8QQAIV7r1sNJUZEU29T/sDiDfWloue4poV2SgxDHI8eSp+mw+msrP6dFIxY6FTsHATmsWGlkSfL7loyLS30OM7ePV/CAsACis8npGNcaGEiJXMG0uQUCKh6Ih0Lvv9viZUrIAf1bFujwIDAQAB-----END RSA PUBLIC KEY-----"}"
+ DBG in [/home/alov/Development/ChatServer/server/server.cpp:301] >>> "Raw request[223 bytes]: OPTIONS sip:nm SIP/2.0
+Via: SIP/2.0/TCP nm;branch=foo
+From: <sip:nm@nm>;tag=root
+To: <sip:nm2@nm2>
+Call-ID: 50000
+CSeq: 42 OPTIONS
+Max-Forwards: 70
+Content-Length: 0
+Contact: <sip:nm@nm>
+Accept: application/sdp
+
+"
+ VER in [/home/alov/Development/ChatServer/common/common.cpp:101] >>> "Timestamp: Tue Dec 13 19:24:23 2016, 0h 0m 0s ago "
+ TRC in [/home/alov/Development/ChatServer/parser/my_parser.cpp:57] >>> "parseRequest[223](OPTIONS sip:nm SIP/2.0
+Via: SIP/2.0/TCP nm;branch=foo
+From: <sip:nm@nm>;tag=root
+To: <sip:nm2@nm2>
+Call-ID: 50000
+CSeq: 42 OPTIONS
+Max-Forwards: 70
+Content-Length: 0
+Contact: <sip:nm@nm>
+Accept: application/sdp
+
+)"
+terminate called after throwing an instance of 'std::out_of_range'
+  what():  basic_string::substr
+./launch.sh: line 4:  7678 Aborted                 (core dumped) ./server 9000
+./chat_server.sh: line 5:  7676 Aborted                 (core dumped) nohup ./chatclient_privacy_policy_server
+maxa@maxa:~$ 
+

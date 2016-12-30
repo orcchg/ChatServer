@@ -1,0 +1,66 @@
+ INF in [/home/alov/Development/ChatServer/database/system_table.cpp:128] >>> "exit SystemTable::addRecord()."
+ TRC in [/home/alov/Development/ChatServer/server/server_api_impl.cpp:114] >>> "sendHello"
+ MSG in [/home/alov/Development/ChatServer/server/server_api_impl.cpp:126] >>> "Response: HTTP/1.1 200 OK
+Server: ChatServer-1.6.4-DEBUG
+Content-Type: application/json
+Content-Length: 480
+
+{"system":"Server greetings you!","payload":"private_pubkey=-----BEGIN RSA PUBLIC KEY-----MIIBCgKCAQEAxrns5XdaiXP6rUHP8/ph5hTTfK0AFAMugnbRPUWbMeN2jXnVzVAameOl1BZnNPBcUsDn4F3pzt0nqifQJ/ZC6dvFECBwEo6Gq+zocOD5m4fikvRYoQNL4jffsKoJr4yzH6zElMgsOe0ZXibha0EG8eNHsevlbDhJ2Q8jUhic1vbrEC1BVj6lQ1WcdgCYzWFZQQqNum3PNN8QQAIV7r1sNJUZEU29T/sDiDfWloue4poV2SgxDHI8eSp+mw+msrP6dFIxY6FTsHATmsWGlkSfL7loyLS30OM7ePV/CAsACis8npGNcaGEiJXMG0uQUCKh6Ih0Lvv9viZUrIAf1bFujwIDAQAB-----END RSA PUBLIC KEY-----"}"
+ DBG in [/home/alov/Development/ChatServer/server/server.cpp:301] >>> "Raw request[274 bytes]: GET http://www.baidu.com/favicon.ico HTTP/1.1
+Host: www.baidu.com
+Connection: keep-alive
+Accept-Encoding: gzip, deflate
+Accept: */*
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36
+
+"
+ VER in [/home/alov/Development/ChatServer/common/common.cpp:101] >>> "Timestamp: Sat Dec  3 20:29:25 2016, 0h 0m 0s ago "
+ TRC in [/home/alov/Development/ChatServer/parser/my_parser.cpp:57] >>> "parseRequest[274](GET http://www.baidu.com/favicon.ico HTTP/1.1
+Host: www.baidu.com
+Connection: keep-alive
+Accept-Encoding: gzip, deflate
+Accept: */*
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36
+
+)"
+ VER in [/home/alov/Development/ChatServer/server/server.cpp:331] >>> "Processing request: 1 / 1"
+ ERR in [/home/alov/Development/ChatServer/server/server.cpp:344] >>> "Invalid path: http://www.baidu.com/favicon.ico"
+ DBG in [/home/alov/Development/ChatServer/server/server.cpp:296] >>> "Connection closed"
+ DBG in [/home/alov/Development/ChatServer/server/server.cpp:316] >>> "Stopping peer thread..."
+ TRC in [/home/alov/Development/ChatServer/server/server_api_impl.cpp:131] >>> "logoutPeerAtConnectionReset(9)"
+ DBG in [/home/alov/Development/ChatServer/server/server.cpp:592] >>> "Moderation Daemon working..."
+ TRC in [/home/alov/Development/ChatServer/server/server_api_impl.cpp:158] >>> "checkActivityAndKick"
+ DBG in [/home/alov/Development/ChatServer/server/server.cpp:594] >>> "Moderation Daemon, total kicked: 0"
+Moderation Daemon, total kicked: 0 DBG in [/home/alov/Development/ChatServer/server/server.cpp:592] >>> "Moderation Daemon working..."
+ TRC in [/home/alov/Development/ChatServer/server/server_api_impl.cpp:158] >>> "checkActivityAndKick"
+ DBG in [/home/alov/Development/ChatServer/server/server.cpp:594] >>> "Moderation Daemon, total kicked: 0"
+Moderation Daemon, total kicked: 0 DBG in [/home/alov/Development/ChatServer/server/server.cpp:592] >>> "Moderation Daemon working..."
+ TRC in [/home/alov/Development/ChatServer/server/server_api_impl.cpp:158] >>> "checkActivityAndKick"
+ DBG in [/home/alov/Development/ChatServer/server/server.cpp:594] >>> "Moderation Daemon, total kicked: 0"
+Moderation Daemon, total kicked: 0 DBG in [/home/alov/Development/ChatServer/server/server.cpp:592] >>> "Moderation Daemon working..."
+ TRC in [/home/alov/Development/ChatServer/server/server_api_impl.cpp:158] >>> "checkActivityAndKick"
+ SYS in [/home/alov/Development/ChatServer/server/server_api_impl.cpp:165] >>> "Moderating: peer with ID [1002] was inactive for 44274524 ms, kicking..."
+Moderating: peer with ID [1002] was inactive for 44274524 ms, kicking... TRC in [/home/alov/Development/ChatServer/server/server_api_impl.cpp:87] >>> "kickPeer(1002)"
+ TRC in [/home/alov/Development/ChatServer/server/server_api_impl.cpp:218] >>> "sendStatus(18, -2, 1002)"
+ MSG in [/home/alov/Development/ChatServer/server/server_api_impl.cpp:302] >>> "Response: HTTP/1.1 200 Kicked by administrator
+Server: ChatServer-1.6.4-DEBUG
+Content-Type: application/json
+Content-Length: 121
+
+{"code":18,"action":-2,"id":1002,"token":"7bba7a6d00ae6270fdcf74e917afeab83696d3e25ade678aed66e8ae478b4a50","payload":""}"
+ INF in [/home/alov/Development/ChatServer/server/server_api_impl.cpp:93] >>> "Kick peer with ID[1002] at command"
+ TRC in [/home/alov/Development/ChatServer/server/server_api_impl.cpp:435] >>> "logout(/logout?id=1002&login=Maxim Alov)"
+ TRC in [/home/alov/Development/ChatServer/parser/my_parser.cpp:387] >>> "Parsed param: id:1002"
+ TRC in [/home/alov/Development/ChatServer/parser/my_parser.cpp:387] >>> "Parsed param: login:Maxim Alov"
+ DBG in [/home/alov/Development/ChatServer/server/server_api_impl.cpp:440] >>> "Query: id: 1002"
+ DBG in [/home/alov/Development/ChatServer/server/server_api_impl.cpp:440] >>> "Query: login: Maxim Alov"
+ TRC in [/home/alov/Development/ChatServer/server/server_api_impl.cpp:1337] >>> "eraseAllPendingHandshakes(1002)"
+ DBG in [/home/alov/Development/ChatServer/server/server_api_impl.cpp:1343] >>> "Erased 0 handshakes"
+ SYS in [/home/alov/Development/ChatServer/server/server_api_impl.cpp:165] >>> "Moderating: peer with ID [101] was inactive for 14542634605341572607 ms, kicking..."
+Moderating: peer with ID [101] was inactive for 14542634605341572607 ms, kicking... TRC in [/home/alov/Development/ChatServer/server/server_api_impl.cpp:87] >>> "kickPeer(101)"
+ WRN in [/home/alov/Development/ChatServer/server/server_api_impl.cpp:99] >>> "No such peer to kick: 101"
+./launch.sh: line 4: 12645 Segmentation fault      (core dumped) ./server 9000
+./chat_server.sh: line 5: 12643 Aborted                 (core dumped) nohup ./chatclient_privacy_policy_server
+maxa@maxa:~$ ./chat_server.sh 
+nohup: appending output to 'nohup.out'
+
