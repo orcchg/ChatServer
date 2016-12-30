@@ -31,7 +31,7 @@
 
 #if SECURE
 
-#include "boringssl-compat/boringssl_compat.h"
+#include "BoringSSL-Compat/boringssl_compat.h"
 
 // symmetric key in bytes
 #define KEY_LENGTH SHA256_DIGEST_LENGTH

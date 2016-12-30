@@ -10,3 +10,6 @@
 [submodule "gflags"]
 	path = gflags
 	url = https://github.com/gflags/gflags.git
+[submodule "BoringSSL-Compat"]
+	path = BoringSSL-Compat
+	url = https://github.com/orcchg/BoringSSL-Compat
