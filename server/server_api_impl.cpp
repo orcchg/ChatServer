@@ -30,6 +30,7 @@
 #include <sstream>
 #include <utility>
 #include <vector>
+#include <inttypes.h>
 #include <unistd.h>
 #include "all.h"
 #include "common.h"
@@ -148,7 +149,7 @@ void ServerApiImpl::updateLastActivityTimestampOfPeer(ID_t id, Path action) {
     uint64_t timestamp = common::getCurrentTime();
     it->second.setLastAction(action);
     it->second.setLastActivityTimestamp(timestamp);
-    DBG("Updated timestamp for peer with ID [%lli]: %zu", id, timestamp);
+    DBG("Updated timestamp for peer with ID [%lli]: %" PRIu64, id, timestamp);
   } else {
     WRN("No such peer to update last activity timestamp: %lli", id);
   }
@@ -162,8 +163,8 @@ int ServerApiImpl::checkActivityAndKick() {
     uint64_t timestamp = it.second.getLastActivityTimestamp();
     uint64_t inactive = current - timestamp;
     if (inactive > PEER_ACTIVITY_TIMEOUT) {
-      SYS("Moderating: peer with ID [%lli] was inactive for %zu ms, kicking...", it.first, inactive);
-      printf("\e[5;01;35mModerating: peer with ID [%lli] was inactive for %zu ms, kicking...\e[m", it.first, inactive);
+      SYS("Moderating: peer with ID [%lli] was inactive for %" PRIu64" ms, kicking...", it.first, inactive);
+      printf("\e[5;01;35mModerating: peer with ID [%lli] was inactive for %" PRIu64" ms, kicking...\e[m\n", it.first, inactive);
       kickPeer(it.first);
       ++kicked;
     }
@@ -719,7 +720,7 @@ void ServerApiImpl::listAllPeers() const {
     memset(time_ago, '\0', 64);
     uint64_t timestamp = it.second.getLastActivityTimestamp();
     common::timestampToReadable(timestamp, date_time, time_ago);
-    printf("Peer[%lli]: login = %s, email = %s, channel = %i, socket = %i, la = %i, lats = %s (%zu) %s  ",
+    printf("Peer[%lli]: login = %s, email = %s, channel = %i, socket = %i, la = %i, lats = %s (%" PRIu64") %s  ",
            it.first, it.second.getLogin().c_str(), it.second.getEmail().c_str(), it.second.getChannel(),
            it.second.getSocket(), static_cast<int>(it.second.getLastAction()), date_time, timestamp, time_ago);
     if (it.second.isAdmin()) {
