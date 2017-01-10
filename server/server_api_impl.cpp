@@ -159,14 +159,20 @@ int ServerApiImpl::checkActivityAndKick() {
   TRC("checkActivityAndKick");
   int kicked = 0;
   uint64_t current = common::getCurrentTime();
+  std::unordered_map<ID_t, server::Peer> kicked_peers;
   for (auto& it : m_peers) {
     uint64_t timestamp = it.second.getLastActivityTimestamp();
     uint64_t inactive = current - timestamp;
     if (inactive > PEER_ACTIVITY_TIMEOUT) {
       SYS("Moderating: peer with ID [%lli] was inactive for %" PRIu64" ms, kicking...", it.first, inactive);
       printf("\e[5;01;35mModerating: peer with ID [%lli] was inactive for %" PRIu64" ms, kicking...\e[m\n", it.first, inactive);
-      kickPeer(it.first);
+      kicked_peers.insert(it);  // add kick candidate to separate map
       ++kicked;
+    }
+  }
+  if (kicked > 0) {
+    for (auto& it : kicked_peers) {
+      kickPeer(it.first);  // kick peers, removing them from 'm_peers' map safely
     }
   }
   return kicked;

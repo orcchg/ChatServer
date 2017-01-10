@@ -26,7 +26,7 @@
 
 cmake_minimum_required( VERSION 2.8 )
 PROJECT( ChatServer )
-SET( D_VERSION "1.6.4" )
+SET( D_VERSION "1.6.5" )
 MESSAGE( STATUS "Version ${D_VERSION}" )
 
 # -----------------------------------------------------------------------------
