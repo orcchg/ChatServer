@@ -80,7 +80,6 @@ See LICENSE
 Version
 -------
 
-Version 1.3 is GPL licensed for non-commercial. This version is freezed and is outdated.
-Currently production version is 1.5.1 which is not open-source anymore.
+Currently production version is 1.5.1.
 
 Checkout ChatClient android app on Google Play !
